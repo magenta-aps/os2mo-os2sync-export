@@ -193,6 +193,7 @@ def main(settings):
 
     sync_os2sync_orgunits(settings, counter, prev_date)
     sync_os2sync_users(settings, counter, prev_date)
+    remove_from_os2sync(settings)
 
     if hash_cache_file:
         hash_cache_file.write_text(json.dumps(os2sync.hash_cache, indent=4))
