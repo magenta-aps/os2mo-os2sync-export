@@ -1,9 +1,8 @@
 from unittest.mock import patch
 from uuid import uuid4
 
-from os2sync_export.os2sync_models import OrgUnit
-
 from .helpers import dummy_settings
+from os2sync_export.os2sync_models import OrgUnit
 
 uuid = uuid4()
 o = OrgUnit(Name="test", Uuid=uuid, ParentOrgUnitUuid=None)

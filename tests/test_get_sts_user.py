@@ -1,9 +1,10 @@
 import unittest
 from unittest.mock import patch
 
+from parameterized import parameterized
+
 from os2sync_export import os2mo
 from os2sync_export.os2mo import get_sts_user_raw as os2mo_get_sts_user_raw
-from parameterized import parameterized
 from tests.helpers import dummy_positions
 from tests.helpers import dummy_settings
 from tests.helpers import mock_engagements_to_user

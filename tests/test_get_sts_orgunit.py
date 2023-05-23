@@ -2,6 +2,7 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
+
 from os2sync_export.os2mo import get_sts_orgunit
 from tests.helpers import dummy_settings
 

@@ -6,6 +6,8 @@ from uuid import uuid4
 
 from hypothesis import given
 from hypothesis import strategies as st
+from parameterized import parameterized
+
 from os2sync_export.os2mo import get_org_unit_hierarchy
 from os2sync_export.os2mo import get_work_address
 from os2sync_export.os2mo import is_ignored
@@ -16,7 +18,6 @@ from os2sync_export.os2mo import os2mo_get
 from os2sync_export.os2mo import overwrite_position_uuids
 from os2sync_export.os2mo import overwrite_unit_uuids
 from os2sync_export.os2mo import partition_kle
-from parameterized import parameterized
 from tests.helpers import dummy_settings
 from tests.helpers import MockOs2moGet
 

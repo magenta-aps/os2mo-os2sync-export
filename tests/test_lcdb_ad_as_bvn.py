@@ -2,11 +2,6 @@ import unittest
 from unittest.mock import patch
 
 import pytest
-from os2sync_export.lcdb_os2mo import get_sts_user_raw
-from os2sync_export.lcdb_os2mo import try_get_it_user_key
-from sqlalchemy.orm import sessionmaker
-from tests.helpers import dummy_settings
-
 from exporters.sql_export.lc_for_jobs_db import get_engine
 from exporters.sql_export.sql_table_defs import Adresse
 from exporters.sql_export.sql_table_defs import Base
@@ -15,6 +10,11 @@ from exporters.sql_export.sql_table_defs import Engagement
 from exporters.sql_export.sql_table_defs import ItForbindelse
 from exporters.sql_export.sql_table_defs import ItSystem
 from exporters.sql_export.sql_table_defs import Tilknytning
+from sqlalchemy.orm import sessionmaker
+
+from os2sync_export.lcdb_os2mo import get_sts_user_raw
+from os2sync_export.lcdb_os2mo import try_get_it_user_key
+from tests.helpers import dummy_settings
 
 AD_IT_SYSTEM = "Active Directory"
 

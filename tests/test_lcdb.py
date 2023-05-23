@@ -4,10 +4,11 @@ from unittest.mock import patch
 from uuid import uuid4
 
 from alchemy_mock.mocking import UnifiedAlchemyMagicMock
+from parameterized import parameterized
+
 from os2sync_export.lcdb_os2mo import is_ignored
 from os2sync_export.lcdb_os2mo import overwrite_unit_uuids
 from os2sync_export.lcdb_os2mo import overwrite_user_uuids
-from parameterized import parameterized
 from tests.helpers import dummy_settings
 
 

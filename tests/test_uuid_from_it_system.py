@@ -1,7 +1,8 @@
 from uuid import uuid4
 
-from os2sync_export.os2mo import get_fk_org_uuid
 from parameterized import parameterized
+
+from os2sync_export.os2mo import get_fk_org_uuid
 
 
 FK_ORG_UUID_IT_SYSTEM = "FK-org uuid"
