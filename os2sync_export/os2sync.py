@@ -14,12 +14,13 @@ from typing import Tuple
 from uuid import UUID
 
 import requests
-from os2sync_export import config
-from os2sync_export.os2sync_models import OrgUnit
 from tenacity import retry
 from tenacity import retry_if_exception_type
 from tenacity import stop_after_delay
 from tenacity import wait_fixed
+
+from os2sync_export import config
+from os2sync_export.os2sync_models import OrgUnit
 
 retry_max_time = 60
 settings = config.get_os2sync_settings()

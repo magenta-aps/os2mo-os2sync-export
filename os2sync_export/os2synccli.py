@@ -6,6 +6,7 @@ from typing import Tuple
 from uuid import UUID
 
 import click
+
 from os2sync_export import lcdb_os2mo
 from os2sync_export import os2mo
 from os2sync_export import os2sync

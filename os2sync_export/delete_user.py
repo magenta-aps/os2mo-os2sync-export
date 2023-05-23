@@ -1,6 +1,7 @@
 from uuid import UUID
 
 import click
+
 from os2sync_export.os2sync import delete_user
 
 

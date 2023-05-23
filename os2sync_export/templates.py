@@ -14,6 +14,7 @@ from jinja2 import Environment
 from jinja2 import StrictUndefined
 from jinja2 import Template
 from jinja2.exceptions import TemplateSyntaxError
+
 from os2sync_export.config import Settings
 
 logger = logging.getLogger(__name__)

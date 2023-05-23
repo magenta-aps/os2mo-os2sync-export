@@ -16,6 +16,11 @@ from uuid import UUID
 import sentry_sdk
 from gql.client import SyncClientSession
 from more_itertools import flatten
+from ra_utils.tqdm_wrapper import tqdm
+from tenacity import retry
+from tenacity import retry_if_exception_type
+from tenacity import stop_after_attempt
+
 from os2sync_export import lcdb_os2mo
 from os2sync_export import os2mo
 from os2sync_export import os2sync
@@ -23,10 +28,6 @@ from os2sync_export.config import get_os2sync_settings
 from os2sync_export.config import Settings
 from os2sync_export.config import setup_gql_client
 from os2sync_export.os2sync_models import OrgUnit
-from ra_utils.tqdm_wrapper import tqdm
-from tenacity import retry
-from tenacity import retry_if_exception_type
-from tenacity import stop_after_attempt
 
 logger = logging.getLogger(__name__)
 

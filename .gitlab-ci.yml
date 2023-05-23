@@ -21,9 +21,11 @@ variables:
 
 
 Lint os2sync Exporter:
-  extends: .lint-python
+  stage: lint
+  needs: []
+  image: python:3.11
+  services: []
   script:
-    - cd exporters/os2sync_export
     - pip install mypy==0.991 pre-commit types-Jinja2 types-click types-requests types-python-dateutil types-aiofiles
     - pre-commit run --files os2sync_export/*.py tests/*.py 
 
@@ -32,8 +34,6 @@ Lint os2sync Exporter:
 Build os2sync_export image:
   extends: .build-docker
   variables:
-    CONTEXT: ${CI_PROJECT_DIR}/exporters/os2sync_export
-    DOCKERFILE: ${CI_PROJECT_DIR}/exporters/os2sync_export/Dockerfile
     CI_IMAGE: ${OS2SYNC_EXPORT_IMAGE_SHA}
 
 # Test
@@ -48,35 +48,3 @@ Test OS2SYNC exporter:
   script:
     - cd /app/
     - pytest tests/
-
-# Release
-##########
-Release OS2Sync master image:
-  extends: .release-master
-  variables:
-    CI_IMAGE: ${OS2SYNC_EXPORT_IMAGE_SHA}
-    RELEASE_IMAGE: ${OS2SYNC_EXPORT_RELEASE_REGISTRY_IMAGE}
-
-Release OS2Sync release image:
-  extends: .release-version
-  variables:
-    CI_IMAGE: ${OS2SYNC_EXPORT_IMAGE_SHA}
-    RELEASE_IMAGE: ${OS2SYNC_EXPORT_RELEASE_REGISTRY_IMAGE}
-
-Release OS2Sync to Dev:
-  extends: .release-to-dev
-  needs: ["Release version"]
-  variables:
-    ENDPOINT: os2mo/flux/os2syncexport/update-dev
-
-Release OS2Sync to Test:
-  extends: .release-to-test
-  needs: []
-  variables:
-    ENDPOINT: os2mo/flux/os2syncexport/update-test
-
-Release OS2Sync to Prod:
-  extends: .release-to-prod
-  needs: []
-  variables:
-    ENDPOINT: os2mo/flux/os2syncexport/update-prod
