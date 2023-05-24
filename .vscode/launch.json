@@ -8,7 +8,7 @@
             "module": "uvicorn",
             "justMyCode": false,
             "args": [
-                "os2sync_export.main:app",
+                "os2sync_export.main:create_app",
                 "--host",
                 "0.0.0.0",
                 "--reload"

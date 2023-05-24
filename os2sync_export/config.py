@@ -1,5 +1,4 @@
 import logging
-from functools import lru_cache
 from pathlib import Path
 from typing import Any
 from typing import cast
@@ -9,6 +8,7 @@ from typing import Literal
 from typing import Tuple
 from uuid import UUID
 
+from fastramqpi.config import Settings as FastRAMQPISettings  # type: ignore
 from pydantic import AnyHttpUrl
 from pydantic import BaseSettings
 from ra_utils.apply import apply
@@ -53,8 +53,10 @@ def json_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
     return final_settings
 
 
-class Settings(JobSettings):
+class Settings(FastRAMQPISettings, JobSettings):
+
     # common:
+
     municipality: str  # Called "municipality.cvr" in settings.json
     mora_base: AnyHttpUrl = cast(
         AnyHttpUrl, "http://localhost:5000"
@@ -93,6 +95,8 @@ class Settings(JobSettings):
     os2sync_filter_users_by_it_system: bool = False
 
     class Config:
+        frozen = False
+        env_nested_delimiter = "__"
 
         env_file_encoding = "utf-8"
 
@@ -111,7 +115,6 @@ class Settings(JobSettings):
             )
 
 
-@lru_cache()
 def get_os2sync_settings(*args, **kwargs) -> Settings:
     return Settings(*args, **kwargs)
 
