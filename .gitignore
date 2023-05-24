@@ -8,3 +8,9 @@ dist
 
 # Workspace
 .hypothesis/
+
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/
