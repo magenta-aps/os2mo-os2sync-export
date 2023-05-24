@@ -6,6 +6,7 @@ services:
       context: .
     env_file:
       - ./.env
+    command: "uvicorn os2sync_export.main:create_app --host 0.0.0.0 --reload"
     ports:
       - 127.0.0.1:8000:8000/tcp
     volumes:

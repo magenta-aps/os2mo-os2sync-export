@@ -1,9 +1,11 @@
 import logging
+from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
 from uuid import UUID
 
+import sentry_sdk
 from fastapi import APIRouter
 from fastapi import BackgroundTasks
 from fastapi import FastAPI
@@ -33,7 +35,6 @@ amqp_router = MORouter()
 
 
 async def update_single_user(uuid: UUID, gql_session, settings: Settings) -> None:
-
     sts_users = await get_sts_user(
         str(uuid), gql_session=gql_session, settings=settings
     )
@@ -44,7 +45,6 @@ async def update_single_user(uuid: UUID, gql_session, settings: Settings) -> Non
 
 
 async def update_single_orgunit(uuid: UUID, settings: Settings) -> None:
-
     sts_org_unit = get_sts_orgunit(str(uuid), settings=settings)
 
     if sts_org_unit:
@@ -65,7 +65,12 @@ async def index() -> Dict[str, str]:
 async def trigger_all(
     request: Request, background_tasks: BackgroundTasks
 ) -> Dict[str, str]:
-    background_tasks.add_task(main, settings=get_os2sync_settings())
+    context: dict[str, Any] = request.app.state.context
+    background_tasks.add_task(
+        main,
+        settings=context["user_context"]["settings"],
+        gql_session=context["graphql_session"],
+    )
     return {"triggered": "OK"}
 
 
@@ -73,7 +78,6 @@ async def trigger_all(
 async def amqp_trigger_employee(
     context: Context, uuid: PayloadUUID, _: SleepOnError
 ) -> None:
-
     await update_single_user(
         uuid,
         gql_session=context["graphql_session"],
@@ -84,24 +88,28 @@ async def amqp_trigger_employee(
 
 @fastapi_router.post("/trigger/user/{uuid}")
 async def trigger_user(
+    request: Request,
     uuid: UUID,
     dry_run: bool = False,
 ) -> List[Optional[Dict]]:
+    context: dict[str, Any] = request.app.state.context
 
     return await os2synccli.update_single_user(
-        uuid, settings=get_os2sync_settings(), dry_run=dry_run
+        uuid, settings=context["user_context"]["settings"], dry_run=dry_run
     )
 
 
 @fastapi_router.post("/trigger/orgunit/{uuid}", status_code=200)
 async def trigger_orgunit(
+    request: Request,
     uuid: UUID,
     dry_run: bool,
     response: Response,
 ) -> Optional[OrgUnit]:
+    context: dict[str, Any] = request.app.state.context
 
     org_unit, changes = os2synccli.update_single_orgunit(
-        uuid, settings=get_os2sync_settings(), dry_run=dry_run
+        uuid, settings=context["user_context"]["settings"], dry_run=dry_run
     )
     if changes:
         response.status_code = status.HTTP_201_CREATED
@@ -113,6 +121,8 @@ async def trigger_orgunit(
 def create_fastramqpi(**kwargs) -> FastRAMQPI:
     settings = get_os2sync_settings(**kwargs)
     settings.start_logging_based_on_settings()
+    if settings.sentry_dsn:
+        sentry_sdk.init(dsn=settings.sentry_dsn)
 
     fastramqpi = FastRAMQPI(application_name="os2sync-export", settings=settings)
 
