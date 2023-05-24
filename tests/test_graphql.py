@@ -79,7 +79,7 @@ def test_group_by_engagement():
 
 
 @patch("os2sync_export.os2mo.get_sts_user_raw")
-def test_get_sts_user(get_sts_user_raw_mock):
+async def test_get_sts_user(get_sts_user_raw_mock):
     gql_mock = MagicMock()
     gql_mock.execute.return_value = {
         "employees": [{"objects": [{"itusers": query_response}]}]
@@ -87,7 +87,7 @@ def test_get_sts_user(get_sts_user_raw_mock):
     settings = dummy_settings
     settings.os2sync_uuid_from_it_systems = ["FK-ORG UUID"]
     settings.os2sync_user_key_it_system_name = "FK-ORG USERNAME"
-    get_sts_user(mo_uuid=mo_uuid, gql_session=gql_mock, settings=settings)
+    await get_sts_user(mo_uuid=mo_uuid, gql_session=gql_mock, settings=settings)
 
     assert len(get_sts_user_raw_mock.call_args_list) == 3
     for c in [
@@ -117,12 +117,12 @@ def test_get_sts_user(get_sts_user_raw_mock):
 
 
 @patch("os2sync_export.os2mo.get_sts_user_raw")
-def test_get_sts_user_no_it_accounts(get_sts_user_raw_mock):
+async def test_get_sts_user_no_it_accounts(get_sts_user_raw_mock):
     """Test that users without it-accounts creates one fk-org account"""
     gql_mock = MagicMock()
     gql_mock.execute.return_value = {"employees": [{"objects": [{"itusers": []}]}]}
     settings = dummy_settings
-    get_sts_user(mo_uuid=mo_uuid, gql_session=gql_mock, settings=settings)
+    await get_sts_user(mo_uuid=mo_uuid, gql_session=gql_mock, settings=settings)
     get_sts_user_raw_mock.assert_called_once_with(
         mo_uuid, settings, fk_org_uuid=None, user_key=None, engagement_uuid=None
     )

@@ -4,6 +4,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+import asyncio
 import json
 import logging
 import pathlib
@@ -141,7 +142,7 @@ def read_all_users(
     stop=stop_after_attempt(5),
     retry=retry_if_exception_type(ConnectionError),
 )
-def main(settings: Settings):
+async def main(settings: Settings):
 
     if settings.sentry_dsn:
         sentry_sdk.init(dsn=settings.sentry_dsn)
@@ -190,7 +191,7 @@ def main(settings: Settings):
 
     logger.info("Start syncing users")
     gql_client = setup_gql_client(settings)
-    with gql_client as gql_session:
+    async with gql_client as gql_session:
         mo_users = read_all_users(
             gql_session=gql_session,
             settings=settings,
@@ -220,4 +221,4 @@ def main(settings: Settings):
 if __name__ == "__main__":
     settings = get_os2sync_settings()
     settings.start_logging_based_on_settings()
-    main(settings)
+    asyncio.run(main(settings))

@@ -51,7 +51,7 @@ async def trigger_user(
     dry_run: bool = False,
 ) -> List[Optional[Dict]]:
     clear_caches()
-    return update_single_user(uuid, settings, dry_run)
+    return await update_single_user(uuid, settings, dry_run)
 
 
 @app.post("/trigger/orgunit/{uuid}", status_code=200)
