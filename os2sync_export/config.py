@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-from typing import Any
 from typing import cast
 from typing import Dict
 from typing import List
@@ -10,47 +9,10 @@ from uuid import UUID
 
 from fastramqpi.config import Settings as FastRAMQPISettings  # type: ignore
 from pydantic import AnyHttpUrl
-from pydantic import BaseSettings
-from ra_utils.apply import apply
 from ra_utils.job_settings import JobSettings
-from ra_utils.load_settings import load_settings
 from raclients.graph.client import GraphQLClient
 
 logger = logging.getLogger(__name__)
-
-
-def json_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
-    """
-    Read config from settings.json.
-
-    Reads all keys starting with 'os2sync.' and a few common settings into Settings.
-    """
-    try:
-        all_settings = load_settings()
-    except FileNotFoundError:
-        # No settingsfile found. Using environment variables"
-        return {}
-    # Read os2sync specific settings
-    os2sync_settings: Dict[str, str] = dict(
-        filter(
-            apply(lambda key, value: key.startswith("os2sync")), all_settings.items()
-        )
-    )
-
-    # replace dots with underscore. eg: os2sync.ignored.unit_levels -> os2sync_ignored_unit_levels
-    final_settings = {
-        key.replace(".", "_"): val for key, val in os2sync_settings.items()
-    }
-
-    # Add needed common settings
-    municipality = all_settings.get("municipality.cvr")
-    if municipality:
-        final_settings["municipality"] = municipality
-    mo_url = all_settings.get("mora.base")
-    if mo_url:
-        final_settings["mo_url"] = mo_url
-
-    return final_settings
 
 
 class Settings(FastRAMQPISettings, JobSettings):
@@ -96,20 +58,6 @@ class Settings(FastRAMQPISettings, JobSettings):
         env_nested_delimiter = "__"
 
         env_file_encoding = "utf-8"
-
-        @classmethod
-        def customise_sources(
-            cls,
-            init_settings,
-            env_settings,
-            file_secret_settings,
-        ):
-            return (
-                init_settings,
-                env_settings,
-                json_config_settings_source,
-                file_secret_settings,
-            )
 
 
 def get_os2sync_settings(*args, **kwargs) -> Settings:
