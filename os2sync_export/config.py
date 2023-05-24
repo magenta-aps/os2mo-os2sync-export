@@ -46,9 +46,9 @@ def json_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
     municipality = all_settings.get("municipality.cvr")
     if municipality:
         final_settings["municipality"] = municipality
-    mora_base = all_settings.get("mora.base")
-    if mora_base:
-        final_settings["mora_base"] = mora_base
+    mo_url = all_settings.get("mora.base")
+    if mo_url:
+        final_settings["mo_url"] = mo_url
 
     return final_settings
 
@@ -58,9 +58,6 @@ class Settings(FastRAMQPISettings, JobSettings):
     # common:
 
     municipality: str  # Called "municipality.cvr" in settings.json
-    mora_base: AnyHttpUrl = cast(
-        AnyHttpUrl, "http://localhost:5000"
-    )  # "mora.base" from settings.json + /service
 
     # os2sync:
     os2sync_top_unit_uuid: UUID
@@ -122,7 +119,7 @@ def get_os2sync_settings(*args, **kwargs) -> Settings:
 def setup_gql_client(settings: Settings) -> GraphQLClient:
 
     return GraphQLClient(
-        url=f"{settings.mora_base}/graphql/v3",
+        url=f"{settings.mo_url}/graphql/v3",
         client_id=settings.client_id,
         client_secret=settings.client_secret,
         auth_realm=settings.auth_realm,
