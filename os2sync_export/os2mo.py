@@ -16,7 +16,6 @@ from typing import Tuple
 from uuid import UUID
 
 import requests
-from exporters.utils.priority_by_class import choose_public_address
 from gql import gql
 from gql.client import SyncClientSession
 from more_itertools import first
@@ -30,6 +29,7 @@ from tenacity import wait_exponential
 from os2sync_export.config import get_os2sync_settings
 from os2sync_export.config import Settings
 from os2sync_export.os2sync_models import OrgUnit
+from os2sync_export.priority_by_class import choose_public_address
 from os2sync_export.templates import Person
 from os2sync_export.templates import User
 
