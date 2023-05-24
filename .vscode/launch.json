@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "os2sync exporter",
+            "type": "python",
+            "request": "launch",
+            "module": "uvicorn",
+            "justMyCode": false,
+            "args": [
+                "os2sync_export.main:app",
+                "--host",
+                "0.0.0.0",
+                "--reload"
+            ],
+            "envFile": "${workspaceFolder}/.env",
+        }
+    ]
+}
