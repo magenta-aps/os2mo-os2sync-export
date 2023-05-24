@@ -31,7 +31,7 @@ async def update_single_user(
 
     for sts_user in sts_users:
         if sts_user:
-            os2sync.upsert_user(sts_user)
+            os2sync.os2sync_post("{BASE}/user", json=sts_user)
 
     return sts_users
 

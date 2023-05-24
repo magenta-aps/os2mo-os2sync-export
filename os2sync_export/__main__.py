@@ -4,9 +4,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-import json
 import logging
-import pathlib
 from operator import itemgetter
 from typing import Dict
 from typing import Set
@@ -139,13 +137,8 @@ async def read_all_users(
     retry=retry_if_exception_type(ConnectionError),
 )
 async def main(settings: Settings, gql_session):
-    hash_cache_file = pathlib.Path(settings.os2sync_hash_cache)
-
-    logger.info("mox_os2sync starting")
     log_mox_config(settings)
 
-    if hash_cache_file and hash_cache_file.exists():
-        os2sync.hash_cache.update(json.loads(hash_cache_file.read_text()))
     os2sync_client = os2sync.get_os2sync_session()
     request_uuid = os2sync.trigger_hierarchy(
         os2sync_client, os2sync_api_url=settings.os2sync_api_url
@@ -192,17 +185,12 @@ async def main(settings: Settings, gql_session):
     # Create or update users
     logger.info(f"Medarbejdere overført til OS2SYNC: {len(mo_users)}")
     for user in mo_users.values():
-        os2sync.upsert_user(user)
+        os2sync.os2sync_post("{BASE}/user", json=user)
 
     # Delete any user not in os2mo
     terminated_users = existing_os2sync_users - set(mo_users)
     logger.info(f"Medarbejdere slettes i OS2Sync: {len(terminated_users)}")
     for uuid in terminated_users:
-        os2sync.delete_user(str(uuid))
+        os2sync.os2sync_delete("{BASE}/user/" + uuid)
 
     logger.info("sync users done")
-    if hash_cache_file:
-        hash_cache_file.write_text(json.dumps(os2sync.hash_cache, indent=4))
-
-    log_mox_config(settings)
-    logger.info("mox_os2sync done")

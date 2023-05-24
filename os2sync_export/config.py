@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 from typing import cast
 from typing import Dict
 from typing import List
@@ -27,7 +26,6 @@ class Settings(FastRAMQPISettings, JobSettings):
         AnyHttpUrl, "http://localhost:8081/api"
     )
 
-    os2sync_hash_cache: Path = Path("/opt/dipex/os2sync_hash_cache")
     os2sync_xfer_cpr: bool = False
 
     os2sync_autowash: bool = False
