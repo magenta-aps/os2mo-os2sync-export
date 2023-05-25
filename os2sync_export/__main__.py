@@ -4,7 +4,6 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-import asyncio
 import json
 import logging
 import pathlib
@@ -13,9 +12,9 @@ from typing import Dict
 from typing import Set
 from uuid import UUID
 
-import sentry_sdk
-from gql.client import SyncClientSession
+from gql.client import AsyncClientSession
 from more_itertools import flatten
+from ra_utils.asyncio_utils import gather_with_concurrency
 from ra_utils.tqdm_wrapper import tqdm
 from tenacity import retry
 from tenacity import retry_if_exception_type
@@ -23,9 +22,7 @@ from tenacity import stop_after_attempt
 
 from os2sync_export import os2mo
 from os2sync_export import os2sync
-from os2sync_export.config import get_os2sync_settings
 from os2sync_export.config import Settings
-from os2sync_export.config import setup_gql_client
 from os2sync_export.os2sync_models import OrgUnit
 
 logger = logging.getLogger(__name__)
@@ -94,8 +91,8 @@ def read_all_user_uuids(org_uuid: str, limit: int = 1_000) -> Set[str]:
     return all_employee_uuids
 
 
-def read_all_users(
-    gql_session: SyncClientSession, settings: Settings
+async def read_all_users(
+    gql_session: AsyncClientSession, settings: Settings
 ) -> Dict[UUID, Dict]:
     """Read all current users from OS2MO
 
@@ -115,17 +112,16 @@ def read_all_users(
         os2mo_uuids_present, desc="Reading users from OS2MO", unit="user"
     )
 
-    # Create os2sync payload for all org_units:
-    all_users = flatten(
+    tasks = [
         os2mo.get_sts_user(uuid, gql_session=gql_session, settings=settings)
         for uuid in os2mo_uuids_present
-    )
+    ]
+    all_users = await gather_with_concurrency(5, *tasks)
     res: Dict[UUID, Dict] = {}
-    for u in all_users:
-
+    for u in flatten(all_users):
         if u is None:
             continue
-        user_uuid = UUID(u["Uuid"])
+        user_uuid = UUID(u["Uuid"])  # type: ignore
         if res.get(user_uuid):
             # This might happen if more than one user has the same uuid in an it-account
             # or one has the same uuid in an it-account as another user without any it-accounts' MO uuid
@@ -142,11 +138,7 @@ def read_all_users(
     stop=stop_after_attempt(5),
     retry=retry_if_exception_type(ConnectionError),
 )
-async def main(settings: Settings):
-
-    if settings.sentry_dsn:
-        sentry_sdk.init(dsn=settings.sentry_dsn)
-
+async def main(settings: Settings, gql_session):
     hash_cache_file = pathlib.Path(settings.os2sync_hash_cache)
 
     logger.info("mox_os2sync starting")
@@ -190,12 +182,10 @@ async def main(settings: Settings):
     logger.info("sync_os2sync_orgunits done")
 
     logger.info("Start syncing users")
-    gql_client = setup_gql_client(settings)
-    async with gql_client as gql_session:
-        mo_users = read_all_users(
-            gql_session=gql_session,
-            settings=settings,
-        )
+    mo_users = await read_all_users(
+        gql_session=gql_session,
+        settings=settings,
+    )
     assert (
         mo_users
     ), "No mo-users were found. Stopping os2sync_export to ensure we won't delete every user from fk-org. Again"
@@ -216,9 +206,3 @@ async def main(settings: Settings):
 
     log_mox_config(settings)
     logger.info("mox_os2sync done")
-
-
-if __name__ == "__main__":
-    settings = get_os2sync_settings()
-    settings.start_logging_based_on_settings()
-    asyncio.run(main(settings))
