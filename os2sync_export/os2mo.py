@@ -127,9 +127,9 @@ def strip_truncate_and_warn(d, root, length):
 )
 def os2mo_get(url, **params):
     # format url like {BASE}/service
-    mora_base = get_os2sync_settings().mora_base
+    mo_url = get_os2sync_settings().mo_url
 
-    url = url.format(BASE=f"{mora_base}/service")
+    url = url.format(BASE=f"{mo_url}/service")
     session = get_mo_session()
     r = session.get(url, params=params)
     r.raise_for_status()
