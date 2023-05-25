@@ -1,8 +1,6 @@
 import logging
 from typing import Any
 from typing import Dict
-from typing import List
-from typing import Optional
 from uuid import UUID
 
 import sentry_sdk
@@ -10,8 +8,6 @@ from fastapi import APIRouter
 from fastapi import BackgroundTasks
 from fastapi import FastAPI
 from fastapi import Request
-from fastapi import Response
-from fastapi import status
 from fastramqpi.main import FastRAMQPI  # type: ignore
 from ramqp.depends import Context
 from ramqp.depends import SleepOnError
@@ -19,13 +15,11 @@ from ramqp.mo import MORouter
 from ramqp.mo import PayloadUUID
 
 from os2sync_export import os2sync
-from os2sync_export import os2synccli
 from os2sync_export.__main__ import main
 from os2sync_export.config import get_os2sync_settings
 from os2sync_export.config import Settings
 from os2sync_export.os2mo import get_sts_orgunit
 from os2sync_export.os2mo import get_sts_user
-from os2sync_export.os2sync_models import OrgUnit
 
 
 logger = logging.getLogger(__name__)
@@ -90,32 +84,29 @@ async def amqp_trigger_employee(
 async def trigger_user(
     request: Request,
     uuid: UUID,
-    dry_run: bool = False,
-) -> List[Optional[Dict]]:
+) -> str:
     context: dict[str, Any] = request.app.state.context
 
-    return await os2synccli.update_single_user(
-        uuid, settings=context["user_context"]["settings"], dry_run=dry_run
+    await update_single_user(
+        uuid,
+        gql_session=context["graphql_session"],
+        settings=context["user_context"]["settings"],
     )
+    return "OK"
 
 
 @fastapi_router.post("/trigger/orgunit/{uuid}", status_code=200)
 async def trigger_orgunit(
     request: Request,
     uuid: UUID,
-    dry_run: bool,
-    response: Response,
-) -> Optional[OrgUnit]:
+) -> str:
     context: dict[str, Any] = request.app.state.context
-
-    org_unit, changes = os2synccli.update_single_orgunit(
-        uuid, settings=context["user_context"]["settings"], dry_run=dry_run
+    await update_single_orgunit(
+        uuid,
+        settings=context["user_context"]["settings"],
     )
-    if changes:
-        response.status_code = status.HTTP_201_CREATED
-    if not org_unit:
-        response.status_code = status.HTTP_404_NOT_FOUND
-    return org_unit
+
+    return "OK"
 
 
 def create_fastramqpi(**kwargs) -> FastRAMQPI:
