@@ -657,3 +657,34 @@ def show_all_details(uuid, objtyp):
                 os2mo_get("{BASE}/" + objtyp + "/" + uuid + "/details/" + d).json()
             )
     print(" ---- end of details ----\n")
+
+
+async def get_address_owners(gql_session: AsyncClientSession, mo_uuid: UUID):
+    """Fetches owners, org_unit or employee, for an address by its UUID.
+
+    Returns:
+        tuple[str|None, str|None]
+    """
+
+    q = gql(
+        """
+    query GetAddress($uuids: [UUID!]) {
+        addresses(uuids: $uuids) {
+            objects {
+                employee_uuid
+                org_unit_uuid
+            }
+        }
+    }
+    """
+    )
+    mo_uuid_str = str(mo_uuid)
+    result = await gql_session.execute(
+        q,
+        variable_values={
+            "uuids": mo_uuid_str,
+        },
+    )
+
+    addr = one(one(result["addresses"])["objects"])
+    return addr.get("org_unit_uuid"), addr.get("employee_uuid")
