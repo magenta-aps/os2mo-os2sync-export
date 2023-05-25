@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Magenta ApS
+#
+# SPDX-License-Identifier: MPL-2.0
 from typing import Any
 from typing import Callable
 from typing import Generator
@@ -34,3 +37,11 @@ def set_settings() -> Generator[Callable[..., Settings], None, None]:
         return settings
 
     yield setup_mock_settings
+
+
+@pytest.fixture()
+def mock_settings(
+    set_settings: Callable[..., Settings]
+) -> Generator[Settings, None, None]:
+    """Fixture to mock get_settings."""
+    yield set_settings()
