@@ -5,8 +5,6 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-import hashlib
-import json
 import logging
 from typing import Dict
 from typing import Set
@@ -25,7 +23,6 @@ from os2sync_export.os2sync_models import OrgUnit
 retry_max_time = 60
 settings = config.get_os2sync_settings()
 logger = logging.getLogger(__name__)
-hash_cache: Dict = {}
 
 
 def get_os2sync_session():
@@ -44,20 +41,6 @@ def get_os2sync_session():
 
 
 session = get_os2sync_session()
-
-
-def already_xferred(url, params, method):
-    if settings.os2sync_api_url == "stub":
-        params_hash = params
-    else:
-        params_hash = hashlib.sha224(
-            (json.dumps(params, sort_keys=True) + method).encode("utf-8")
-        ).hexdigest()
-    if hash_cache.get(url) == params_hash:
-        return True
-    else:
-        hash_cache[url] = params_hash
-    return False
 
 
 def os2sync_url(url):
@@ -105,22 +88,6 @@ def os2sync_post(url, **params):
     r = session.post(url, **params)
     r.raise_for_status()
     return r
-
-
-def delete_user(uuid):
-    if not already_xferred("/user/" + uuid, {}, "delete"):
-        logger.debug("delete user %s", uuid)
-        os2sync_delete("{BASE}/user/" + uuid)
-    else:
-        logger.debug("delete user %s - cached", uuid)
-
-
-def upsert_user(user):
-    if not already_xferred("/user/" + user["Uuid"], user, "upsert"):
-        logger.debug("upsert user %s", user["Uuid"])
-        os2sync_post("{BASE}/user", json=user)
-    else:
-        logger.debug("upsert user %s - cached", user["Uuid"])
 
 
 def delete_orgunit(uuid: UUID):
