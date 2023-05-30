@@ -5,46 +5,47 @@ stages:
   - lint
   - build
   - test
+  - coverage
   - release
+
+variables:
+  IMAGE_SHA: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
+
+  PYTEST_COV_MODULE: os2sync_export
+  PYTEST_COV_FAIL_UNDER: 80
+
+  PRECOMMIT_USE_POETRY: "true"
+  POETRY_VERSION: "1.3.1"
+
+  OS2SYNC_EXPORT_RELEASE_REGISTRY_IMAGE: index.docker.io/magentaaps/os2mo-os2sync-export
+  OS2SYNC_EXPORT_IMAGE_SHA: ${CI_REGISTRY_IMAGE}/os2mo-os2sync-export:${CI_COMMIT_SHA}
+
+
+# Conditions
+#############
+.if-default-branch-refs: &if-default-branch-refs
+  if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+.if-tag: &if-tag
+  if: '$CI_COMMIT_TAG'
+
+.if-merge-request: &if-merge-request
+  if: '$CI_MERGE_REQUEST_IID'
+
+# Workflow
+###########
+workflow:
+  rules:
+    - <<: *if-tag
+    - <<: *if-default-branch-refs
+    - <<: *if-merge-request
+
 
 include:
   - project: labs/salt-automation
     ref: master
     file:
+      - /gitlab-ci-templates/common/rules.v1.yml
+      - /gitlab-ci-templates/common/pre-commit.v1.yml
+      - /gitlab-ci-templates/python/pytest.v1.yml
       - /gitlab-ci-templates/common/docker-build-meta.v2.yml
-      - /gitlab-ci-templates/common/docker-release-meta.v1.yml
-      - /gitlab-ci-templates/common/config-updater-meta.v1.yml
-
-variables:
-  OS2SYNC_EXPORT_RELEASE_REGISTRY_IMAGE: index.docker.io/magentaaps/os2mo-os2sync-export
-  OS2SYNC_EXPORT_IMAGE_SHA: ${CI_REGISTRY_IMAGE}/os2mo-os2sync-export:${CI_COMMIT_SHA}
-
-
-Lint os2sync Exporter:
-  stage: lint
-  needs: []
-  image: python:3.11
-  services: []
-  script:
-    - pip install mypy==0.991 pre-commit types-Jinja2 types-click types-requests types-python-dateutil types-aiofiles
-    - pre-commit run --all-files
-
-# Build
-########
-Build os2sync_export image:
-  extends: .build-docker
-  variables:
-    CI_IMAGE: ${OS2SYNC_EXPORT_IMAGE_SHA}
-
-# Test
-######
-Test OS2SYNC exporter:
-  stage: test
-  needs: ["Build os2sync_export image"]
-  image: ${OS2SYNC_EXPORT_IMAGE_SHA}
-  variables:
-    GIT_STRATEGY: none # We do not need the source code
-    HYPOTHESIS_PROFILE: ci
-  script:
-    - cd /app/
-    - pytest tests/
