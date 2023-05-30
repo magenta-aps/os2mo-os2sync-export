@@ -10,7 +10,8 @@ stages:
 
 variables:
   IMAGE_SHA: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
-
+  
+  PYTEST_COV_MODULE: os2sync_export
   PYTEST_COV_FAIL_UNDER: 80
 
   PRECOMMIT_USE_POETRY: "true"
