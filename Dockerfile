@@ -15,6 +15,6 @@ COPY pyproject.toml poetry.lock ./
 
 RUN POETRY_NO_INTERACTION=1 /opt/poetry/bin/poetry install --no-root
 
-COPY ./ ./
+COPY ./os2sync_export ./os2sync_export
 
 CMD ["uvicorn", "os2sync_export.main:create_app", "--host", "0.0.0.0"]
