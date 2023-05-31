@@ -20,6 +20,7 @@ from os2sync_export.__main__ import main
 from os2sync_export.config import get_os2sync_settings
 from os2sync_export.config import Settings
 from os2sync_export.os2mo import get_address_owners
+from os2sync_export.os2mo import get_ituser_owners
 from os2sync_export.os2mo import get_sts_orgunit
 from os2sync_export.os2mo import get_sts_user
 
@@ -110,6 +111,25 @@ async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: SleepOnEr
         return
 
     logger.warn(f"Unable to update address, could not find owners for address: {uuid}")
+
+
+@amqp_router.register("ituser")
+async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: SleepOnError):
+    settings = context["user_context"]["settings"]
+    graphql_session = context["graphql_session"]
+
+    ou_uuid, e_uuid = await get_ituser_owners(graphql_session, uuid)
+    if ou_uuid:
+        await update_single_orgunit(ou_uuid, settings)
+        logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
+        return
+
+    if e_uuid:
+        await update_single_user(e_uuid, graphql_session, settings)
+        logger.info(f"Synced user to fk-org: {e_uuid}")
+        return
+
+    logger.warn(f"Unable to update ituser, could not find owners for ituser: {uuid}")
 
 
 @fastapi_router.post("/trigger/user/{uuid}")
