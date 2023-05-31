@@ -715,3 +715,29 @@ async def get_ituser_owners(gql_session: AsyncClientSession, mo_uuid: UUID):
 
     res = one(one(result["itusers"])["objects"])
     return res.get("org_unit_uuid"), res.get("employee_uuid")
+
+
+async def get_manager_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
+    """Finds manager org_unit UUID, by manager UUID."""
+
+    q = gql(
+        """
+    query GetManager($uuids: [UUID!]) {
+        managers(uuids: $uuids) {
+            objects {
+                org_unit_uuid
+            }
+        }
+    }
+    """
+    )
+    mo_uuid_str = str(mo_uuid)
+    result = await gql_session.execute(
+        q,
+        variable_values={
+            "uuids": mo_uuid_str,
+        },
+    )
+
+    res = one(one(result["managers"])["objects"])
+    return res.get("org_unit_uuid")
