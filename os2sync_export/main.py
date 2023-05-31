@@ -80,6 +80,15 @@ async def amqp_trigger_employee(
     logger.info(f"Synced user to fk-org: {uuid=}")
 
 
+@amqp_router.register("org_unit")
+async def amqp_trigger_org_unit(context: Context, uuid: PayloadUUID, _: SleepOnError):
+    await update_single_orgunit(
+        uuid,
+        settings=context["user_context"]["settings"],
+    )
+    logger.info(f"Synced org_unit to fk-org: {uuid=}")
+
+
 @fastapi_router.post("/trigger/user/{uuid}")
 async def trigger_user(
     request: Request,
