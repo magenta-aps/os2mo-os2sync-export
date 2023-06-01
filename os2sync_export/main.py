@@ -23,6 +23,7 @@ from os2sync_export.config import Settings
 from os2sync_export.os2mo import get_address_owners
 from os2sync_export.os2mo import get_engagement_employee_uuid
 from os2sync_export.os2mo import get_ituser_owners
+from os2sync_export.os2mo import get_kle_org_unit_uuid
 from os2sync_export.os2mo import get_manager_org_unit_uuid
 from os2sync_export.os2mo import get_sts_orgunit
 from os2sync_export.os2mo import get_sts_user
@@ -163,6 +164,20 @@ async def amqp_trigger_engagement(context: Context, uuid: PayloadUUID, _: SleepO
         return
 
     logger.warn(f"Unable to update ituser, could not find owners for: {uuid}")
+
+
+@amqp_router.register("kle")
+async def amqp_trigger_kle(context: Context, uuid: PayloadUUID, _: SleepOnError):
+    settings = context["user_context"]["settings"]
+    graphql_session = context["graphql_session"]
+
+    ou_uuid = await get_kle_org_unit_uuid(graphql_session, uuid)
+    if ou_uuid:
+        await update_single_orgunit(ou_uuid, settings)
+        logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
+        return
+
+    logger.warn(f"Unable to update ituser, could not find owners for ituser: {uuid}")
 
 
 @fastapi_router.post("/trigger/user/{uuid}")
