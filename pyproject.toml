@@ -50,3 +50,8 @@ build-backend = "poetry.core.masonry.api"
 max-line-length = 100
 extend-ignore = "E203, E501"
 statistics = "true"
+
+[tool.pytest.ini_options]
+markers = [
+    "webtest: tests that uses a real connection to a running os2mo instance"
+]
