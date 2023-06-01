@@ -20,9 +20,9 @@ from os2sync_export import os2sync
 from os2sync_export.__main__ import main
 from os2sync_export.config import get_os2sync_settings
 from os2sync_export.config import Settings
-from os2sync_export.os2mo import get_address_owners
+from os2sync_export.os2mo import get_address_org_unit_and_employee_uuids
 from os2sync_export.os2mo import get_engagement_employee_uuid
-from os2sync_export.os2mo import get_ituser_owners
+from os2sync_export.os2mo import get_ituser_org_unit_and_employee_uuids
 from os2sync_export.os2mo import get_kle_org_unit_uuid
 from os2sync_export.os2mo import get_manager_org_unit_uuid
 from os2sync_export.os2mo import get_sts_orgunit
@@ -103,7 +103,9 @@ async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: RateLimit
     settings = context["user_context"]["settings"]
     graphql_session = context["graphql_session"]
 
-    ou_uuid, e_uuid = await get_address_owners(graphql_session, uuid)
+    ou_uuid, e_uuid = await get_address_org_unit_and_employee_uuids(
+        graphql_session, uuid
+    )
     if ou_uuid:
         await update_single_orgunit(ou_uuid, settings)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
@@ -124,7 +126,9 @@ async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit
     settings = context["user_context"]["settings"]
     graphql_session = context["graphql_session"]
 
-    ou_uuid, e_uuid = await get_ituser_owners(graphql_session, uuid)
+    ou_uuid, e_uuid = await get_ituser_org_unit_and_employee_uuids(
+        graphql_session, uuid
+    )
     if ou_uuid:
         await update_single_orgunit(ou_uuid, settings)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
