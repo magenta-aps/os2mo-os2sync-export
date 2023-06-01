@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MPL-2.0
 [tool.poetry]
 name = "os2sync_export"
-version = "0.1.0"
+version = "0.0.0" # versioning handled by conventional commits
 description = "Integration from OS2mo to OS2Sync"
 authors = ["Magenta ApS <info@magenta.dk>"]
 license = "MPL-2.0"
