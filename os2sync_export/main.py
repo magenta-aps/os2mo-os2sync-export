@@ -11,7 +11,7 @@ from fastapi import Request
 from fastramqpi.main import FastRAMQPI  # type: ignore
 from gql.client import AsyncClientSession
 from ramqp.depends import Context
-from ramqp.depends import SleepOnError
+from ramqp.depends import RateLimit
 from ramqp.mo import MORouter
 from ramqp.mo import PayloadUUID
 
@@ -75,7 +75,7 @@ async def trigger_all(
 
 @amqp_router.register("person")
 async def amqp_trigger_employee(
-    context: Context, uuid: PayloadUUID, _: SleepOnError
+    context: Context, uuid: PayloadUUID, _: RateLimit
 ) -> None:
     await update_single_user(
         uuid,
@@ -86,7 +86,7 @@ async def amqp_trigger_employee(
 
 
 @amqp_router.register("org_unit")
-async def amqp_trigger_org_unit(context: Context, uuid: PayloadUUID, _: SleepOnError):
+async def amqp_trigger_org_unit(context: Context, uuid: PayloadUUID, _: RateLimit):
     await update_single_orgunit(
         uuid,
         settings=context["user_context"]["settings"],
@@ -95,7 +95,7 @@ async def amqp_trigger_org_unit(context: Context, uuid: PayloadUUID, _: SleepOnE
 
 
 @amqp_router.register("address")
-async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: SleepOnError):
+async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: RateLimit):
     settings = context["user_context"]["settings"]
     graphql_session = context["graphql_session"]
 
@@ -114,7 +114,7 @@ async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: SleepOnEr
 
 
 @amqp_router.register("ituser")
-async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: SleepOnError):
+async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit):
     settings = context["user_context"]["settings"]
     graphql_session = context["graphql_session"]
 
