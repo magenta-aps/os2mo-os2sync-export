@@ -15,7 +15,6 @@ from fastramqpi.main import FastRAMQPI  # type: ignore
 from gql.client import AsyncClientSession
 from ramqp.depends import Context
 from ramqp.depends import RateLimit
-from ramqp.depends import SleepOnError
 from ramqp.mo import MORouter
 from ramqp.mo import PayloadUUID
 
@@ -146,7 +145,7 @@ async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit
 
 
 @amqp_router.register("manager")
-async def amqp_trigger_manager(context: Context, uuid: PayloadUUID, _: SleepOnError):
+async def amqp_trigger_manager(context: Context, uuid: PayloadUUID, _: RateLimit):
     settings = context["user_context"]["settings"]
     graphql_session = context["graphql_session"]
 
@@ -160,7 +159,7 @@ async def amqp_trigger_manager(context: Context, uuid: PayloadUUID, _: SleepOnEr
 
 
 @amqp_router.register("engagement")
-async def amqp_trigger_engagement(context: Context, uuid: PayloadUUID, _: SleepOnError):
+async def amqp_trigger_engagement(context: Context, uuid: PayloadUUID, _: RateLimit):
     settings = context["user_context"]["settings"]
     graphql_session = context["graphql_session"]
 
@@ -174,7 +173,7 @@ async def amqp_trigger_engagement(context: Context, uuid: PayloadUUID, _: SleepO
 
 
 @amqp_router.register("kle")
-async def amqp_trigger_kle(context: Context, uuid: PayloadUUID, _: SleepOnError):
+async def amqp_trigger_kle(context: Context, uuid: PayloadUUID, _: RateLimit):
     settings = context["user_context"]["settings"]
     graphql_session = context["graphql_session"]
 
