@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Magenta ApS
+#
+# SPDX-License-Identifier: MPL-2.0
 repos:
   - repo: https://github.com/pycqa/flake8
     rev: 6.0.0
@@ -29,3 +32,8 @@ repos:
     hooks:
       - id: auto-ticket-prepare-commit
       - id: auto-ticket-commit
+
+  - repo: https://github.com/fsfe/reuse-tool
+    rev: v1.1.2
+    hooks:
+      - id: reuse

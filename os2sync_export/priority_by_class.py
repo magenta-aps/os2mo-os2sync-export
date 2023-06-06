@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Magenta ApS
+#
+# SPDX-License-Identifier: MPL-2.0
 # TODO: This file was copied from dipex exporters/utils and should be refactored
 
 

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Magenta ApS
+#
+# SPDX-License-Identifier: MPL-2.0
 from typing import Optional
 from typing import Set
 from uuid import UUID

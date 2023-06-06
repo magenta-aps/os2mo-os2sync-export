@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Magenta ApS
+#
+# SPDX-License-Identifier: MPL-2.0
 [tool.poetry]
 name = "os2sync_export"
 version = "0.1.0"

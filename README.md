@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Magenta ApS
+#
+# SPDX-License-Identifier: MPL-2.0
 # os2mo-os2sync-export
 
 Exports from OS2mo to FK-org via OS2Sync
