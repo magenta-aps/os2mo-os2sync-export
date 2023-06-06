@@ -147,14 +147,10 @@ async def main(settings: Settings, gql_session):
 
     logger.info(f"Orgenheder som tjekkes i OS2Sync: {len(mo_org_units)}")
 
-    changed = [
+    for org_unit in tqdm(
+        mo_org_units.values(), desc="Updating OrgUnits in fk-org", unit="OrgUnit"
+    ):
         os2sync.upsert_org_unit(org_unit, settings.os2sync_api_url)
-        for org_unit in tqdm(
-            mo_org_units.values(), desc="Updating OrgUnits in fk-org", unit="OrgUnit"
-        )
-    ]
-
-    logger.info(f"Orgenheder som blev ændret i OS2Sync: {sum(changed)}")
 
     existing_os2sync_org_units, existing_os2sync_users = os2sync.get_hierarchy(
         os2sync_client,

@@ -96,15 +96,13 @@ def delete_orgunit(uuid: UUID):
     os2sync_delete("{BASE}/orgUnit/" + str(uuid))
 
 
-def upsert_org_unit(
-    org_unit: OrgUnit, os2sync_api_url: str, dry_run: bool = False
-) -> bool:
+def upsert_org_unit(org_unit: OrgUnit, os2sync_api_url: str) -> None:
     try:
         current = os2sync_get_org_unit(api_url=os2sync_api_url, uuid=org_unit.Uuid)
     except KeyError:
         logger.info(f"OrgUnit not found in os2sync - creating {org_unit.Uuid=}")
         os2sync_post("{BASE}/orgUnit/", json=org_unit.json())
-        return True
+        return
 
     # Avoid overwriting information that we cannot provide from os2mo.
     org_unit.LOSShortName = current.LOSShortName
@@ -114,16 +112,9 @@ def upsert_org_unit(
     org_unit.ContactPlaces = org_unit.ContactPlaces or current.ContactPlaces
     org_unit.ContactOpenHours = org_unit.ContactOpenHours or current.ContactOpenHours
 
-    if dry_run:
-        logger.info(f"Found changes to {org_unit.Uuid=}? {current != org_unit}")
-        return current != org_unit
-    if current == org_unit:
-        logger.debug(f"No changes to {org_unit.Uuid=}")
-        return False
-
     logger.info(f"Syncing org_unit {org_unit}")
+
     os2sync_post("{BASE}/orgUnit/", json=org_unit.json())
-    return True
 
 
 def trigger_hierarchy(client: requests.Session, os2sync_api_url: str) -> UUID:
