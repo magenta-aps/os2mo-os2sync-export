@@ -1,14 +1,15 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+from typing import Callable
 from unittest.mock import call
 from unittest.mock import MagicMock
 from unittest.mock import patch
 from uuid import uuid4
 
+from os2sync_export.config import Settings
 from os2sync_export.os2mo import get_sts_user
 from os2sync_export.os2mo import group_accounts
-from tests.helpers import dummy_settings
 
 mo_uuid = str(uuid4())
 engagement_uuid1 = str(uuid4())
@@ -82,14 +83,17 @@ def test_group_by_engagement():
 
 
 @patch("os2sync_export.os2mo.get_sts_user_raw")
-async def test_get_sts_user(get_sts_user_raw_mock):
+async def test_get_sts_user(
+    get_sts_user_raw_mock, set_settings: Callable[..., Settings]
+):
     gql_mock = MagicMock()
     gql_mock.execute.return_value = {
         "employees": [{"objects": [{"itusers": query_response}]}]
     }
-    settings = dummy_settings
-    settings.os2sync_uuid_from_it_systems = ["FK-ORG UUID"]
-    settings.os2sync_user_key_it_system_name = "FK-ORG USERNAME"
+    settings = set_settings(
+        os2sync_uuid_from_it_systems=["FK-ORG UUID"],
+        os2sync_user_key_it_system_name="FK-ORG USERNAME",
+    )
     await get_sts_user(mo_uuid=mo_uuid, gql_session=gql_mock, settings=settings)
 
     assert len(get_sts_user_raw_mock.call_args_list) == 3
@@ -120,12 +124,18 @@ async def test_get_sts_user(get_sts_user_raw_mock):
 
 
 @patch("os2sync_export.os2mo.get_sts_user_raw")
-async def test_get_sts_user_no_it_accounts(get_sts_user_raw_mock):
+async def test_get_sts_user_no_it_accounts(
+    get_sts_user_raw_mock, mock_settings: Settings
+):
     """Test that users without it-accounts creates one fk-org account"""
     gql_mock = MagicMock()
     gql_mock.execute.return_value = {"employees": [{"objects": [{"itusers": []}]}]}
-    settings = dummy_settings
-    await get_sts_user(mo_uuid=mo_uuid, gql_session=gql_mock, settings=settings)
+
+    await get_sts_user(mo_uuid=mo_uuid, gql_session=gql_mock, settings=mock_settings)
     get_sts_user_raw_mock.assert_called_once_with(
-        mo_uuid, settings, fk_org_uuid=None, user_key=None, engagement_uuid=None
+        mo_uuid,
+        settings=mock_settings,
+        fk_org_uuid=None,
+        user_key=None,
+        engagement_uuid=None,
     )
