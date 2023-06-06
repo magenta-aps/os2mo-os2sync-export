@@ -2,7 +2,10 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 import logging
+from typing import Any
 from typing import Dict
+from typing import List
+from typing import Optional
 from typing import Set
 from typing import Tuple
 from uuid import UUID
@@ -140,3 +143,19 @@ def get_hierarchy(
     existing_os2sync_org_units = {UUID(o["Uuid"]) for o in hierarchy["OUs"]}
     existing_os2sync_users = {UUID(u["Uuid"]) for u in hierarchy["Users"]}
     return existing_os2sync_org_units, existing_os2sync_users
+
+
+def update_single_orgunit(uuid: UUID, org_unit: Optional[OrgUnit]):
+    if org_unit:
+        upsert_org_unit(
+            org_unit,
+            settings.os2sync_api_url,
+        )
+    else:
+        delete_orgunit(uuid)
+
+
+def update_single_user(users: List[Optional[Dict[str, Any]]]):
+    for sts_user in users:
+        if sts_user:
+            os2sync_post("{BASE}/user", json=sts_user)
