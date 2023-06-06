@@ -60,7 +60,6 @@ class TestsMOAd(unittest.TestCase):
     def test_kle_to_orgunit(
         self, testsettings, expected_tasks, expected_contactfortasks
     ):
-
         kles = [
             {
                 "uuid": 1,
@@ -117,7 +116,6 @@ class TestsMOAd(unittest.TestCase):
         with patch(
             "os2sync_export.os2mo.os2mo_get", return_value=MockOs2moGet(addresses)
         ):
-
             work_address = get_work_address(positions, work_address_names)
             self.assertEqual(work_address, expected)
 
@@ -214,7 +212,6 @@ def test_org_unit_uuids(root_mock, hierarchy_uuids):
     os2mo_get.cache_clear()
     org_unit_uuids.cache_clear()
     with patch("os2sync_export.os2mo.os2mo_get") as session_mock:
-
         session_mock.return_value = MockOs2moGet({"items": [{"uuid": "test"}]})
         org_unit_uuids(hierarchy_uuids=hierarchy_uuids)
 
@@ -227,7 +224,6 @@ def test_org_unit_uuids(root_mock, hierarchy_uuids):
 
 @patch("os2sync_export.os2mo.organization_uuid", return_value="root_uuid")
 def test_get_org_unit_hierarchy(root_mock):
-
     os2mo_get.cache_clear()
 
     with patch(

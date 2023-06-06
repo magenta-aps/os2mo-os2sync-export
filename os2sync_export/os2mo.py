@@ -288,7 +288,6 @@ def get_sts_user_raw(
     user_key: Optional[str] = None,
     engagement_uuid: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
-
     employee = os2mo_get("{BASE}/e/" + uuid + "/").json()
     user = User(
         dict(
@@ -363,7 +362,6 @@ def group_accounts(
     fk_org_accounts = []
     # Find uuid and user_key for each engagement.
     for eng_uuid in engagement_uuids:
-
         uuid = only(u["user_key"] for u in uuids if u["engagement_uuid"] == eng_uuid)
         user_key = only(
             u["user_key"] for u in user_keys if u["engagement_uuid"] == eng_uuid
@@ -379,7 +377,6 @@ def group_accounts(
 async def get_sts_user(
     mo_uuid: str, gql_session: AsyncClientSession, settings: Settings
 ) -> List[Optional[Dict[str, Any]]]:
-
     users = await get_user_it_accounts(gql_session=gql_session, mo_uuid=mo_uuid)
     try:
         fk_org_accounts = group_accounts(

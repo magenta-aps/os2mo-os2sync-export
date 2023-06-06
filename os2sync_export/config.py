@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 class Settings(FastRAMQPISettings, JobSettings):
-
     # common:
 
     municipality: str  # Called "municipality.cvr" in settings.json
