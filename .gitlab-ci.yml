@@ -20,7 +20,6 @@ variables:
   OS2SYNC_EXPORT_RELEASE_REGISTRY_IMAGE: index.docker.io/magentaaps/os2mo-os2sync-export
   OS2SYNC_EXPORT_IMAGE_SHA: ${CI_REGISTRY_IMAGE}/os2mo-os2sync-export:${CI_COMMIT_SHA}
 
-
 # Conditions
 #############
 .if-default-branch-refs: &if-default-branch-refs
@@ -47,5 +46,27 @@ include:
     file:
       - /gitlab-ci-templates/common/rules.v1.yml
       - /gitlab-ci-templates/common/pre-commit.v1.yml
-      - /gitlab-ci-templates/python/pytest.v1.yml
+      - /gitlab-ci-templates/python/pytest-meta.v1.yml
       - /gitlab-ci-templates/common/docker-build-meta.v2.yml
+
+Test:
+  extends: .pytest
+  script:
+    - $POETRY_HOME/bin/poetry run pytest
+      -m "not webtest"
+      --cov=${PYTEST_COV_MODULE}
+      --group ${CI_NODE_INDEX}
+      --splits ${CI_NODE_TOTAL}
+    - mv .coverage "${CI_PROJECT_DIR}/.coverage.${CI_JOB_ID}"
+
+
+Webtest:
+  extends: .pytest
+  allow_failure: true
+  variables:
+      PYTEST_EXTRA_FLAGS: "-m webtest"
+      CLIENT_ID: "dipex"
+      CLIENT_SECRET: ${OS2SYNC_CLIENT_SECRET}
+      AUTH_SERVER: ${OS2SYNC_AUTH_SERVER}
+      MO_URL: ${OS2SYNC_MO_URL}
+  
