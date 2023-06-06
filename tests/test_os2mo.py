@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 import unittest
+from unittest.mock import ANY
+from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 from unittest.mock import patch
 from uuid import UUID
@@ -13,6 +15,7 @@ from hypothesis import strategies as st
 from parameterized import parameterized
 from pydantic import ValidationError
 
+from os2sync_export.os2mo import get_address_org_unit_and_employee_uuids
 from os2sync_export.os2mo import get_org_unit_hierarchy
 from os2sync_export.os2mo import get_work_address
 from os2sync_export.os2mo import is_ignored
@@ -304,3 +307,37 @@ def test_orgunit_model_invalid_key():
     }
     with pytest.raises(ValidationError):
         OrgUnit(**sts_org_unit)
+
+
+@pytest.mark.asyncio
+async def test_get_address_org_unit_and_employee_uuids():
+    addr_uuid_mock = uuid4()
+    ou_uuid_mock = uuid4()
+    e_uuid_mock = uuid4()
+
+    graphql_session_mock = AsyncMock()
+    graphql_session_mock.execute.return_value = {
+        "addresses": [
+            {
+                "objects": [
+                    {
+                        "org_unit_uuid": str(ou_uuid_mock),
+                        "employee_uuid": str(e_uuid_mock),
+                    }
+                ]
+            }
+        ]
+    }
+
+    result_ou_uuid, result_e_uuid = await get_address_org_unit_and_employee_uuids(
+        graphql_session_mock, addr_uuid_mock
+    )
+
+    graphql_session_mock.execute.assert_called_with(
+        ANY,
+        variable_values={
+            "uuids": str(addr_uuid_mock),
+        },
+    )
+    assert UUID(result_ou_uuid) == ou_uuid_mock
+    assert UUID(result_e_uuid) == e_uuid_mock
