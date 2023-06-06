@@ -26,7 +26,6 @@ logger = logging.getLogger(__name__)
 
 
 def get_os2sync_session():
-
     session = requests.Session()
 
     if settings.os2sync_api_url == "stub":
@@ -65,7 +64,6 @@ def os2sync_get(url, **params) -> Dict:
 
 
 def os2sync_get_org_unit(api_url: str, uuid: UUID) -> OrgUnit:
-
     current = os2sync_get(f"{api_url}/orgUnit/{str(uuid)}")
     current.pop("Type")
     current.pop("Timestamp")

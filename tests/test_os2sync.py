@@ -12,8 +12,8 @@ o2 = OrgUnit(
     ParentOrgUnitUuid=None,
     LOSShortName="Some losShortName",
     PayoutUnitUuid=uuid4(),
-    ContactPlaces=[uuid4()],
-    Tasks=[uuid4()],
+    ContactPlaces={uuid4()},
+    Tasks={uuid4()},
 )
 
 
@@ -59,7 +59,6 @@ def test_os2sync_upsert_org_unit_keep_fk_fields(get_settings_mock):
 
     with patch("os2sync_export.os2sync.os2sync_get_org_unit", return_value=o2):
         with patch("os2sync_export.os2sync.os2sync_post") as post_mock:
-
             upsert_org_unit(o, "os2sync_api_url")
 
             post_mock.assert_called_once_with("{BASE}/orgUnit/", json=o2.json())
@@ -97,7 +96,6 @@ def test_os2sync_upsert_org_unit_ordered_tasks(get_settings_mock):
 
     with patch("os2sync_export.os2sync.os2sync_get_org_unit", return_value=current):
         with patch("os2sync_export.os2sync.os2sync_post") as post_mock:
-
             upsert_org_unit(org_unit, "os2sync_api_url")
 
             post_mock.assert_called_once_with("{BASE}/orgUnit/", json=org_unit.json())
