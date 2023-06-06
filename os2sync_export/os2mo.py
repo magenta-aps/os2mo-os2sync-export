@@ -659,7 +659,9 @@ def show_all_details(uuid, objtyp):
     print(" ---- end of details ----\n")
 
 
-async def get_address_owners(gql_session: AsyncClientSession, mo_uuid: UUID):
+async def get_address_org_unit_and_employee_uuids(
+    gql_session: AsyncClientSession, mo_uuid: UUID
+):
     """Fetches owners, org_unit or employee, for an address by its UUID.
 
     Returns:
@@ -690,7 +692,9 @@ async def get_address_owners(gql_session: AsyncClientSession, mo_uuid: UUID):
     return addr.get("org_unit_uuid"), addr.get("employee_uuid")
 
 
-async def get_ituser_owners(gql_session: AsyncClientSession, mo_uuid: UUID):
+async def get_ituser_org_unit_and_employee_uuids(
+    gql_session: AsyncClientSession, mo_uuid: UUID
+):
     """Finds an ituser by its UUID and returns it if available."""
 
     q = gql(
