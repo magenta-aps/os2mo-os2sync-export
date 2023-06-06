@@ -16,6 +16,7 @@ from parameterized import parameterized
 from pydantic import ValidationError
 
 from os2sync_export.os2mo import get_address_org_unit_and_employee_uuids
+from os2sync_export.os2mo import get_engagement_employee_uuid
 from os2sync_export.os2mo import get_ituser_org_unit_and_employee_uuids
 from os2sync_export.os2mo import get_manager_org_unit_uuid
 from os2sync_export.os2mo import get_org_unit_hierarchy
@@ -427,3 +428,36 @@ async def test_get_manager_org_unit_uuid_not_found():
                 "uuids": str(manager_uuid_mock),
             },
         )
+
+
+@pytest.mark.asyncio
+async def test_get_engagement_employee_uuid():
+    engagement_uuid_mock = uuid4()
+    e_uuid_mock = uuid4()
+
+    graphql_session_mock = MagicMock()
+    graphql_session_mock.execute = AsyncMock(
+        return_value={
+            "engagements": [
+                {
+                    "objects": [
+                        {
+                            "employee_uuid": str(e_uuid_mock),
+                        }
+                    ]
+                }
+            ]
+        }
+    )
+
+    result_e_uuid = await get_engagement_employee_uuid(
+        graphql_session_mock, engagement_uuid_mock
+    )
+
+    graphql_session_mock.execute.assert_called_with(
+        ANY,
+        variable_values={
+            "uuids": str(engagement_uuid_mock),
+        },
+    )
+    assert UUID(result_e_uuid) == e_uuid_mock
