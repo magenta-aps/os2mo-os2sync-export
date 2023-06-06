@@ -656,7 +656,7 @@ def show_all_details(uuid, objtyp):
 async def get_address_org_unit_and_employee_uuids(
     gql_session: AsyncClientSession, mo_uuid: UUID
 ):
-    """Fetches owners, org_unit or employee, for an address by its UUID.
+    """Fetches org_unit or employee, for an address by its UUID.
 
     Returns:
         tuple[str|None, str|None]
@@ -689,7 +689,7 @@ async def get_address_org_unit_and_employee_uuids(
 async def get_ituser_org_unit_and_employee_uuids(
     gql_session: AsyncClientSession, mo_uuid: UUID
 ):
-    """Finds an ituser by its UUID and returns it if available."""
+    """Finds an ituser by its UUID."""
 
     q = gql(
         """
@@ -768,7 +768,7 @@ async def get_engagement_employee_uuid(gql_session: AsyncClientSession, mo_uuid:
 
 
 async def get_kle_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
-    """Finds an KLE org_unit UUID, by KLE-UUID."""
+    """Finds an KLE org_unit UUID, by KLE UUID."""
 
     q = gql(
         """
