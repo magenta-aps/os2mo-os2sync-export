@@ -767,3 +767,29 @@ async def get_engagement_employee_uuid(gql_session: AsyncClientSession, mo_uuid:
 
     res = one(one(result["engagements"])["objects"])
     return res.get("employee_uuid")
+
+
+async def get_kle_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
+    """Finds an KLE org_unit UUID, by KLE-UUID."""
+
+    q = gql(
+        """
+    query GetKLEs($uuids: [UUID!]) {
+        kles(uuids: $uuids) {
+            objects {
+                org_unit_uuid
+            }
+        }
+    }
+    """
+    )
+    mo_uuid_str = str(mo_uuid)
+    result = await gql_session.execute(
+        q,
+        variable_values={
+            "uuids": mo_uuid_str,
+        },
+    )
+
+    res = one(one(result["kles"])["objects"])
+    return res.get("org_unit_uuid")
