@@ -741,3 +741,29 @@ async def get_manager_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UU
 
     res = one(one(result["managers"])["objects"])
     return res.get("org_unit_uuid")
+
+
+async def get_engagement_employee_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
+    """Finds an employee UUID from engagement UUID."""
+
+    q = gql(
+        """
+    query GetEngagement($uuids: [UUID!]) {
+        engagements(uuids: $uuids) {
+            objects {
+                employee_uuid
+            }
+        }
+    }
+    """
+    )
+    mo_uuid_str = str(mo_uuid)
+    result = await gql_session.execute(
+        q,
+        variable_values={
+            "uuids": mo_uuid_str,
+        },
+    )
+
+    res = one(one(result["engagements"])["objects"])
+    return res.get("employee_uuid")
