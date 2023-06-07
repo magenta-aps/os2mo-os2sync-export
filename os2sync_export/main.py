@@ -94,7 +94,7 @@ async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: RateLimit
 
     if e_uuid:
         sts_users = await get_sts_user(e_uuid, graphql_session, settings)
-        os2sync.update_single_user(sts_users)
+        os2sync.update_users(sts_users)
         logger.info(f"Synced user to fk-org: {e_uuid}")
         return
 
@@ -119,7 +119,7 @@ async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit
 
     if e_uuid:
         sts_users = await get_sts_user(e_uuid, graphql_session, settings)
-        os2sync.update_single_user(sts_users)
+        os2sync.update_users(sts_users)
         logger.info(f"Synced user to fk-org: {e_uuid}")
         return
 
@@ -149,7 +149,7 @@ async def amqp_trigger_engagement(context: Context, uuid: PayloadUUID, _: RateLi
     e_uuid = await get_engagement_employee_uuid(graphql_session, uuid)
     if e_uuid:
         sts_users = await get_sts_user(e_uuid, graphql_session, settings)
-        os2sync.update_single_user(sts_users)
+        os2sync.update_users(sts_users)
         logger.info(f"Synced user to fk-org: {e_uuid}")
         return
 
@@ -181,7 +181,7 @@ async def trigger_user(
     sts_users = await get_sts_user(
         str(uuid), context["graphql_session"], context["user_context"]["settings"]
     )
-    os2sync.update_single_user(sts_users)
+    os2sync.update_users(sts_users)
     return "OK"
 
 

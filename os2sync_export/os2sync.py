@@ -155,7 +155,7 @@ def update_single_orgunit(uuid: UUID, org_unit: Optional[OrgUnit]):
         delete_orgunit(uuid)
 
 
-def update_single_user(users: List[Optional[Dict[str, Any]]]):
+def update_users(users: List[Optional[Dict[str, Any]]]):
     for sts_user in users:
         if sts_user:
             os2sync_post("{BASE}/user", json=sts_user)
