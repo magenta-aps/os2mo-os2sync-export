@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+from unittest.mock import MagicMock
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -20,6 +21,6 @@ async def test_update_single_orgunit(
         from os2sync_export.main import update_single_orgunit
 
         uuid = uuid4()
-        with patch("os2sync_export.os2sync.delete_orgunit") as delete_mock:
-            await update_single_orgunit(uuid, mock_settings)
-            delete_mock.assert_called_once_with(uuid)
+        os2sync_client = MagicMock(delete_orgunit=MagicMock())
+        await update_single_orgunit(uuid, mock_settings, os2sync_client)
+        os2sync_client.delete_orgunit.assert_called_once_with(uuid)
