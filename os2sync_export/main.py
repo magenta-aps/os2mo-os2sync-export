@@ -18,7 +18,6 @@ from ramqp.depends import RateLimit
 from ramqp.mo import MORouter
 from ramqp.mo import PayloadUUID
 
-from os2sync_export import os2sync
 from os2sync_export.__main__ import main
 from os2sync_export.config import get_os2sync_settings
 from os2sync_export.config import Settings
@@ -29,7 +28,7 @@ from os2sync_export.os2mo import get_kle_org_unit_uuid
 from os2sync_export.os2mo import get_manager_org_unit_uuid
 from os2sync_export.os2mo import get_sts_orgunit
 from os2sync_export.os2mo import get_sts_user
-
+from os2sync_export.os2sync import OS2SyncClient
 
 logger = logging.getLogger(__name__)
 
@@ -38,27 +37,29 @@ amqp_router = MORouter()
 
 
 async def update_single_user(
-    uuid: UUID, gql_session: AsyncClientSession, settings: Settings
+    uuid: UUID, gql_session: AsyncClientSession, settings: Settings, os2sync_client
 ) -> None:
     sts_users = await get_sts_user(
         str(uuid), gql_session=gql_session, settings=settings
     )
+    if not sts_users:
+        os2sync_client.delete_orgunit(uuid)
 
     for sts_user in sts_users:
         if sts_user:
-            os2sync.os2sync_post("{BASE}/user", json=sts_user)
+            os2sync_client.os2sync_post("{BASE}/user", json=sts_user)
 
 
-async def update_single_orgunit(uuid: UUID, settings: Settings) -> None:
+async def update_single_orgunit(uuid: UUID, settings: Settings, os2sync_client) -> None:
     sts_org_unit = get_sts_orgunit(str(uuid), settings=settings)
 
     if sts_org_unit:
-        os2sync.upsert_org_unit(
+        os2sync_client.upsert_org_unit(
             sts_org_unit,
             settings.os2sync_api_url,
         )
     else:
-        os2sync.delete_orgunit(uuid)
+        os2sync_client.delete_orgunit(uuid)
 
 
 @fastapi_router.get("/")
@@ -87,6 +88,7 @@ async def amqp_trigger_employee(
         uuid,
         gql_session=context["graphql_session"],
         settings=context["user_context"]["settings"],
+        os2sync_client=context["user_context"]["os2sync_client"],
     )
     logger.info(f"Synced user to fk-org: {uuid=}")
 
@@ -96,6 +98,7 @@ async def amqp_trigger_org_unit(context: Context, uuid: PayloadUUID, _: RateLimi
     await update_single_orgunit(
         uuid,
         settings=context["user_context"]["settings"],
+        os2sync_client=context["user_context"]["os2sync_client"],
     )
     logger.info(f"Synced org_unit to fk-org: {uuid=}")
 
@@ -104,17 +107,18 @@ async def amqp_trigger_org_unit(context: Context, uuid: PayloadUUID, _: RateLimi
 async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: RateLimit):
     settings = context["user_context"]["settings"]
     graphql_session = context["graphql_session"]
+    os2sync_client = (context["user_context"]["os2sync_client"],)
 
     ou_uuid, e_uuid = await get_address_org_unit_and_employee_uuids(
         graphql_session, uuid
     )
     if ou_uuid:
-        await update_single_orgunit(ou_uuid, settings)
+        await update_single_orgunit(ou_uuid, settings, os2sync_client)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
         return
 
     if e_uuid:
-        await update_single_user(e_uuid, graphql_session, settings)
+        await update_single_user(e_uuid, graphql_session, settings, os2sync_client)
         logger.info(f"Synced user to fk-org: {e_uuid}")
         return
 
@@ -127,17 +131,25 @@ async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: RateLimit
 async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit):
     settings = context["user_context"]["settings"]
     graphql_session = context["graphql_session"]
+    os2sync_client = (context["user_context"]["os2sync_client"],)
 
     ou_uuid, e_uuid = await get_ituser_org_unit_and_employee_uuids(
         graphql_session, uuid
     )
     if ou_uuid:
-        await update_single_orgunit(ou_uuid, settings)
+        await update_single_orgunit(
+            ou_uuid, settings=settings, os2sync_client=os2sync_client
+        )
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
         return
 
     if e_uuid:
-        await update_single_user(e_uuid, graphql_session, settings)
+        await update_single_user(
+            e_uuid,
+            gql_session=graphql_session,
+            settings=settings,
+            os2sync_client=os2sync_client,
+        )
         logger.info(f"Synced user to fk-org: {e_uuid}")
         return
 
@@ -148,10 +160,11 @@ async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit
 async def amqp_trigger_manager(context: Context, uuid: PayloadUUID, _: RateLimit):
     settings = context["user_context"]["settings"]
     graphql_session = context["graphql_session"]
+    os2sync_client = (context["user_context"]["os2sync_client"],)
 
     ou_uuid = await get_manager_org_unit_uuid(graphql_session, uuid)
     if ou_uuid:
-        await update_single_orgunit(ou_uuid, settings)
+        await update_single_orgunit(ou_uuid, settings, os2sync_client=os2sync_client)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
         return
 
@@ -162,10 +175,13 @@ async def amqp_trigger_manager(context: Context, uuid: PayloadUUID, _: RateLimit
 async def amqp_trigger_engagement(context: Context, uuid: PayloadUUID, _: RateLimit):
     settings = context["user_context"]["settings"]
     graphql_session = context["graphql_session"]
+    os2sync_client = (context["user_context"]["os2sync_client"],)
 
     e_uuid = await get_engagement_employee_uuid(graphql_session, uuid)
     if e_uuid:
-        await update_single_user(e_uuid, graphql_session, settings)
+        await update_single_user(
+            e_uuid, graphql_session, settings=settings, os2sync_client=os2sync_client
+        )
         logger.info(f"Synced user to fk-org: {e_uuid}")
         return
 
@@ -176,10 +192,13 @@ async def amqp_trigger_engagement(context: Context, uuid: PayloadUUID, _: RateLi
 async def amqp_trigger_kle(context: Context, uuid: PayloadUUID, _: RateLimit):
     settings = context["user_context"]["settings"]
     graphql_session = context["graphql_session"]
+    os2sync_client = (context["user_context"]["os2sync_client"],)
 
     ou_uuid = await get_kle_org_unit_uuid(graphql_session, uuid)
     if ou_uuid:
-        await update_single_orgunit(ou_uuid, settings)
+        await update_single_orgunit(
+            ou_uuid, settings=settings, os2sync_client=os2sync_client
+        )
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
         return
 
@@ -197,6 +216,7 @@ async def trigger_user(
         uuid,
         gql_session=context["graphql_session"],
         settings=context["user_context"]["settings"],
+        os2sync_client=(context["user_context"]["os2sync_client"],),
     )
     return "OK"
 
@@ -210,6 +230,7 @@ async def trigger_orgunit(
     await update_single_orgunit(
         uuid,
         settings=context["user_context"]["settings"],
+        os2sync_client=(context["user_context"]["os2sync_client"],),
     )
 
     return "OK"
@@ -225,7 +246,9 @@ def create_fastramqpi(**kwargs) -> FastRAMQPI:
 
     amqpsystem = fastramqpi.get_amqpsystem()
     amqpsystem.router.registry.update(amqp_router.registry)
-    fastramqpi.add_context(settings=settings)
+    fastramqpi.add_context(
+        settings=settings, os2sync_client=OS2SyncClient(settings=settings)
+    )
 
     app = fastramqpi.get_app()
     app.include_router(fastapi_router)

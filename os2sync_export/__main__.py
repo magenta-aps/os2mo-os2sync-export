@@ -16,8 +16,8 @@ from tenacity import retry_if_exception_type
 from tenacity import stop_after_attempt
 
 from os2sync_export import os2mo
-from os2sync_export import os2sync
 from os2sync_export.config import Settings
+from os2sync_export.os2sync import OS2SyncClient
 from os2sync_export.os2sync_models import OrgUnit
 
 logger = logging.getLogger(__name__)
@@ -133,11 +133,11 @@ async def read_all_users(
     stop=stop_after_attempt(5),
     retry=retry_if_exception_type(ConnectionError),
 )
-async def main(settings: Settings, gql_session):
+async def main(settings: Settings, gql_session, os2sync_client):
     log_mox_config(settings)
 
-    os2sync_client = os2sync.get_os2sync_session()
-    request_uuid = os2sync.trigger_hierarchy(
+    os2sync_client = os2sync_client or OS2SyncClient(settings=settings)
+    request_uuid = os2sync_client.trigger_hierarchy(
         os2sync_client, os2sync_api_url=settings.os2sync_api_url
     )
     mo_org_units = read_all_org_units(settings)
@@ -147,9 +147,9 @@ async def main(settings: Settings, gql_session):
     for org_unit in tqdm(
         mo_org_units.values(), desc="Updating OrgUnits in fk-org", unit="OrgUnit"
     ):
-        os2sync.upsert_org_unit(org_unit, settings.os2sync_api_url)
+        os2sync_client.upsert_org_unit(org_unit, settings.os2sync_api_url)
 
-    existing_os2sync_org_units, existing_os2sync_users = os2sync.get_hierarchy(
+    existing_os2sync_org_units, existing_os2sync_users = os2sync_client.get_hierarchy(
         os2sync_client,
         os2sync_api_url=settings.os2sync_api_url,
         request_uuid=request_uuid,
@@ -163,7 +163,7 @@ async def main(settings: Settings, gql_session):
         terminated_org_units = existing_os2sync_org_units - set(mo_org_units)
         logger.info(f"Orgenheder som slettes i OS2Sync: {len(terminated_org_units)}")
         for uuid in terminated_org_units:
-            os2sync.delete_orgunit(uuid)
+            os2sync_client.delete_orgunit(uuid)
 
     logger.info("sync_os2sync_orgunits done")
 
@@ -178,12 +178,12 @@ async def main(settings: Settings, gql_session):
     # Create or update users
     logger.info(f"Medarbejdere overført til OS2SYNC: {len(mo_users)}")
     for user in mo_users.values():
-        os2sync.os2sync_post("{BASE}/user", json=user)
+        os2sync_client.os2sync_post("{BASE}/user", json=user)
 
     # Delete any user not in os2mo
     terminated_users = existing_os2sync_users - set(mo_users)
     logger.info(f"Medarbejdere slettes i OS2Sync: {len(terminated_users)}")
     for uuid in terminated_users:
-        os2sync.os2sync_delete("{BASE}/user/" + uuid)
+        os2sync_client.os2sync_delete("{BASE}/user/" + uuid)
 
     logger.info("sync users done")
