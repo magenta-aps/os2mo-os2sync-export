@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+from unittest.mock import ANY
+from unittest.mock import call
 from unittest.mock import MagicMock
 from unittest.mock import patch
 from uuid import uuid4
@@ -122,11 +124,7 @@ def test_update_orgunit_upsert(mock_settings):
 
     with patch.object(os2sync_client, "upsert_org_unit") as mock_upsert_org_unit:
         os2sync_client.update_org_unit(o.Uuid, o)
-
-        mock_upsert_org_unit.assert_called_with(
-            o,
-            mock_settings.os2sync_api_url,
-        )
+        mock_upsert_org_unit.assert_called_with(o)
 
 
 def test_update_orgunit_delete(mock_settings):
@@ -135,3 +133,17 @@ def test_update_orgunit_delete(mock_settings):
     with patch.object(os2sync_client, "delete_orgunit") as mock_delete_orgunit:
         os2sync_client.update_org_unit(o.Uuid, None)
         mock_delete_orgunit.assert_called_with(o.Uuid)
+
+
+def test_update_users(mock_settings):
+    os2sync_client = OS2SyncClient(settings=mock_settings, session=MagicMock())
+
+    with patch.object(os2sync_client, "os2sync_post") as mock_os2sync_post:
+        users = [o, o2]
+        os2sync_client.update_users(users)
+        mock_os2sync_post.assert_has_calls(
+            [
+                call(ANY, json=users[0]),
+                call(ANY, json=users[1]),
+            ]
+        )

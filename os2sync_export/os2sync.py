@@ -142,9 +142,6 @@ class OS2SyncClient:
 
     def update_org_unit(self, uuid: UUID, org_unit: Optional[OrgUnit]):
         if org_unit:
-            self.upsert_org_unit(
-                org_unit,
-                self.settings.os2sync_api_url,
-            )
+            self.upsert_org_unit(org_unit)
         else:
             self.delete_orgunit(uuid)
