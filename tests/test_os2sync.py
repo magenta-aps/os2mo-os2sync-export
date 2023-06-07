@@ -115,3 +115,23 @@ def test_os2sync_upsert_org_unit_ordered_tasks(mock_settings):
     session_mock.post.assert_called_once_with(
         f"{mock_settings.os2sync_api_url}/orgUnit/", json=org_unit.json()
     )
+
+
+def test_update_orgunit_upsert(mock_settings):
+    os2sync_client = OS2SyncClient(settings=mock_settings, session=MagicMock())
+
+    with patch.object(os2sync_client, "upsert_org_unit") as mock_upsert_org_unit:
+        os2sync_client.update_org_unit(o.Uuid, o)
+
+        mock_upsert_org_unit.assert_called_with(
+            o,
+            mock_settings.os2sync_api_url,
+        )
+
+
+def test_update_orgunit_delete(mock_settings):
+    os2sync_client = OS2SyncClient(settings=mock_settings, session=MagicMock())
+
+    with patch.object(os2sync_client, "delete_orgunit") as mock_delete_orgunit:
+        os2sync_client.update_org_unit(o.Uuid, None)
+        mock_delete_orgunit.assert_called_with(o.Uuid)

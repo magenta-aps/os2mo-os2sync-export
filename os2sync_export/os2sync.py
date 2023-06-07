@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MPL-2.0
 import logging
 from typing import Dict
+from typing import Optional
 from typing import Set
 from typing import Tuple
 from uuid import UUID
@@ -139,7 +140,7 @@ class OS2SyncClient:
             if user:
                 self.os2sync_post("{BASE}/user", json=user)
 
-    def update_org_unit(self, uuid: UUID, org_unit):
+    def update_org_unit(self, uuid: UUID, org_unit: Optional[OrgUnit]):
         if org_unit:
             self.upsert_org_unit(
                 org_unit,
