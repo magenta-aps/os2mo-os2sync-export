@@ -133,3 +133,17 @@ class OS2SyncClient:
         existing_os2sync_org_units = {UUID(o["Uuid"]) for o in hierarchy["OUs"]}
         existing_os2sync_users = {UUID(u["Uuid"]) for u in hierarchy["Users"]}
         return existing_os2sync_org_units, existing_os2sync_users
+
+    def update_users(self, users):
+        for user in users:
+            if user:
+                self.os2sync_post("{BASE}/user", json=user)
+
+    def update_org_unit(self, uuid: UUID, org_unit):
+        if org_unit:
+            self.upsert_org_unit(
+                org_unit,
+                self.settings.os2sync_api_url,
+            )
+        else:
+            self.delete_orgunit(uuid)
