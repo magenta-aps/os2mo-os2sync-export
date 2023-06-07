@@ -113,3 +113,30 @@ def test_os2sync_upsert_org_unit_ordered_tasks(mock_settings):
             upsert_org_unit(org_unit, "os2sync_api_url")
 
             post_mock.assert_called_once_with("{BASE}/orgUnit/", json=org_unit.json())
+
+
+def test_update_single_orgunit_upsert(mock_settings):
+    with patch(
+        "os2sync_export.config.get_os2sync_settings", return_value=mock_settings
+    ):
+        from os2sync_export.os2sync import update_single_orgunit
+
+    with patch("os2sync_export.os2sync.upsert_org_unit") as mock_upsert_org_unit:
+        ou = OrgUnit(Uuid=uuid4())
+        update_single_orgunit(ou.Uuid, ou)
+        mock_upsert_org_unit.assert_called_with(
+            ou,
+            mock_settings.os2sync_api_url,
+        )
+
+
+def test_update_single_orgunit_delete(mock_settings):
+    with patch(
+        "os2sync_export.config.get_os2sync_settings", return_value=mock_settings
+    ):
+        from os2sync_export.os2sync import update_single_orgunit
+
+    with patch("os2sync_export.os2sync.delete_orgunit") as mock_delete_orgunit:
+        ou_uuid = uuid4()
+        update_single_orgunit(ou_uuid, None)
+        mock_delete_orgunit.assert_called_with(ou_uuid)

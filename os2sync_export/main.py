@@ -74,14 +74,8 @@ async def amqp_trigger_employee(
 async def amqp_trigger_org_unit(context: Context, uuid: PayloadUUID, _: RateLimit):
     settings = context["user_context"]["settings"]
     sts_org_unit = get_sts_orgunit(str(uuid), settings=settings)
-
-    if sts_org_unit:
-        os2sync.upsert_org_unit(
-            sts_org_unit,
-            settings.os2sync_api_url,
-        )
-    else:
-        os2sync.delete_orgunit(uuid)
+    os2sync.update_single_orgunit(uuid, sts_org_unit)
+    logger.info(f"Synced org_unit to fk-org: {uuid=}")
 
 
 @amqp_router.register("address")
@@ -94,7 +88,7 @@ async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: RateLimit
     )
     if ou_uuid:
         sts_org_unit = get_sts_orgunit(str(uuid), settings=settings)
-        await os2sync.update_single_orgunit(uuid, sts_org_unit)
+        os2sync.update_single_orgunit(uuid, sts_org_unit)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
         return
 
@@ -119,7 +113,7 @@ async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit
     )
     if ou_uuid:
         sts_org_unit = get_sts_orgunit(str(uuid), settings=settings)
-        await os2sync.update_single_orgunit(uuid, sts_org_unit)
+        os2sync.update_single_orgunit(uuid, sts_org_unit)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
         return
 
@@ -140,7 +134,7 @@ async def amqp_trigger_manager(context: Context, uuid: PayloadUUID, _: RateLimit
     ou_uuid = await get_manager_org_unit_uuid(graphql_session, uuid)
     if ou_uuid:
         sts_org_unit = get_sts_orgunit(str(uuid), settings=settings)
-        await os2sync.update_single_orgunit(uuid, sts_org_unit)
+        os2sync.update_single_orgunit(uuid, sts_org_unit)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
         return
 
@@ -170,7 +164,7 @@ async def amqp_trigger_kle(context: Context, uuid: PayloadUUID, _: RateLimit):
     ou_uuid = await get_kle_org_unit_uuid(graphql_session, uuid)
     if ou_uuid:
         sts_org_unit = get_sts_orgunit(str(uuid), settings)
-        await os2sync.update_single_orgunit(uuid, sts_org_unit)
+        os2sync.update_single_orgunit(uuid, sts_org_unit)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
         return
 
@@ -198,7 +192,7 @@ async def trigger_orgunit(
 ) -> str:
     context: dict[str, Any] = request.app.state.context
     sts_org_unit = get_sts_orgunit(str(uuid), context["user_context"]["settings"])
-    await os2sync.update_single_orgunit(uuid, sts_org_unit)
+    os2sync.update_single_orgunit(uuid, sts_org_unit)
     logger.info(f"Synced org_unit to fk-org: {uuid}")
     return "OK"
 
