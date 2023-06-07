@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+from unittest.mock import ANY
+from unittest.mock import call
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -140,3 +142,24 @@ def test_update_single_orgunit_delete(mock_settings):
         ou_uuid = uuid4()
         update_single_orgunit(ou_uuid, None)
         mock_delete_orgunit.assert_called_with(ou_uuid)
+
+
+def test_update_users(mock_settings):
+    with patch(
+        "os2sync_export.config.get_os2sync_settings", return_value=mock_settings
+    ):
+        from os2sync_export.os2sync import update_users
+
+    with patch("os2sync_export.os2sync.os2sync_post") as mock_os2sync_post:
+        users = [
+            {"uuid": uuid4()},
+            {"uuid": uuid4()},
+        ]
+        update_users(users)
+
+        mock_os2sync_post.assert_has_calls(
+            [
+                call(ANY, json=users[0]),
+                call(ANY, json=users[1]),
+            ]
+        )
