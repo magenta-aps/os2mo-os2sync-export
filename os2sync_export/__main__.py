@@ -137,9 +137,7 @@ async def main(settings: Settings, gql_session, os2sync_client):
     log_mox_config(settings)
 
     os2sync_client = os2sync_client or OS2SyncClient(settings=settings)
-    request_uuid = os2sync_client.trigger_hierarchy(
-        os2sync_client, os2sync_api_url=settings.os2sync_api_url
-    )
+    request_uuid = os2sync_client.trigger_hierarchy()
     mo_org_units = read_all_org_units(settings)
 
     logger.info(f"Orgenheder som tjekkes i OS2Sync: {len(mo_org_units)}")
@@ -147,7 +145,7 @@ async def main(settings: Settings, gql_session, os2sync_client):
     for org_unit in tqdm(
         mo_org_units.values(), desc="Updating OrgUnits in fk-org", unit="OrgUnit"
     ):
-        os2sync_client.upsert_org_unit(org_unit, settings.os2sync_api_url)
+        os2sync_client.upsert_org_unit(org_unit)
 
     existing_os2sync_org_units, existing_os2sync_users = os2sync_client.get_hierarchy(
         os2sync_client,

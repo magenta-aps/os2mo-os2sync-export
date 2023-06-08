@@ -27,7 +27,7 @@ def test_os2sync_upsert_org_unit_no_changes(mock_settings):
     os2sync_client = OS2SyncClient(settings=mock_settings, session=session_mock)
 
     with patch.object(os2sync_client, "os2sync_get_org_unit", return_value=o):
-        os2sync_client.upsert_org_unit(o, "os2sync_api_url")
+        os2sync_client.upsert_org_unit(o)
 
     session_mock.post.assert_called_once_with(
         f"{mock_settings.os2sync_api_url}/orgUnit/", json=o.json()
@@ -40,7 +40,7 @@ def test_os2sync_upsert_org_unit_new(mock_settings):
     os2sync_client = OS2SyncClient(settings=mock_settings, session=session_mock)
 
     with patch.object(os2sync_client, "os2sync_get_org_unit", side_effect=KeyError):
-        os2sync_client.upsert_org_unit(o, "os2sync_api_url")
+        os2sync_client.upsert_org_unit(o)
 
         session_mock.post.assert_called_once_with(
             f"{mock_settings.os2sync_api_url}/orgUnit/", json=o.json()
@@ -56,7 +56,7 @@ def test_os2sync_upsert_org_unit_changes(mock_settings):
 
     with patch.object(os2sync_client, "os2sync_get_org_unit", return_value=o.copy()):
         org_unit.Name = "Changed name"
-        os2sync_client.upsert_org_unit(org_unit, "os2sync_api_url")
+        os2sync_client.upsert_org_unit(org_unit)
 
     session_mock.post.assert_called_once_with(
         f"{mock_settings.os2sync_api_url}/orgUnit/", json=org_unit.json()
@@ -70,7 +70,7 @@ def test_os2sync_upsert_org_unit_keep_fk_fields(mock_settings):
     os2sync_client = OS2SyncClient(settings=mock_settings, session=session_mock)
 
     with patch.object(os2sync_client, "os2sync_get_org_unit", return_value=o2):
-        os2sync_client.upsert_org_unit(o, "os2sync_api_url")
+        os2sync_client.upsert_org_unit(o)
 
     session_mock.post.assert_called_once_with(
         f"{mock_settings.os2sync_api_url}/orgUnit/", json=o2.json()
@@ -88,7 +88,7 @@ def test_os2sync_upsert_org_unit_changes_w_fixed_fields(mock_settings):
     expected = o.copy()
     expected.Name = org_unit.Name
     with patch.object(os2sync_client, "os2sync_get_org_unit", return_value=fk_org):
-        os2sync_client.upsert_org_unit(org_unit, "os2sync_api_url")
+        os2sync_client.upsert_org_unit(org_unit)
 
     session_mock.post.assert_called_once_with(
         f"{mock_settings.os2sync_api_url}/orgUnit/", json=expected.json()
@@ -110,7 +110,7 @@ def test_os2sync_upsert_org_unit_ordered_tasks(mock_settings):
     os2sync_client = OS2SyncClient(settings=mock_settings, session=session_mock)
 
     with patch.object(os2sync_client, "os2sync_get_org_unit", return_value=current):
-        os2sync_client.upsert_org_unit(org_unit, "os2sync_api_url")
+        os2sync_client.upsert_org_unit(org_unit)
 
     session_mock.post.assert_called_once_with(
         f"{mock_settings.os2sync_api_url}/orgUnit/", json=org_unit.json()

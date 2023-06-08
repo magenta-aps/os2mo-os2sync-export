@@ -76,6 +76,7 @@ async def trigger_all(
         main,
         settings=context["user_context"]["settings"],
         gql_session=context["graphql_session"],
+        os2sync_client=context["user_context"]["os2sync_client"],
     )
     return {"triggered": "OK"}
 

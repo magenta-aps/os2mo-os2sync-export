@@ -56,8 +56,8 @@ class OS2SyncClient:
         r.raise_for_status()
         return r.json()
 
-    def os2sync_get_org_unit(self, api_url: str, uuid: UUID) -> OrgUnit:
-        current = self.os2sync_get(f"{api_url}/orgUnit/{str(uuid)}")
+    def os2sync_get_org_unit(self, uuid: UUID) -> OrgUnit:
+        current = self.os2sync_get(f"{{BASE}}/orgUnit/{str(uuid)}")
         current.pop("Type")
         current.pop("Timestamp")
         return OrgUnit(**current)
@@ -83,11 +83,9 @@ class OS2SyncClient:
         logger.debug("delete orgunit %s", uuid)
         self.os2sync_delete("{BASE}/orgUnit/" + str(uuid))
 
-    def upsert_org_unit(self, org_unit: OrgUnit, os2sync_api_url: str) -> None:
+    def upsert_org_unit(self, org_unit: OrgUnit) -> None:
         try:
-            current = self.os2sync_get_org_unit(
-                api_url=os2sync_api_url, uuid=org_unit.Uuid
-            )
+            current = self.os2sync_get_org_unit(uuid=org_unit.Uuid)
         except KeyError:
             logger.info(f"OrgUnit not found in os2sync - creating {org_unit.Uuid=}")
             self.os2sync_post("{BASE}/orgUnit/", json=org_unit.json())
@@ -107,13 +105,13 @@ class OS2SyncClient:
 
         self.os2sync_post("{BASE}/orgUnit/", json=org_unit.json())
 
-    def trigger_hierarchy(self, os2sync_api_url: str) -> UUID:
+    def trigger_hierarchy(self) -> UUID:
         """ "Triggers a job in the os2sync container that gathers the entire hierarchy from FK-ORG
 
         Returns: UUID
 
         """
-        r = self.session.get(f"{os2sync_api_url}/hierarchy")
+        r = self.session.get(f"{self.settings.os2sync_api_url}/hierarchy")
         r.raise_for_status()
         return UUID(r.text)
 
