@@ -386,20 +386,18 @@ async def test_get_manager_org_unit_uuid():
     manager_uuid_mock = uuid4()
     ou_uuid_mock = uuid4()
 
-    graphql_session_mock = MagicMock()
-    graphql_session_mock.execute = AsyncMock(
-        return_value={
-            "managers": [
-                {
-                    "objects": [
-                        {
-                            "org_unit_uuid": str(ou_uuid_mock),
-                        }
-                    ]
-                }
-            ]
-        }
-    )
+    graphql_session_mock = AsyncMock()
+    graphql_session_mock.execute.return_value = {
+        "managers": [
+            {
+                "objects": [
+                    {
+                        "org_unit_uuid": str(ou_uuid_mock),
+                    }
+                ]
+            }
+        ]
+    }
 
     result_ou_uuid = await get_manager_org_unit_uuid(
         graphql_session_mock, manager_uuid_mock
@@ -412,3 +410,20 @@ async def test_get_manager_org_unit_uuid():
         },
     )
     assert UUID(result_ou_uuid) == ou_uuid_mock
+
+
+@pytest.mark.asyncio
+async def test_get_manager_org_unit_uuid_not_found():
+    manager_uuid_mock = uuid4()
+    graphql_session_mock = AsyncMock()
+    graphql_session_mock.execute.return_value = {"managers": []}
+
+    with pytest.raises(ValueError):
+        _ = await get_manager_org_unit_uuid(graphql_session_mock, manager_uuid_mock)
+
+        graphql_session_mock.execute.assert_called_with(
+            ANY,
+            variable_values={
+                "uuids": str(manager_uuid_mock),
+            },
+        )
