@@ -13,7 +13,12 @@
                 "0.0.0.0",
                 "--reload"
             ],
-            "envFile": "${workspaceFolder}/.env",
+            "envFile": "${workspaceFolder}/docker.env",
+            "env": {
+                "MO_URL":"http://localhost:5000",
+                "AUTH_SERVER":"http://localhost:5000/auth",
+                "AMQP__URL":"amqp://guest:guest@localhost:5672/",
+            }
         }
     ]
 }
