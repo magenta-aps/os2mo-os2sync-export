@@ -388,7 +388,7 @@ async def get_sts_user(
     sts_users = [
         get_sts_user_raw(
             mo_uuid,
-            settings,
+            settings=settings,
             fk_org_uuid=it["uuid"],
             user_key=it["user_key"],
             engagement_uuid=it["engagement_uuid"],

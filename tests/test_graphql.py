@@ -2,10 +2,12 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 from typing import Callable
+from unittest.mock import AsyncMock
 from unittest.mock import call
-from unittest.mock import MagicMock
 from unittest.mock import patch
 from uuid import uuid4
+
+import pytest
 
 from os2sync_export.config import Settings
 from os2sync_export.os2mo import get_sts_user
@@ -82,11 +84,12 @@ def test_group_by_engagement():
         assert g in groups
 
 
+@pytest.mark.asyncio
 @patch("os2sync_export.os2mo.get_sts_user_raw")
 async def test_get_sts_user(
     get_sts_user_raw_mock, set_settings: Callable[..., Settings]
 ):
-    gql_mock = MagicMock()
+    gql_mock = AsyncMock()
     gql_mock.execute.return_value = {
         "employees": [{"objects": [{"itusers": query_response}]}]
     }
@@ -100,21 +103,21 @@ async def test_get_sts_user(
     for c in [
         call(
             mo_uuid,
-            settings,
+            settings=settings,
             fk_org_uuid=fk_org_uuid_1,
             user_key=fk_org_user_key_1,
             engagement_uuid=engagement_uuid1,
         ),
         call(
             mo_uuid,
-            settings,
+            settings=settings,
             fk_org_uuid=fk_org_uuid_2,
             user_key=fk_org_user_key_2,
             engagement_uuid=engagement_uuid2,
         ),
         call(
             mo_uuid,
-            settings,
+            settings=settings,
             fk_org_uuid=fk_org_uuid_3,
             user_key=None,
             engagement_uuid=None,
@@ -123,12 +126,13 @@ async def test_get_sts_user(
         assert c in get_sts_user_raw_mock.call_args_list
 
 
+@pytest.mark.asyncio
 @patch("os2sync_export.os2mo.get_sts_user_raw")
 async def test_get_sts_user_no_it_accounts(
     get_sts_user_raw_mock, mock_settings: Settings
 ):
     """Test that users without it-accounts creates one fk-org account"""
-    gql_mock = MagicMock()
+    gql_mock = AsyncMock()
     gql_mock.execute.return_value = {"employees": [{"objects": [{"itusers": []}]}]}
 
     await get_sts_user(mo_uuid=mo_uuid, gql_session=gql_mock, settings=mock_settings)
