@@ -57,6 +57,7 @@ include:
       - /gitlab-ci-templates/common/docker-build.v1.yml
       - /gitlab-ci-templates/common/docker-release.v1.yml
       - /gitlab-ci-templates/common/config-updater-meta.v1.yml
+      - gitlab-ci-templates/common/config-updater-flux.v1.yml
 
 
 Release to Dev:
