@@ -36,6 +36,14 @@ fastapi_router = APIRouter()
 amqp_router = MORouter()
 
 
+def unpack_context(context) -> tuple[Settings, AsyncClientSession, OS2SyncClient]:
+    """Returns the relevant objects from the context dictionary"""
+    settings: Settings = context["user_context"]["settings"]
+    graphql_session: AsyncClientSession = context["graphql_session"]
+    os2sync_client: OS2SyncClient = context["user_context"]["os2sync_client"]
+    return settings, graphql_session, os2sync_client
+
+
 @fastapi_router.get("/")
 async def index() -> Dict[str, str]:
     return {"name": "os2sync_export"}
@@ -59,9 +67,7 @@ async def trigger_all(
 async def amqp_trigger_employee(
     context: Context, uuid: PayloadUUID, _: RateLimit
 ) -> None:
-    settings: Settings = context["user_context"]["settings"]
-    graphql_session: AsyncClientSession = context["graphql_session"]
-    os2sync_client: OS2SyncClient = context["user_context"]["os2sync_client"]
+    settings, graphql_session, os2sync_client = unpack_context(context=context)
 
     try:
         sts_users = await get_sts_user(
@@ -79,8 +85,7 @@ async def amqp_trigger_employee(
 
 @amqp_router.register("org_unit")
 async def amqp_trigger_org_unit(context: Context, uuid: PayloadUUID, _: RateLimit):
-    os2sync_client: OS2SyncClient = context["user_context"]["os2sync_client"]
-    settings: Settings = context["user_context"]["settings"]
+    settings, _, os2sync_client = unpack_context(context=context)
 
     try:
         sts_org_unit = get_sts_orgunit(str(uuid), settings=settings)
@@ -97,10 +102,7 @@ async def amqp_trigger_org_unit(context: Context, uuid: PayloadUUID, _: RateLimi
 
 @amqp_router.register("address")
 async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: RateLimit):
-    settings: Settings = context["user_context"]["settings"]
-    graphql_session: AsyncClientSession = context["graphql_session"]
-    os2sync_client: OS2SyncClient = context["user_context"]["os2sync_client"]
-
+    settings, graphql_session, os2sync_client = unpack_context(context=context)
     try:
         ou_uuid, e_uuid = await get_address_org_unit_and_employee_uuids(
             graphql_session, uuid
@@ -131,9 +133,7 @@ async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: RateLimit
 
 @amqp_router.register("ituser")
 async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit):
-    settings: Settings = context["user_context"]["settings"]
-    graphql_session: AsyncClientSession = context["graphql_session"]
-    os2sync_client: OS2SyncClient = context["user_context"]["os2sync_client"]
+    settings, graphql_session, os2sync_client = unpack_context(context=context)
 
     try:
         ou_uuid, e_uuid = await get_ituser_org_unit_and_employee_uuids(
@@ -162,9 +162,7 @@ async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit
 
 @amqp_router.register("manager")
 async def amqp_trigger_manager(context: Context, uuid: PayloadUUID, _: RateLimit):
-    settings: Settings = context["user_context"]["settings"]
-    graphql_session: AsyncClientSession = context["graphql_session"]
-    os2sync_client: OS2SyncClient = context["user_context"]["os2sync_client"]
+    settings, graphql_session, os2sync_client = unpack_context(context=context)
 
     try:
         ou_uuid = await get_manager_org_unit_uuid(graphql_session, uuid)
@@ -183,9 +181,7 @@ async def amqp_trigger_manager(context: Context, uuid: PayloadUUID, _: RateLimit
 
 @amqp_router.register("engagement")
 async def amqp_trigger_engagement(context: Context, uuid: PayloadUUID, _: RateLimit):
-    settings: Settings = context["user_context"]["settings"]
-    graphql_session: AsyncClientSession = context["graphql_session"]
-    os2sync_client: OS2SyncClient = context["user_context"]["os2sync_client"]
+    settings, graphql_session, os2sync_client = unpack_context(context=context)
 
     try:
         e_uuid = await get_engagement_employee_uuid(graphql_session, uuid)
@@ -206,9 +202,7 @@ async def amqp_trigger_engagement(context: Context, uuid: PayloadUUID, _: RateLi
 
 @amqp_router.register("kle")
 async def amqp_trigger_kle(context: Context, uuid: PayloadUUID, _: RateLimit):
-    settings: Settings = context["user_context"]["settings"]
-    graphql_session: AsyncClientSession = context["graphql_session"]
-    os2sync_client: OS2SyncClient = context["user_context"]["os2sync_client"]
+    settings, graphql_session, os2sync_client = unpack_context(context=context)
 
     ou_uuid = await get_kle_org_unit_uuid(graphql_session, uuid)
     if ou_uuid:
