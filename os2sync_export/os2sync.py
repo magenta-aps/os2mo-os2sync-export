@@ -81,8 +81,12 @@ class OS2SyncClient:
         return r
 
     def delete_orgunit(self, uuid: UUID):
-        logger.debug("delete orgunit %s", uuid)
+        logger.info("delete orgunit %s", uuid)
         self.os2sync_delete("{BASE}/orgUnit/" + str(uuid))
+
+    def delete_user(self, uuid: UUID):
+        logger.info("delete user %s", uuid)
+        self.os2sync_delete("{BASE}/user/" + str(uuid))
 
     def upsert_org_unit(self, org_unit: OrgUnit) -> None:
         try:
