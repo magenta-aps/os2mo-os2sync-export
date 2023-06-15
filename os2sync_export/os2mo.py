@@ -665,7 +665,7 @@ async def get_address_org_unit_and_employee_uuids(
     q = gql(
         """
     query GetAddress($uuids: [UUID!]) {
-        addresses(uuids: $uuids) {
+        addresses(uuids: $uuids, from_date:null, to_date:null) {
             objects {
                 employee_uuid
                 org_unit_uuid
@@ -694,7 +694,7 @@ async def get_ituser_org_unit_and_employee_uuids(
     q = gql(
         """
     query GetItUser($uuids: [UUID!]) {
-        itusers(uuids: $uuids) {
+        itusers(uuids: $uuids, from_date:null, to_date:null) {
             objects {
                 employee_uuid
                 org_unit_uuid
@@ -721,7 +721,7 @@ async def get_manager_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UU
     q = gql(
         """
     query GetManager($uuids: [UUID!]) {
-        managers(uuids: $uuids) {
+        managers(uuids: $uuids, from_date:null, to_date:null) {
             objects {
                 org_unit_uuid
             }
@@ -747,7 +747,7 @@ async def get_engagement_employee_uuid(gql_session: AsyncClientSession, mo_uuid:
     q = gql(
         """
     query GetEngagement($uuids: [UUID!]) {
-        engagements(uuids: $uuids) {
+        engagements(uuids: $uuids, from_date:null, to_date:null) {
             objects {
                 employee_uuid
             }
@@ -773,7 +773,7 @@ async def get_kle_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
     q = gql(
         """
     query GetKLEs($uuids: [UUID!]) {
-        kles(uuids: $uuids) {
+        kles(uuids: $uuids, from_date:null, to_date:null) {
             objects {
                 org_unit_uuid
             }
