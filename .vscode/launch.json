@@ -15,9 +15,11 @@
             ],
             "envFile": "${workspaceFolder}/docker.env",
             "env": {
-                "MO_URL":"http://localhost:5000",
-                "AUTH_SERVER":"http://localhost:5000/auth",
-                "AMQP__URL":"amqp://guest:guest@localhost:5672/",
+                "MO_URL": "http://localhost:5000",
+                "AUTH_SERVER": "http://localhost:5000/auth",
+                "AMQP__URL": "amqp://guest:guest@localhost:5672/",
+
+                "OS2SYNC_UUID_FROM_IT_SYSTEMS": "[\"Office365\"]"
             }
         }
     ]
