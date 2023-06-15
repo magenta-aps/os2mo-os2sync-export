@@ -1,18 +1,22 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+import datetime
 import logging
 from typing import Any
 from typing import Dict
 from uuid import UUID
 
 import sentry_sdk
+from dateutil import tz
 from fastapi import APIRouter
 from fastapi import BackgroundTasks
 from fastapi import FastAPI
 from fastapi import Request
 from fastramqpi.main import FastRAMQPI  # type: ignore
 from gql.client import AsyncClientSession
+from more_itertools import one
+from more_itertools import only
 from ramqp.depends import Context
 from ramqp.depends import RateLimit
 from ramqp.mo import MORouter
@@ -21,13 +25,16 @@ from ramqp.mo import PayloadUUID
 from os2sync_export.__main__ import main
 from os2sync_export.config import get_os2sync_settings
 from os2sync_export.config import Settings
+from os2sync_export.os2mo import create_os2sync_user_from_fk_org_account
+from os2sync_export.os2mo import extract_fk_org_accounts_from_it_users
 from os2sync_export.os2mo import get_address_org_unit_and_employee_uuids
-from os2sync_export.os2mo import get_engagement_employee_uuid
+from os2sync_export.os2mo import get_engagement_timeline
 from os2sync_export.os2mo import get_ituser_org_unit_and_employee_uuids
 from os2sync_export.os2mo import get_kle_org_unit_uuid
 from os2sync_export.os2mo import get_manager_org_unit_uuid
 from os2sync_export.os2mo import get_sts_orgunit
 from os2sync_export.os2mo import get_sts_user
+from os2sync_export.os2mo import get_user_it_accounts
 from os2sync_export.os2sync import OS2SyncClient
 
 logger = logging.getLogger(__name__)
@@ -182,23 +189,108 @@ async def amqp_trigger_manager(context: Context, uuid: PayloadUUID, _: RateLimit
 
 @amqp_router.register("engagement")
 async def amqp_trigger_engagement(context: Context, uuid: PayloadUUID, _: RateLimit):
-    settings, graphql_session, os2sync_client = unpack_context(context=context)
+    now = datetime.datetime.now().astimezone(tz.gettz("Europe/Copenhagen"))
+    settings: Settings = context["user_context"]["settings"]
+    graphql_session: AsyncClientSession = context["graphql_session"]
+    os2sync_client: OS2SyncClient = context["user_context"]["os2sync_client"]
 
-    try:
-        e_uuid = await get_engagement_employee_uuid(graphql_session, uuid)
-    except ValueError:
-        logger.debug(f"Event registered but no engagement found with {uuid=}")
-        return
-
-    if e_uuid:
-        sts_users = await get_sts_user(
-            e_uuid, gql_session=graphql_session, settings=settings
+    # TODO: Get past,present and future states of the event-engagement
+    engagement_timeline = await get_engagement_timeline(graphql_session, uuid)
+    if len(engagement_timeline) < 1:
+        logger.warn(
+            f"Unable to update engagement, could not find present+futures for: {uuid}"
         )
-        os2sync_client.update_users(e_uuid, sts_users)
-        logger.info(f"Synced user to fk-org: {e_uuid}")
         return
 
-    logger.warn(f"Unable to update ituser, could not find owners for: {uuid}")
+    # Get engagement employee UUID
+    # QUESTION: should we use a certain timeline element and not just default to the first element?
+    employee_uuid = F[0]["employee_uuid"]
+    if not employee_uuid:
+        logger.warn(f"Unable to update engagement, could not find employee for: {uuid}")
+        return
+
+    # Get ITUsers with engagements for the employee - an employee can have more fk-org-users defined this way
+    e_it_users = await get_user_it_accounts(
+        gql_session=graphql_session,
+        mo_uuid=employee_uuid,
+        from_date=now.date(),
+    )
+    e_it_users_with_engagements = list(
+        filter(lambda u: u["engagement"] and len(u["engagement"]) > 0, e_it_users)
+    )
+
+    # LEGACY: Employee has no itusers with engagements
+    if len(e_it_users_with_engagements) < 0:
+        for eng in engagement_timeline:
+            os2sync_user = await create_os2sync_user_from_fk_org_account(
+                settings,
+                now,
+                UUID(employee_uuid),
+                {
+                    "uuid": employee_uuid,
+                    "user_key": eng["user_key"],  # ?? should it be the employee-uuid ??
+                    "engagement_uuid": eng["uuid"],
+                },
+            )
+
+            os2sync_client.os2sync_post("{BASE}/user", json=os2sync_user)
+            logger.info(f"Synced user to fk-org: {os2sync_user}")
+        return
+
+    # NEW LOGIC - we treat it-users as the engagements we want to sync with os2sync
+
+    fk_org_accounts = extract_fk_org_accounts_from_it_users(e_it_users, settings)
+    if len(fk_org_accounts) < 1:
+        # NOTE: in this scope we have the state: engagement-event, from an engagement not specified
+        # through itusers, BUT the employee have itusers with engagements
+        pass
+
+        # for eng in engagements_present_future:
+        #     fk_org_accounts.append(
+        #         {
+        #             "uuid": employee_uuid,
+        #             "user_key": None,  # TODO: Figure out if we need to set this to anything
+        #             "engagement_uuid": eng["uuid"],
+        #         }
+        #     )
+
+    # TODO: Create os2sync-user from fk-org accounts
+    for fk_org_acc in fk_org_accounts:
+        os2sync_user = await create_os2sync_user_from_fk_org_account(
+            settings, now, UUID(employee_uuid), fk_org_acc
+        )
+
+        os2sync_client.os2sync_post("{BASE}/user", json=os2sync_user)
+        logger.info(f"Synced user to fk-org: {os2sync_user}")
+
+    raise Exception(
+        "TMP exception for dev - force AMQP to re-schedule event when iteration is done"
+    )
+
+    # --------------------------------------------------------------------------------
+    #     # os2sync_users = [
+    #     #     get_sts_user_raw(
+    #     #         uuid=employee_uuid,
+    #     #         settings=settings,
+    #     #         fk_org_uuid=fk_org_acc["uuid"],
+    #     #         engagement_uuid=fk_org_acc["engagement_uuid"]
+    #     #     )
+    #     #     for fk_org_acc in fk_org_accounts
+    #     # ]
+
+    #     # for e_it_user in employee_it_users:
+    #     #     # employee_it_users_engagements = await get_engagement_employee_uuid(e_it_user['uuid'])
+    #     #     tap="test"
+
+    #     # TODO: Replace below, old, logic with above, new, logic.
+    #     sts_users = await get_sts_user(
+    #         e_uuid, gql_session=graphql_session, settings=settings
+    #     )
+    #     os2sync_client.update_users(sts_users)
+    #     logger.info(f"Synced user to fk-org: {e_uuid}")
+    #     return
+
+    # logger.warn(f"Unable to update ituser, could not find owners for: {uuid}")
 
 
 @amqp_router.register("kle")

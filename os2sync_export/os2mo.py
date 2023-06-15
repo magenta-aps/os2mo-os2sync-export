@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+import datetime
 import logging
 from functools import lru_cache
 from operator import itemgetter
@@ -298,8 +299,10 @@ def get_sts_user_raw(
     engagements = os2mo_get(
         "{BASE}/e/" + uuid + "/details/engagement?calculate_primary=true"
     ).json()
+
     if engagement_uuid:
         engagements = filter(lambda e: e["uuid"] == engagement_uuid, engagements)
+
     allowed_unitids = org_unit_uuids(
         root=settings.os2sync_top_unit_uuid,
         hierarchy_uuids=get_org_unit_hierarchy(settings.os2sync_filter_hierarchy_names),
@@ -309,12 +312,14 @@ def get_sts_user_raw(
     if not sts_user["Positions"]:
         # return immediately because users with no engagements are not synced.
         return None
+
     if settings.os2sync_uuid_from_it_systems:
         overwrite_position_uuids(sts_user, settings.os2sync_uuid_from_it_systems)
 
     addresses = os2mo_get("{BASE}/e/" + uuid + "/details/address").json()
     if engagement_uuid is not None:
         addresses = filter(lambda a: a["engagement_uuid"] == engagement_uuid, addresses)
+
     addresses_to_user(
         sts_user,
         addresses=addresses,
@@ -342,24 +347,33 @@ def group_accounts(
     """Groups it accounts by their associated engagement"""
     # Find all unique engagement_uuids
     engagement_uuids = {u["engagement_uuid"] for u in users}
+
     # Find relevant it-systems containing user_keys
     user_keys = list(
         filter(lambda x: x["itsystem"]["name"] == user_key_it_system_name, users)
     )
+
     # Find relevant it-systems containing uuids
     uuids = list(filter(lambda x: x["itsystem"]["name"] in uuid_from_it_systems, users))
     fk_org_accounts = []
+
     # Find uuid and user_key for each engagement.
     for eng_uuid in engagement_uuids:
+        # Find fk-org user-id
         uuid = only(u["user_key"] for u in uuids if u["engagement_uuid"] == eng_uuid)
+
+        #
         user_key = only(
             u["user_key"] for u in user_keys if u["engagement_uuid"] == eng_uuid
         )
+
         fk_org_accounts.append(
             {"engagement_uuid": eng_uuid, "uuid": uuid, "user_key": user_key}
         )
+
     if fk_org_accounts == []:
         return [{"engagement_uuid": None, "uuid": None, "user_key": None}]
+
     return fk_org_accounts
 
 
@@ -611,18 +625,29 @@ def get_sts_orgunit(uuid: str, settings) -> Optional[OrgUnit]:
 
 
 async def get_user_it_accounts(
-    gql_session: AsyncClientSession, mo_uuid: str
+    gql_session: AsyncClientSession, mo_uuid: str, from_date: datetime.date = None
 ) -> List[Dict]:
     """Find fk-org user(s) details for the person with given MO uuid"""
     q = gql(
         """
-    query GetITAccounts($uuids: [UUID!]) {
-        employees(uuids: $uuids) {
+    query GetITAccounts($uuids: [UUID!], $from_date: DateTime) {
+        employees(uuids: $uuids, from_date: $from_date) {
             objects {
               itusers {
                 uuid
                 user_key
+
                 engagement_uuid
+                engagement {
+                  uuid
+                  user_key
+                  type
+                  validity {
+                    from
+                    to
+                  }
+                }
+
                 itsystem {
                   name
                 }
@@ -632,7 +657,12 @@ async def get_user_it_accounts(
         }
     """
     )
-    res = await gql_session.execute(q, variable_values={"uuids": mo_uuid})
+
+    q_vars = {"uuids": mo_uuid}
+    if from_date:
+        q_vars["from_date"] = from_date.isoformat()
+
+    res = await gql_session.execute(q, variable_values=q_vars)
     objects = one(res["employees"])["objects"]
     return one(objects)["itusers"]
 
@@ -737,8 +767,43 @@ async def get_manager_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UU
     return org_unit_uuid
 
 
-async def get_engagement_employee_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
-    """Finds an employee UUID from engagement UUID."""
+async def get_engagement_timeline(
+    gql_session: AsyncClientSession, engagement_uuid: UUID
+) -> str:
+    """Get all past, present and futures states of an engagements."""
+
+    q = gql(
+        """
+    query GetEngagementPresentAndFuture($uuids: [UUID!]) {
+        engagements(uuids: $uuids, from_date: null, to_date: null) {
+            objects {
+                uuid
+                user_key
+                employee_uuid
+
+                validity {
+                    from
+                    to
+                } 
+            } 
+        }
+    }
+    """
+    )
+
+    result = await gql_session.execute(
+        q,
+        variable_values={
+            "uuids": str(engagement_uuid),
+        },
+    )
+    return one(result["engagements"])["objects"]
+
+
+async def get_engagement_employee_uuid(
+    gql_session: AsyncClientSession, mo_uuid: UUID
+) -> str:
+    """Finds, present, employee UUID from engagement UUID."""
 
     q = gql(
         """
@@ -789,3 +854,178 @@ async def get_kle_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
     objects = one(result["kles"])["objects"]
     org_unit_uuid = extract_uuid(objects, "org_unit_uuid")
     return org_unit_uuid
+
+
+async def get_employee(gql_session: AsyncClientSession, employee_uuid: UUID):
+    """Get all past, present and futures states of an engagements."""
+
+    q = gql(
+        """
+    query GetEmployee($uuids: [UUID!]) {
+        employees(uuids: $uuids) {
+            objects {
+              uuid
+              user_key
+              cpr_no
+              seniority
+              nickname_givenname
+              nickname_surname
+            }
+          }
+        }
+    """
+    )
+
+    result = await gql_session.execute(
+        q,
+        variable_values={
+            "uuids": str(employee_uuid),
+        },
+    )
+    return one(one(result["engagements"])["objects"])
+
+
+async def get_employee_engagements(
+    gql_session: AsyncClientSession, employee_uuid: UUID
+):
+    q = gql(
+        """
+    query GetEmployee($uuids: [UUID!]) {
+        employees(uuids: $uuids, from_date: null, to_date: null) {
+            objects {
+              uuid
+              user_key
+              cpr_no
+              seniority
+              nickname_givenname
+              nickname_surname
+
+              engagements {
+                uuid
+                user_key
+                fraction
+                leave_uuid
+                primary_uuid
+              }
+            }
+          }
+        }
+    """
+    )
+
+    result = await gql_session.execute(
+        q,
+        variable_values={
+            "uuids": str(employee_uuid),
+        },
+    )
+    return one(one(result["engagements"])["objects"])
+
+
+def extract_fk_org_accounts_from_it_users(it_users: List[Dict], settings: Settings):
+    """Extracts "fk-org-accounts" from a list of it-users.
+
+    NOTE: ITUsers does not directly translate 1:1 to an fk-org-account, since
+    the fk-org-account UUID is located in one it-user, and the USER_KEY, in another.
+    """
+    # Find all unique engagement UUIDs across all the ITUsers
+    it_user_engagements = [one(u["engagement"]) for u in it_users]
+    it_user_engagement_uuids_unique = {u["uuid"] for u in it_user_engagements}
+
+    # Find fk_org_account UUID & USER_KEY
+    it_user_fk_org_uuids = list(
+        filter(
+            lambda x: x["itsystem"]["name"] in settings.os2sync_uuid_from_it_systems,
+            it_users,
+        )
+    )
+    it_user_fk_org_user_keys = list(
+        filter(
+            lambda x: x["itsystem"]["name"] == settings.os2sync_user_key_it_system_name,
+            it_users,
+        )
+    )
+
+    # Combine unique engagements with the found fk_org_account UUIDs + USER_KEYs
+    fk_org_accounts = []
+    for eng_uuid in it_user_engagement_uuids_unique:
+        fk_org_uuid = only(
+            u["user_key"]
+            for u in it_user_fk_org_uuids
+            if one(u["engagement"])["uuid"] == eng_uuid
+        )
+
+        fk_org_user_key = only(
+            u["user_key"]
+            for u in it_user_fk_org_user_keys
+            if one(u["engagement"])["uuid"] == eng_uuid
+        )
+
+        fk_org_accounts.append(
+            {
+                "uuid": fk_org_uuid,
+                "user_key": fk_org_user_key,
+                "engagement_uuid": eng_uuid,
+            }
+        )
+
+    return fk_org_accounts
+
+
+async def create_os2sync_user_from_fk_org_account(
+    settings: Settings,
+    gql_session: AsyncClientSession,
+    dt: datetime.datetime,
+    employee_uuid: UUID,
+    fk_org_account: dict,
+):
+    # TODO: Check if the engagement is active or not
+    # (active = from_date not in future)
+    active = True
+
+    # Create base for "os2sync_user"
+    # employee = os2mo_get("{BASE}/e/" + employee_uuid + "/").json()
+    employee = await get_employee(gql_session, employee_uuid)
+    os2sync_user = User(
+        dict(
+            uuid=fk_org_account["uuid"],
+            candidate_user_id=fk_org_account["user_key"],
+            person=Person(employee, settings=settings),
+        ),
+        settings=settings,
+    )
+    os2sync_user_dict = os2sync_user.to_json()
+
+    # Get fkorg_acc employee engagements
+    # employee_engagements = os2mo_get(
+    #     "{BASE}/e/" + str(employee_uuid) + "/details/engagement?calculate_primary=true"
+    # ).json()
+    employee_engagements = await get_engagement_timeline(
+        gql_session,
+    )
+
+    if fk_org_account["engagement_uuid"]:
+        employee_engagements = filter(
+            lambda e: e["uuid"] == fk_org_account["engagement_uuid"],
+            employee_engagements,
+        )
+
+    allowed_unitids = org_unit_uuids(
+        root=settings.os2sync_top_unit_uuid,
+        hierarchy_uuids=get_org_unit_hierarchy(settings.os2sync_filter_hierarchy_names),
+    )
+
+    for e in sorted(
+        employee_engagements, key=lambda e: e["job_function"]["name"] + e["uuid"]
+    ):
+        if e["org_unit"]["uuid"] in allowed_unitids:
+            os2sync_user_dict["Positions"].append(
+                {
+                    "OrgUnitUuid": e["org_unit"]["uuid"],
+                    "Name": e["job_function"]["name"],
+                    # Only used to find primary engagements work-address
+                    "is_primary": e["is_primary"],
+                }
+            )
+
+    tap = "test"
