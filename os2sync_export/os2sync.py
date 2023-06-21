@@ -139,10 +139,14 @@ class OS2SyncClient:
         existing_os2sync_users = {UUID(u["Uuid"]) for u in hierarchy["Users"]}
         return existing_os2sync_org_units, existing_os2sync_users
 
-    def update_users(self, users):
+    def update_users(self, uuid: UUID, users):
         for user in users:
             if user:
                 self.os2sync_post("{BASE}/user", json=user)
+
+        # If the users uuid is overwritten from an it-account we need to ensure no user exists with the old uuid.
+        if not any(uuid == UUID(user["Uuid"]) for user in users):
+            self.delete_user(uuid)
 
     def update_org_unit(self, uuid: UUID, org_unit: Optional[OrgUnit]):
         if org_unit:
