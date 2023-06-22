@@ -145,7 +145,7 @@ class OS2SyncClient:
                 self.os2sync_post("{BASE}/user", json=user)
 
         # If the users uuid is overwritten from an it-account we need to ensure no user exists with the old uuid.
-        if not any(uuid == UUID(user["Uuid"]) for user in users):
+        if not any(uuid == UUID(user["Uuid"]) for user in users if user):
             self.delete_user(uuid)
 
     def update_org_unit(self, uuid: UUID, org_unit: Optional[OrgUnit]):
