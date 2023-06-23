@@ -169,7 +169,7 @@ python-versions = "*"
 
 [[package]]
 name = "fastapi"
-version = "0.97.0"
+version = "0.98.0"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 category = "main"
 optional = false
@@ -1029,7 +1029,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "3.11.*"
-content-hash = "93b57fe1bfd6bc2afc7b8061fb6663b59335221b9310a878d3d93be3b9f87ab7"
+content-hash = "37181491c590bcf73b7afa4aeac5bba4b669f630399f1b35dc117b23cc7bea9b"
 
 [metadata.files]
 aio-pika = [
@@ -1303,8 +1303,8 @@ distlib = [
     {file = "distlib-0.3.6.tar.gz", hash = "sha256:14bad2d9b04d3a36127ac97f30b12a19268f211063d8f8ee4f47108896e11b46"},
 ]
 fastapi = [
-    {file = "fastapi-0.97.0-py3-none-any.whl", hash = "sha256:95d757511c596409930bd20673358d4a4d709004edb85c5d24d6ffc48fabcbf2"},
-    {file = "fastapi-0.97.0.tar.gz", hash = "sha256:b53248ee45f64f19bb7600953696e3edf94b0f7de94df1e5433fc5c6136fa986"},
+    {file = "fastapi-0.98.0-py3-none-any.whl", hash = "sha256:f4165fb1fe3610c52cb1b8282c1480de9c34bc270f56a965aa93a884c350d605"},
+    {file = "fastapi-0.98.0.tar.gz", hash = "sha256:0d3c18886f652038262b5898fec6b09f4ca92ee23e9d9b1d1d24e429f84bf27b"},
 ]
 fastramqpi = [
     {file = "fastramqpi-1.4.3-py3-none-any.whl", hash = "sha256:bce229ead5d3105e72880a88fe6a0c845f557a7a27396880351425d7303982d9"},
