@@ -43,12 +43,6 @@ class OS2SyncClient:
         url = url.format(BASE=self.settings.os2sync_api_url)
         return url
 
-    @retry(
-        wait=wait_fixed(5),
-        reraise=True,
-        stop=stop_after_delay(10 * 60),
-        retry=retry_if_exception_type(requests.HTTPError),
-    )
     def os2sync_get(self, url, **params) -> Dict:
         url = self.os2sync_url(url)
         r = self.session.get(url, params=params)
