@@ -4,8 +4,6 @@
 from unittest.mock import patch
 from uuid import uuid4
 
-import pytest
-
 from os2sync_export.os2mo import get_sts_orgunit
 
 top_level_uuid = str(uuid4())
@@ -19,6 +17,8 @@ class MockUnitWParent:
 
 @patch("os2sync_export.os2mo.os2mo_get", return_value=MockUnitWParent())
 @patch("os2sync_export.os2mo.is_ignored", return_value=False)
-def test_get_sts_orgunit(mock_os2mo_get, ignored_mock, mock_settings):
-    with pytest.raises(ValueError):
-        get_sts_orgunit("test", settings=mock_settings)
+def test_get_sts_orgunit_not_under_top_level(
+    mock_os2mo_get, ignored_mock, mock_settings
+):
+    res = get_sts_orgunit("test", settings=mock_settings)
+    assert res is None

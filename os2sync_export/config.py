@@ -24,7 +24,7 @@ class Settings(FastRAMQPISettings, JobSettings):
     # os2sync:
     os2sync_top_unit_uuid: UUID
     os2sync_api_url: AnyHttpUrl | Literal["stub"] = cast(
-        AnyHttpUrl, "http://localhost:8081/api"
+        AnyHttpUrl, "http://os2sync:5000/api"
     )
 
     os2sync_xfer_cpr: bool = False
