@@ -297,6 +297,15 @@ def test_manager_to_orgunit_vacant():
     assert manager_uuid is None
 
 
+def test_manager_to_orgunit_multiple_managers():
+    with patch("os2sync_export.os2mo.os2mo_get") as session_mock:
+        person_uuids = [uuid4(), uuid4()]
+        managers = [{"person": {"uuid": uuid}} for uuid in person_uuids]
+        session_mock.return_value = MockOs2moGet(managers)
+        manager_uuid = manager_to_orgunit("org_unit_uuid")
+    assert manager_uuid in person_uuids
+
+
 def test_orgunit_model():
     sts_org_unit = {"Uuid": uuid4(), "Name": "Test", "ParentOrgUnitUuid": uuid4()}
     assert OrgUnit(**sts_org_unit)
