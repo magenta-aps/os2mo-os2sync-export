@@ -19,10 +19,6 @@ from more_itertools import first
 from more_itertools import one
 from more_itertools import only
 from ra_utils.headers import TokenSettings
-from tenacity import retry
-from tenacity import retry_if_exception_type
-from tenacity import stop_after_delay
-from tenacity import wait_exponential
 
 from os2sync_export.config import get_os2sync_settings
 from os2sync_export.config import Settings
@@ -32,7 +28,6 @@ from os2sync_export.templates import Person
 from os2sync_export.templates import User
 
 logger = logging.getLogger(__name__)
-retry_max_time = 60
 
 
 def get_mo_session():
@@ -117,13 +112,6 @@ def strip_truncate_and_warn(d, root, length):
                 )
 
 
-@lru_cache
-@retry(
-    reraise=True,
-    wait=wait_exponential(multiplier=1, min=4, max=10),
-    stop=stop_after_delay(retry_max_time),
-    retry=retry_if_exception_type(requests.HTTPError),
-)
 def os2mo_get(url, **params):
     # format url like {BASE}/service
     mo_url = get_os2sync_settings().mo_url
@@ -407,7 +395,6 @@ def organization_uuid() -> str:
     return one(os2mo_get("{BASE}/o/").json())["uuid"]
 
 
-@lru_cache
 def org_unit_uuids(**kwargs: Any) -> Set[str]:
     org_uuid = organization_uuid()
     hierarchy_uuids = kwargs.get("hierarchy_uuids")
@@ -623,11 +610,6 @@ def get_sts_orgunit(uuid: str, settings) -> Optional[OrgUnit]:
     return OrgUnit(**sts_org_unit)
 
 
-@retry(
-    reraise=True,
-    wait=wait_exponential(multiplier=1, min=4, max=10),
-    stop=stop_after_delay(retry_max_time),
-)
 async def get_user_it_accounts(
     gql_session: AsyncClientSession, mo_uuid: str
 ) -> List[Dict]:
