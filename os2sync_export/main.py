@@ -87,6 +87,7 @@ async def amqp_trigger_employee(
 async def amqp_trigger_org_unit(context: Context, uuid: PayloadUUID, _: RateLimit):
     settings, _, os2sync_client = unpack_context(context=context)
 
+    sts_org_unit = None
     try:
         sts_org_unit = get_sts_orgunit(str(uuid), settings=settings)
     except ValueError:
