@@ -20,6 +20,7 @@ from more_itertools import one
 from more_itertools import only
 from ra_utils.headers import TokenSettings
 from tenacity import retry
+from tenacity import retry_if_exception_type
 from tenacity import stop_after_delay
 from tenacity import wait_exponential
 
@@ -121,6 +122,7 @@ def strip_truncate_and_warn(d, root, length):
     reraise=True,
     wait=wait_exponential(multiplier=1, min=4, max=10),
     stop=stop_after_delay(retry_max_time),
+    retry=retry_if_exception_type(requests.HTTPError),
 )
 def os2mo_get(url, **params):
     # format url like {BASE}/service
@@ -129,6 +131,8 @@ def os2mo_get(url, **params):
     url = url.format(BASE=f"{mo_url}/service")
     session = get_mo_session()
     r = session.get(url, params=params)
+    if r.status_code == 404:
+        raise ValueError("No object found with this uuid")
     r.raise_for_status()
     return r
 
