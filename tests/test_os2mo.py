@@ -26,7 +26,6 @@ from os2sync_export.os2mo import is_ignored
 from os2sync_export.os2mo import kle_to_orgunit
 from os2sync_export.os2mo import manager_to_orgunit
 from os2sync_export.os2mo import org_unit_uuids
-from os2sync_export.os2mo import os2mo_get
 from os2sync_export.os2mo import overwrite_position_uuids
 from os2sync_export.os2mo import overwrite_unit_uuids
 from os2sync_export.os2mo import partition_kle
@@ -219,8 +218,6 @@ class TestsMOAd(unittest.TestCase):
 @given(st.tuples(st.uuids()))
 def test_org_unit_uuids(root_mock, hierarchy_uuids):
     session_mock = MagicMock()
-    os2mo_get.cache_clear()
-    org_unit_uuids.cache_clear()
     with patch("os2sync_export.os2mo.os2mo_get") as session_mock:
         session_mock.return_value = MockOs2moGet({"items": [{"uuid": "test"}]})
         org_unit_uuids(hierarchy_uuids=hierarchy_uuids)
@@ -234,8 +231,6 @@ def test_org_unit_uuids(root_mock, hierarchy_uuids):
 
 @patch("os2sync_export.os2mo.organization_uuid", return_value="root_uuid")
 def test_get_org_unit_hierarchy(root_mock):
-    os2mo_get.cache_clear()
-
     with patch(
         "os2sync_export.os2mo.os2mo_get",
         return_value=MockOs2moGet(

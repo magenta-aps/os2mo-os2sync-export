@@ -11,9 +11,6 @@ from gql.client import AsyncClientSession
 from more_itertools import flatten
 from ra_utils.asyncio_utils import gather_with_concurrency
 from ra_utils.tqdm_wrapper import tqdm
-from tenacity import retry
-from tenacity import retry_if_exception_type
-from tenacity import stop_after_attempt
 
 from os2sync_export import os2mo
 from os2sync_export.config import Settings
@@ -127,12 +124,6 @@ async def read_all_users(
     return res
 
 
-# Retry in case the connection to fk-org is down
-@retry(
-    reraise=True,
-    stop=stop_after_attempt(5),
-    retry=retry_if_exception_type(ConnectionError),
-)
 async def main(settings: Settings, gql_session, os2sync_client):
     log_mox_config(settings)
 
