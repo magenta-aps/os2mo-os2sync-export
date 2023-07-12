@@ -75,6 +75,9 @@ class OS2SyncClient:
         return r
 
     def delete_orgunit(self, uuid: UUID):
+        if uuid == self.settings.os2sync_top_unit_uuid:
+            logger.error("Received event to delete top_unit_uuid - ignoring.")
+            return
         logger.info("delete orgunit %s", uuid)
         self.os2sync_delete("{BASE}/orgUnit/" + str(uuid))
 
