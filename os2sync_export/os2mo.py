@@ -652,6 +652,14 @@ def show_all_details(uuid, objtyp):
     print(" ---- end of details ----\n")
 
 
+def extract_uuid(objects, obj_type) -> str | None:
+    """Extracts uuids of employees or org_units
+    When querying eg. addresses we get a list of changes to that address.
+    We need to extract the uuid of the employee or org_unit, assuming they do not change.
+    """
+    return only(set(o.get(obj_type) for o in objects if o.get(obj_type)))
+
+
 async def get_address_org_unit_and_employee_uuids(
     gql_session: AsyncClientSession, mo_uuid: UUID
 ):
@@ -681,14 +689,8 @@ async def get_address_org_unit_and_employee_uuids(
         },
     )
     objects = one(result["addresses"])["objects"]
-    # If there are changes to an address we get a list for each change.
-    # We need to extract the uuid of the employee or org_unit, assuming they do not change.
-    employee_uuid = only(
-        set(o.get("employee_uuid") for o in objects if o.get("employee_uuid"))
-    )
-    org_unit_uuid = only(
-        set(o.get("org_unit_uuid") for o in objects if o.get("org_unit_uuid"))
-    )
+    employee_uuid = extract_uuid(objects, "employee_uuid")
+    org_unit_uuid = extract_uuid(objects, "org_unit_uuid")
     return org_unit_uuid, employee_uuid
 
 
