@@ -680,9 +680,16 @@ async def get_address_org_unit_and_employee_uuids(
             "uuids": mo_uuid_str,
         },
     )
-
-    addr = one(one(result["addresses"])["objects"])
-    return addr.get("org_unit_uuid"), addr.get("employee_uuid")
+    objects = one(result["addresses"])["objects"]
+    # If there are changes to an address we get a list for each change.
+    # We need to extract the uuid of the employee or org_unit, assuming they do not change.
+    employee_uuid = only(
+        set(o.get("employee_uuid") for o in objects if o.get("employee_uuid"))
+    )
+    org_unit_uuid = only(
+        set(o.get("org_unit_uuid") for o in objects if o.get("org_unit_uuid"))
+    )
+    return org_unit_uuid, employee_uuid
 
 
 async def get_ituser_org_unit_and_employee_uuids(

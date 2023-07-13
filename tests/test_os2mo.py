@@ -331,7 +331,11 @@ async def test_get_address_org_unit_and_employee_uuids():
                     {
                         "org_unit_uuid": str(ou_uuid_mock),
                         "employee_uuid": str(e_uuid_mock),
-                    }
+                    },
+                    {
+                        "org_unit_uuid": str(ou_uuid_mock),
+                        "employee_uuid": str(e_uuid_mock),
+                    },
                 ]
             }
         ]
