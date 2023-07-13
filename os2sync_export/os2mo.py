@@ -637,19 +637,12 @@ async def get_user_it_accounts(
     return one(objects)["itusers"]
 
 
-def show_all_details(uuid, objtyp):
-    import pprint
-
-    print(" ---- details ----\n")
-    for d, has_detail in (
-        os2mo_get("{BASE}/" + objtyp + "/" + uuid + "/details").json().items()
-    ):
-        if has_detail:
-            print("------------ detail ---- " + d)
-            pprint.pprint(
-                os2mo_get("{BASE}/" + objtyp + "/" + uuid + "/details/" + d).json()
-            )
-    print(" ---- end of details ----\n")
+def extract_uuid(objects, obj_type) -> str | None:
+    """Extracts uuids of employees or org_units
+    When querying eg. addresses we get a list of changes to that address.
+    We need to extract the uuid of the employee or org_unit, assuming they do not change.
+    """
+    return only(set(o.get(obj_type) for o in objects if o.get(obj_type)))
 
 
 async def get_address_org_unit_and_employee_uuids(
@@ -680,9 +673,10 @@ async def get_address_org_unit_and_employee_uuids(
             "uuids": mo_uuid_str,
         },
     )
-
-    addr = one(one(result["addresses"])["objects"])
-    return addr.get("org_unit_uuid"), addr.get("employee_uuid")
+    objects = one(result["addresses"])["objects"]
+    employee_uuid = extract_uuid(objects, "employee_uuid")
+    org_unit_uuid = extract_uuid(objects, "org_unit_uuid")
+    return org_unit_uuid, employee_uuid
 
 
 async def get_ituser_org_unit_and_employee_uuids(
@@ -710,8 +704,10 @@ async def get_ituser_org_unit_and_employee_uuids(
         },
     )
 
-    res = one(one(result["itusers"])["objects"])
-    return res.get("org_unit_uuid"), res.get("employee_uuid")
+    objects = one(result["itusers"])["objects"]
+    employee_uuid = extract_uuid(objects, "employee_uuid")
+    org_unit_uuid = extract_uuid(objects, "org_unit_uuid")
+    return org_unit_uuid, employee_uuid
 
 
 async def get_manager_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
@@ -736,8 +732,9 @@ async def get_manager_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UU
         },
     )
 
-    res = one(one(result["managers"])["objects"])
-    return res.get("org_unit_uuid")
+    objects = one(result["managers"])["objects"]
+    org_unit_uuid = extract_uuid(objects, "org_unit_uuid")
+    return org_unit_uuid
 
 
 async def get_engagement_employee_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
@@ -762,8 +759,9 @@ async def get_engagement_employee_uuid(gql_session: AsyncClientSession, mo_uuid:
         },
     )
 
-    res = one(one(result["engagements"])["objects"])
-    return res.get("employee_uuid")
+    objects = one(result["engagements"])["objects"]
+    employee_uuid = extract_uuid(objects, "employee_uuid")
+    return employee_uuid
 
 
 async def get_kle_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
@@ -788,5 +786,6 @@ async def get_kle_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
         },
     )
 
-    res = one(one(result["kles"])["objects"])
-    return res.get("org_unit_uuid")
+    objects = one(result["kles"])["objects"]
+    org_unit_uuid = extract_uuid(objects, "org_unit_uuid")
+    return org_unit_uuid

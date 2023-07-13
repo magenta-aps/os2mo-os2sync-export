@@ -331,7 +331,11 @@ async def test_get_address_org_unit_and_employee_uuids():
                     {
                         "org_unit_uuid": str(ou_uuid_mock),
                         "employee_uuid": str(e_uuid_mock),
-                    }
+                    },
+                    {
+                        "org_unit_uuid": str(ou_uuid_mock),
+                        "employee_uuid": str(e_uuid_mock),
+                    },
                 ]
             }
         ]
@@ -366,7 +370,11 @@ async def test_get_ituser_org_unit_and_employee_uuids():
                         {
                             "org_unit_uuid": str(ou_uuid_mock),
                             "employee_uuid": str(e_uuid_mock),
-                        }
+                        },
+                        {
+                            "org_unit_uuid": str(ou_uuid_mock),
+                            "employee_uuid": str(e_uuid_mock),
+                        },
                     ]
                 }
             ]
@@ -399,7 +407,10 @@ async def test_get_manager_org_unit_uuid():
                 "objects": [
                     {
                         "org_unit_uuid": str(ou_uuid_mock),
-                    }
+                    },
+                    {
+                        "org_unit_uuid": str(ou_uuid_mock),
+                    },
                 ]
             }
         ]
@@ -448,7 +459,10 @@ async def test_get_engagement_employee_uuid():
                     "objects": [
                         {
                             "employee_uuid": str(e_uuid_mock),
-                        }
+                        },
+                        {
+                            "employee_uuid": str(e_uuid_mock),
+                        },
                     ]
                 }
             ]
@@ -481,7 +495,10 @@ async def test_get_kle_org_unit_uuid():
                     "objects": [
                         {
                             "org_unit_uuid": str(ou_uuid_mock),
-                        }
+                        },
+                        {
+                            "org_unit_uuid": str(ou_uuid_mock),
+                        },
                     ]
                 }
             ]
