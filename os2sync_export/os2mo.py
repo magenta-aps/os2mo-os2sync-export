@@ -637,21 +637,6 @@ async def get_user_it_accounts(
     return one(objects)["itusers"]
 
 
-def show_all_details(uuid, objtyp):
-    import pprint
-
-    print(" ---- details ----\n")
-    for d, has_detail in (
-        os2mo_get("{BASE}/" + objtyp + "/" + uuid + "/details").json().items()
-    ):
-        if has_detail:
-            print("------------ detail ---- " + d)
-            pprint.pprint(
-                os2mo_get("{BASE}/" + objtyp + "/" + uuid + "/details/" + d).json()
-            )
-    print(" ---- end of details ----\n")
-
-
 def extract_uuid(objects, obj_type) -> str | None:
     """Extracts uuids of employees or org_units
     When querying eg. addresses we get a list of changes to that address.
