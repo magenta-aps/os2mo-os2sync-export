@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 import logging
+from datetime import date
 from functools import lru_cache
 from operator import itemgetter
 from typing import Any
@@ -377,17 +378,18 @@ async def get_sts_user(
         logger.warn(f"Unable to map uuid/user_keys from it-systems for {mo_uuid=}.")
         fk_org_accounts = [{"engagement_uuid": None, "uuid": None, "user_key": None}]
 
-    sts_users = [
-        get_sts_user_raw(
-            mo_uuid,
+    # Create os2sync users for each fk_org_account
+    return [
+        await create_os2sync_user(
             settings=settings,
-            fk_org_uuid=it["uuid"],
+            gql_session=gql_session,
+            employee_uuid=UUID(mo_uuid),
+            fk_org_uuid=UUID(it["uuid"]) if it["uuid"] else None,
             user_key=it["user_key"],
             engagement_uuid=it["engagement_uuid"],
         )
         for it in fk_org_accounts
     ]
-    return sts_users
 
 
 @lru_cache()
@@ -616,7 +618,7 @@ async def get_user_it_accounts(
     """Find fk-org user(s) details for the person with given MO uuid"""
     q = gql(
         """
-    query GetITAccounts($uuids: [UUID!]) {
+    query GetEmployeeITAccounts($uuids: [UUID!]) {
         employees(uuids: $uuids) {
             objects {
               itusers {
@@ -632,6 +634,7 @@ async def get_user_it_accounts(
         }
     """
     )
+
     res = await gql_session.execute(q, variable_values={"uuids": mo_uuid})
     objects = one(res["employees"])["objects"]
     return one(objects)["itusers"]
@@ -789,3 +792,183 @@ async def get_kle_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
     objects = one(result["kles"])["objects"]
     org_unit_uuid = extract_uuid(objects, "org_unit_uuid")
     return org_unit_uuid
+
+
+async def get_employee(
+    gql_session: AsyncClientSession,
+    uuid: UUID,
+    include_addresses: bool = False,
+    include_engagements: bool = False,
+    **validity_kwargs,
+) -> List[Dict[str, Any]]:
+    q = gql(
+        """
+    query GetEmployeeEngagements(
+        $uuids: [UUID!],
+        $from_date: DateTime,
+        $to_date: DateTime,
+        $include_addresses: Boolean = false,
+        $include_engagements: Boolean = false,
+    ) {
+        employees(uuids: $uuids, from_date: $from_date, to_date: $to_date) {
+            objects {
+                uuid
+                name
+                user_key
+                cpr_no
+                seniority
+                nickname_givenname
+                nickname_surname
+                validity {
+                    from
+                    to
+                }
+
+                addresses @include(if: $include_addresses) {
+                    uuid
+                    name
+                    user_key
+                    validity {
+                        from
+                        to
+                    }
+                }
+                engagements @include(if: $include_engagements) {
+                    uuid
+                    user_key
+                    is_primary
+                    validity {
+                        from
+                        to
+                    }
+
+                    engagement_type {
+                        uuid
+                        name
+                        user_key
+                    }
+
+                    job_function {
+                        uuid
+                        name
+                        user_key
+                    }
+
+                    org_unit {
+                        uuid
+                        name
+                        validity {
+                            from
+                            to
+                        }
+                    }
+                }
+            }
+        }
+    }
+    """
+    )
+
+    query_vars = {
+        "uuids": str(uuid),
+        "include_addresses": include_addresses,
+        "include_engagements": include_engagements,
+    }
+
+    if "from_date" in validity_kwargs:
+        from_date: date = validity_kwargs["from_date"]
+        query_vars["from_date"] = from_date.isoformat() if from_date else None
+
+    if "to_date" in validity_kwargs:
+        to_date: date = validity_kwargs["to_date"]
+        query_vars["to_date"] = from_date.isoformat() if to_date else None
+
+    # Execute & return
+    result = await gql_session.execute(
+        q,
+        variable_values=query_vars,
+    )
+
+    return one(result["employees"])["objects"]
+
+
+async def create_os2sync_user(
+    settings: Settings,
+    gql_session: AsyncClientSession,
+    employee_uuid: UUID,
+    fk_org_uuid: Optional[UUID] = None,
+    user_key: Optional[str] = None,
+    engagement_uuid: Optional[str] = None,
+):
+    if settings.os2sync_filter_users_by_it_system and user_key is None:
+        # Skip user if filter is activated and there are no user_key to find in settings
+        # By returning user without any positions it will be removed from fk-org
+        return None
+
+    allowed_unitids = org_unit_uuids(
+        root=settings.os2sync_top_unit_uuid,
+        hierarchy_uuids=get_org_unit_hierarchy(settings.os2sync_filter_hierarchy_names),
+    )
+
+    # Get employee and related data - for all of time
+    employee_versions = await get_employee(
+        gql_session,
+        employee_uuid,
+        include_addresses=True,
+        include_engagements=True,
+        from_date=None,
+        to_date=None,
+    )
+
+    # HACK: Use FIRST employee-version, and "employee.engagements[].org_unit", if there are multiple versions
+    # TODO: Figure out we if need to find the closest version to NOW(), or if the first-hack is enoguh.
+    employee = first(employee_versions)
+    for eng in employee["engagements"]:
+        eng["org_unit"] = first(eng["org_unit"])
+
+    # Filter the employee data on engagement_uuid if given
+    if engagement_uuid:
+        employee["engagements"] = filter(
+            lambda e: e["uuid"] == engagement_uuid, employee["engagements"]
+        )
+        employee["addresses"] = filter(
+            lambda a: a["engagement_uuid"] == engagement_uuid, employee["addresses"]
+        )
+
+    # Create os2sync-user
+    os2sync_user = User(
+        dict(
+            uuid=str(fk_org_uuid or employee_uuid),
+            candidate_user_id=user_key,
+            person=Person(employee, settings=settings),
+        ),
+        settings=settings,
+    ).to_json()
+
+    engagements_to_user(os2sync_user, employee["engagements"], allowed_unitids)
+    if not os2sync_user["Positions"]:
+        # return immediately because users with no engagements are not synced.
+        return None
+
+    if settings.os2sync_uuid_from_it_systems:
+        overwrite_position_uuids(os2sync_user, settings.os2sync_uuid_from_it_systems)
+
+    addresses_to_user(
+        os2sync_user,
+        addresses=employee["addresses"],
+        phone_scope_classes=settings.os2sync_phone_scope_classes,
+        landline_scope_classes=settings.os2sync_landline_scope_classes,
+        email_scope_classes=settings.os2sync_email_scope_classes,
+    )
+
+    # Optionally find the work address of employees primary engagement.
+    work_address_names = settings.os2sync_employee_engagement_address
+    if os2sync_user["Positions"] and work_address_names:
+        os2sync_user["Location"] = get_work_address(
+            os2sync_user["Positions"], work_address_names
+        )
+
+    truncate_length = max(36, settings.os2sync_truncate_length)
+    strip_truncate_and_warn(os2sync_user, os2sync_user, length=truncate_length)
+
+    return os2sync_user
