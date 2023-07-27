@@ -132,18 +132,19 @@ async def test_get_sts_user(
 
 
 @pytest.mark.asyncio
-@patch("os2sync_export.os2mo.get_sts_user_raw")
+@patch("os2sync_export.os2mo.create_os2sync_user")
 async def test_get_sts_user_no_it_accounts(
-    get_sts_user_raw_mock, mock_settings: Settings
+    create_os2sync_user_mock, mock_settings: Settings
 ):
     """Test that users without it-accounts creates one fk-org account"""
     gql_mock = AsyncMock()
     gql_mock.execute.return_value = {"employees": [{"objects": [{"itusers": []}]}]}
 
     await get_sts_user(mo_uuid=mo_uuid, gql_session=gql_mock, settings=mock_settings)
-    get_sts_user_raw_mock.assert_called_once_with(
-        mo_uuid,
+    create_os2sync_user_mock.assert_called_once_with(
         settings=mock_settings,
+        gql_session=ANY,
+        employee_uuid=UUID(mo_uuid),
         fk_org_uuid=None,
         user_key=None,
         engagement_uuid=None,
