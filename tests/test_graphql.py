@@ -2,9 +2,11 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 from typing import Callable
+from unittest.mock import ANY
 from unittest.mock import AsyncMock
 from unittest.mock import call
 from unittest.mock import patch
+from uuid import UUID
 from uuid import uuid4
 
 import pytest
@@ -85,9 +87,9 @@ def test_group_by_engagement():
 
 
 @pytest.mark.asyncio
-@patch("os2sync_export.os2mo.get_sts_user_raw")
+@patch("os2sync_export.os2mo.create_os2sync_user")
 async def test_get_sts_user(
-    get_sts_user_raw_mock, set_settings: Callable[..., Settings]
+    create_os2sync_user_mock, set_settings: Callable[..., Settings]
 ):
     gql_mock = AsyncMock()
     gql_mock.execute.return_value = {
@@ -99,31 +101,34 @@ async def test_get_sts_user(
     )
     await get_sts_user(mo_uuid=mo_uuid, gql_session=gql_mock, settings=settings)
 
-    assert len(get_sts_user_raw_mock.call_args_list) == 3
+    assert len(create_os2sync_user_mock.call_args_list) == 3
     for c in [
         call(
-            mo_uuid,
             settings=settings,
-            fk_org_uuid=fk_org_uuid_1,
+            gql_session=ANY,
+            employee_uuid=UUID(mo_uuid),
+            fk_org_uuid=UUID(fk_org_uuid_1),
             user_key=fk_org_user_key_1,
             engagement_uuid=engagement_uuid1,
         ),
         call(
-            mo_uuid,
             settings=settings,
-            fk_org_uuid=fk_org_uuid_2,
+            gql_session=ANY,
+            employee_uuid=UUID(mo_uuid),
+            fk_org_uuid=UUID(fk_org_uuid_2),
             user_key=fk_org_user_key_2,
             engagement_uuid=engagement_uuid2,
         ),
         call(
-            mo_uuid,
             settings=settings,
-            fk_org_uuid=fk_org_uuid_3,
+            gql_session=ANY,
+            employee_uuid=UUID(mo_uuid),
+            fk_org_uuid=UUID(fk_org_uuid_3),
             user_key=None,
             engagement_uuid=None,
         ),
     ]:
-        assert c in get_sts_user_raw_mock.call_args_list
+        assert c in create_os2sync_user_mock.call_args_list
 
 
 @pytest.mark.asyncio
