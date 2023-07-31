@@ -187,11 +187,14 @@ def engagements_to_user(user, engagements, allowed_unitids, use_extension_field=
             user["Positions"].append(
                 {
                     "OrgUnitUuid": e.get("org_unit").get("uuid"),
-                    "Name": e.get("extension_3") if use_extension_field else e.get("job_function").get("name"),
+                    "Name": e.get("extension_3")
+                    if use_extension_field
+                    else e.get("job_function").get("name"),
                     # Only used to find primary engagements work-address
                     "is_primary": e.get("is_primary"),
                 }
             )
+
 
 def try_get_it_user_key(uuid: str, user_key_it_system_name) -> Optional[str]:
     """
