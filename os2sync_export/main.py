@@ -113,7 +113,11 @@ async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: RateLimit
         return
 
     if ou_uuid:
-        sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+        try:
+            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+        except ValueError:
+            logger.info("Related org_unit not found")
+            return
         os2sync_client.update_org_unit(ou_uuid, sts_org_unit)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
         return
@@ -145,7 +149,11 @@ async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit
         return
 
     if ou_uuid:
-        sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+        try:
+            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+        except ValueError:
+            logger.info("Related org_unit not found")
+            return
         os2sync_client.update_org_unit(ou_uuid, sts_org_unit)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
         return
@@ -172,7 +180,11 @@ async def amqp_trigger_manager(context: Context, uuid: PayloadUUID, _: RateLimit
         return
 
     if ou_uuid:
-        sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+        try:
+            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+        except ValueError:
+            logger.info("Related org_unit not found")
+            return
         os2sync_client.update_org_unit(ou_uuid, sts_org_unit)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
         return
@@ -207,7 +219,11 @@ async def amqp_trigger_kle(context: Context, uuid: PayloadUUID, _: RateLimit):
 
     ou_uuid = await get_kle_org_unit_uuid(graphql_session, uuid)
     if ou_uuid:
-        sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+        try:
+            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+        except ValueError:
+            logger.info("Related org_unit not found")
+            return
         os2sync_client.update_org_unit(ou_uuid, sts_org_unit)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
         return
@@ -240,9 +256,13 @@ async def trigger_orgunit(
     uuid: UUID,
 ) -> str:
     context: dict[str, Any] = request.app.state.context
-    sts_org_unit = get_sts_orgunit(
-        str(uuid), settings=context["user_context"]["settings"]
-    )
+    try:
+        sts_org_unit = get_sts_orgunit(
+            str(uuid), settings=context["user_context"]["settings"]
+        )
+    except ValueError:
+        logger.info("Org_unit not found")
+        return "Org_unit not found"
     os2sync_client: OS2SyncClient = context["user_context"]["os2sync_client"]
     os2sync_client.update_org_unit(uuid, sts_org_unit)
     logger.info(f"Synced org_unit to fk-org: {uuid}")
