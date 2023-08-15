@@ -179,7 +179,7 @@ def engagements_to_user(user, engagements, allowed_unitids, use_extension_field=
     key_to_sort_by = (
         lambda e: (e.get("extension_3") + e.get("uuid"))
         if use_extension_field
-        else lambda e: (e.get("job_function").get("name") + e.get("uuid"))
+        else (e.get("job_function").get("name") + e.get("uuid"))
     )
 
     for e in sorted(engagements, key=key_to_sort_by):
