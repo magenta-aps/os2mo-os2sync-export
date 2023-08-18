@@ -176,20 +176,19 @@ def engagements_to_user(user, engagements, allowed_unitids, use_extension_field=
         True - if wanting to be overriden with "extension_3".
         False - if wanting to display "job_function".
     """
-    key_to_sort_by = (
-        lambda e: (e.get("extension_3") + e.get("uuid"))
-        if use_extension_field
-        else (e.get("job_function").get("name") + e.get("uuid"))
-    )
+    for e in engagements:
+        e["job_function"] = (
+            e.get("extension_3")
+            if use_extension_field and e.get("extension_3")
+            else e.get("job_function").get("name")
+        )
 
-    for e in sorted(engagements, key=key_to_sort_by):
+    for e in sorted(engagements, key=lambda e: (e["job_function"] + e.get("uuid"))):
         if e.get("org_unit").get("uuid") in allowed_unitids:
             user["Positions"].append(
                 {
                     "OrgUnitUuid": e.get("org_unit").get("uuid"),
-                    "Name": e.get("extension_3")
-                    if use_extension_field
-                    else e.get("job_function").get("name"),
+                    "Name": e.get("job_function"),
                     # Only used to find primary engagements work-address
                     "is_primary": e.get("is_primary"),
                 }
