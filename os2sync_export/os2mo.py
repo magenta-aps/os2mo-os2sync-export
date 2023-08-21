@@ -122,6 +122,17 @@ def os2mo_get(url, **params):
     if r.status_code == 404:
         raise ValueError("No object found with this uuid")
     r.raise_for_status()
+
+    try:
+        # Log every query and response, but remove CPR numbers
+        # this is wraped in try/except to avoid blocking the program by trying to log unexpected data
+        res = r.json()
+        if isinstance(res, dict) and res.get("cpr_no"):
+            res.update({"cpr_no": "removed from logs"})
+            logger.debug(f"os2mo_get {url=} returned {res=}")
+    except:  # noqa: E722
+        pass
+
     return r
 
 
