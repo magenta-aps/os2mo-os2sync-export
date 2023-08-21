@@ -129,7 +129,7 @@ def os2mo_get(url, **params):
         res = r.json()
         if isinstance(res, dict) and res.get("cpr_no"):
             res.update({"cpr_no": "removed from logs"})
-            logger.debug(f"os2mo_get {url=} returned {res=}")
+        logger.debug(f"os2mo_get {url=} returned {res=}")
     except:  # noqa: E722
         pass
 
