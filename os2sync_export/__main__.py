@@ -139,8 +139,6 @@ async def main(settings: Settings, gql_session, os2sync_client):
         os2sync_client.upsert_org_unit(org_unit)
 
     existing_os2sync_org_units, existing_os2sync_users = os2sync_client.get_hierarchy(
-        os2sync_client,
-        os2sync_api_url=settings.os2sync_api_url,
         request_uuid=request_uuid,
     )
 
