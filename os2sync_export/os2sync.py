@@ -123,7 +123,7 @@ class OS2SyncClient:
         stop=stop_after_delay(10 * 60),
         retry=retry_if_exception_type(requests.HTTPError),
     )
-    def get_hierarchy(self, str, request_uuid: UUID) -> Tuple[Set[UUID], Set[UUID]]:
+    def get_hierarchy(self, request_uuid: UUID) -> Tuple[Set[UUID], Set[UUID]]:
         """Fetches the hierarchy from os2sync. Retries for 10 minutes until it is ready."""
         r = self.session.get(
             f"{self.settings.os2sync_api_url}/hierarchy/{str(request_uuid)}"
