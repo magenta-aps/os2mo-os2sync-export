@@ -25,7 +25,7 @@ uvicorn = "^0.23.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.3.2"
-pre-commit = "^3.2.2"
+pre-commit = "^3.4.0"
 
 [tool.poetry.group.dev.dependencies]
 hypothesis = "^6.75.3"
