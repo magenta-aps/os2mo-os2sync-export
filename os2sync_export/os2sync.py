@@ -102,6 +102,7 @@ class OS2SyncClient:
         org_unit.ContactOpenHours = (
             org_unit.ContactOpenHours or current.ContactOpenHours
         )
+        org_unit.SOR = org_unit.SOR or current.SOR
 
         logger.info(f"Syncing org_unit {org_unit}")
 
