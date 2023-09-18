@@ -75,12 +75,11 @@ async def amqp_trigger_employee(
             gql_session=graphql_session,
             settings=settings,
         )
+        os2sync_client.update_users(uuid, sts_users)
+        logger.info(f"Synced user to fk-org: {uuid=}")
     except ValueError:
-        logger.info(f"Event registered but person was found with {uuid=}")
         os2sync_client.delete_user(uuid)
-
-    os2sync_client.update_users(uuid, sts_users)
-    logger.info(f"Synced user to fk-org: {uuid=}")
+        logger.info(f"Deleted user from fk-org {uuid=}")
 
 
 @amqp_router.register("org_unit")
