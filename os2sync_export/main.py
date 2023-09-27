@@ -75,11 +75,12 @@ async def amqp_trigger_employee(
             gql_session=graphql_session,
             settings=settings,
         )
-        os2sync_client.update_users(uuid, sts_users)
-        logger.info(f"Synced user to fk-org: {uuid=}")
+        logger.debug(sts_users)
     except ValueError:
         os2sync_client.delete_user(uuid)
-        logger.info(f"Deleted user from fk-org {uuid=}")
+        logger.info(f"No fk-org user was found for {uuid=}. Deleting from fk-org")
+    else:
+        os2sync_client.update_users(uuid, sts_users)
 
 
 @amqp_router.register("org_unit")
@@ -126,8 +127,6 @@ async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: RateLimit
             e_uuid, gql_session=graphql_session, settings=settings
         )
         os2sync_client.update_users(e_uuid, sts_users)
-
-        logger.info(f"Synced user to fk-org: {e_uuid}")
         return
 
     logger.warn(
@@ -162,7 +161,6 @@ async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit
             e_uuid, gql_session=graphql_session, settings=settings
         )
         os2sync_client.update_users(e_uuid, sts_users)
-        logger.info(f"Synced user to fk-org: {e_uuid}")
         return
 
     logger.warn(f"Unable to update ituser, could not find owners for: {uuid}")
@@ -206,7 +204,6 @@ async def amqp_trigger_engagement(context: Context, uuid: PayloadUUID, _: RateLi
             e_uuid, gql_session=graphql_session, settings=settings
         )
         os2sync_client.update_users(e_uuid, sts_users)
-        logger.info(f"Synced user to fk-org: {e_uuid}")
         return
 
     logger.warn(f"Unable to update ituser, could not find owners for: {uuid}")
