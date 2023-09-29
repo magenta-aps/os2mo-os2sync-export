@@ -154,6 +154,13 @@ async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit
             return
         os2sync_client.update_org_unit(ou_uuid, sts_org_unit)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
+
+        # If the uuid is overwritten from an it-account we need to ensure no org_unit exists with the old uuid.
+        if sts_org_unit and str(ou_uuid) != str(sts_org_unit.Uuid):
+            logger.info(
+                f"Delete org_unit with {ou_uuid=} from fk-org to as the uuid was overwritten by an it-account"
+            )
+            os2sync_client.delete_orgunit(ou_uuid)
         return
 
     if e_uuid:
@@ -161,6 +168,13 @@ async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit
             e_uuid, gql_session=graphql_session, settings=settings
         )
         os2sync_client.update_users(e_uuid, sts_users)
+
+        # If the users uuid is overwritten from an it-account we need to ensure no user exists with the old uuid.
+        if not any(str(e_uuid) == str(user["Uuid"]) for user in sts_users if user):
+            logger.info(
+                f"Delete user with {e_uuid=} from fk-org to as the uuid was overwritten by an it-account"
+            )
+            os2sync_client.delete_user(e_uuid)
         return
 
     logger.warn(f"Unable to update ituser, could not find owners for: {uuid}")

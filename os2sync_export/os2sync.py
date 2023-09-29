@@ -142,13 +142,6 @@ class OS2SyncClient:
                 logger.info(f"Syncing user {user['Uuid']=} to fk-org")
                 self.os2sync_post("{BASE}/user", json=user)
 
-        # If the users uuid is overwritten from an it-account we need to ensure no user exists with the old uuid.
-        if not any(str(uuid) == str(user["Uuid"]) for user in users if user):
-            logger.info(
-                f"Delete user with {uuid=} from fk-org to as the uuid was overwritten by an it-account"
-            )
-            self.delete_user(uuid)
-
     def update_org_unit(self, uuid: UUID, org_unit: Optional[OrgUnit]):
         if org_unit:
             self.upsert_org_unit(org_unit)
