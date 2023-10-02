@@ -16,20 +16,53 @@ from os2sync_export.os2sync_models import OrgUnit
     "os2sync_export.main.get_ituser_org_unit_and_employee_uuids",
     return_value=(None, uuid4()),
 )
-async def test_trigger_it_user_update(get_mock, mock_context):
-    """Test react to it-event and update user"""
+async def test_trigger_it_user_delete(get_mock, mock_context):
+    """Test delete terminated user
+    Test that if no fk-org user was found for the triggered user it is deleted from fk-org
+    """
     settings, graphql_session, os2sync_client = unpack_context(context=mock_context)
-
+    # MO persons uuid
     user_uuid = get_mock.return_value[1]
+    # Fk-org users for this person - None
+    fk_org_users = []
     with patch(
-        "os2sync_export.main.get_sts_user", return_value=[{"Uuid": user_uuid}]
+        "os2sync_export.main.get_sts_user", return_value=fk_org_users
     ) as get_user_mock:
         await amqp_trigger_it_user(mock_context, uuid4(), None)
     get_mock.assert_awaited_once()
     get_user_mock.assert_called_once_with(
         user_uuid, gql_session=graphql_session, settings=settings
     )
-    os2sync_client.delete_user.assert_not_called
+    assert os2sync_client.update_users.called_once_with(user_uuid, fk_org_users)
+    os2sync_client.delete_user.called_once_with(user_uuid)
+
+
+@pytest.mark.asyncio
+@patch(
+    "os2sync_export.main.get_ituser_org_unit_and_employee_uuids",
+    return_value=(None, uuid4()),
+)
+async def test_trigger_it_user_update(get_mock, mock_context):
+    """Test react to it-event and update user
+
+    Test that we perform an update user (and not a delete) on events for a user
+    with one fk-org account found with uuid matching MOs
+    """
+    settings, graphql_session, os2sync_client = unpack_context(context=mock_context)
+    # MO persons uuid
+    user_uuid = get_mock.return_value[1]
+    # Fk-org users for this person - same uuid as i os2mo
+    fk_org_users = [{"Uuid": user_uuid}]
+    with patch(
+        "os2sync_export.main.get_sts_user", return_value=fk_org_users
+    ) as get_user_mock:
+        await amqp_trigger_it_user(mock_context, uuid4(), None)
+    get_mock.assert_awaited_once()
+    get_user_mock.assert_called_once_with(
+        user_uuid, gql_session=graphql_session, settings=settings
+    )
+    assert os2sync_client.update_users.called_once_with(user_uuid, fk_org_users)
+    os2sync_client.delete_user.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -38,17 +71,25 @@ async def test_trigger_it_user_update(get_mock, mock_context):
     return_value=(None, uuid4()),
 )
 async def test_trigger_it_user_delete_mo_uuid(get_mock, mock_context):
-    """Delete fk-org user with MO uuid if a uuid is overwritten from an IT-account"""
+    """Delete fk-org user with MO uuid if a uuid is overwritten from an IT-account
+
+    Tests that if the found it-account(s) has different uuids to MOs
+    the account with MOs uuid is deleted
+    """
     settings, graphql_session, os2sync_client = unpack_context(context=mock_context)
+    # MO persons uuid
     user_uuid = get_mock.return_value[1]
+    # Fk-org users for this person with uuids different from os2mo
+    fk_org_users = [{"Uuid": uuid4()}, {"Uuid": uuid4()}]
     with patch(
-        "os2sync_export.main.get_sts_user", return_value=[{"Uuid": uuid4()}]
+        "os2sync_export.main.get_sts_user", return_value=fk_org_users
     ) as get_user_mock:
         await amqp_trigger_it_user(mock_context, uuid4(), None)
     get_mock.assert_awaited_once()
     get_user_mock.assert_called_once_with(
         user_uuid, gql_session=graphql_session, settings=settings
     )
+    assert os2sync_client.update_users.called_once_with(user_uuid, fk_org_users)
     os2sync_client.delete_user.assert_called_with(user_uuid)
 
 
@@ -57,18 +98,45 @@ async def test_trigger_it_user_delete_mo_uuid(get_mock, mock_context):
     "os2sync_export.main.get_ituser_org_unit_and_employee_uuids",
     return_value=(uuid4(), None),
 )
-async def test_trigger_it_orgunit_update(get_mock, mock_context):
-    """Test react to it-event and update orgunit"""
+async def test_trigger_it_orgunit_delete(get_mock, mock_context):
+    """Test react to it-event and delete from fk-org if none were found"""
     settings, graphql_session, os2sync_client = unpack_context(context=mock_context)
 
     orgunit_uuid = get_mock.return_value[0]
+    fk_org_orggunit = None
     with patch(
-        "os2sync_export.main.get_sts_orgunit", return_value=OrgUnit(Uuid=uuid4())
+        "os2sync_export.main.get_sts_orgunit", return_value=fk_org_orggunit
     ) as get_user_mock:
         await amqp_trigger_it_user(mock_context, uuid4(), None)
     get_mock.assert_awaited_once()
     get_user_mock.assert_called_once_with(orgunit_uuid, settings)
-    os2sync_client.delete_orgunit.assert_not_called
+    os2sync_client.update_org_unit(orgunit_uuid, None)
+    os2sync_client.delete_orgunit.called_once_with(orgunit_uuid)
+
+
+@pytest.mark.asyncio
+@patch(
+    "os2sync_export.main.get_ituser_org_unit_and_employee_uuids",
+    return_value=(uuid4(), None),
+)
+async def test_trigger_it_orgunit_update(get_mock, mock_context):
+    """Test react to it-event and update orgunit
+
+    Tests that changes to an orgunits it-accounts leads to the orgunit being
+    updated (and not deleted) from fk-org
+    """
+    settings, graphql_session, os2sync_client = unpack_context(context=mock_context)
+
+    orgunit_uuid = get_mock.return_value[0]
+    fk_org_orggunit = OrgUnit(Uuid=orgunit_uuid)
+    with patch(
+        "os2sync_export.main.get_sts_orgunit", return_value=fk_org_orggunit
+    ) as get_user_mock:
+        await amqp_trigger_it_user(mock_context, uuid4(), None)
+    get_mock.assert_awaited_once()
+    get_user_mock.assert_called_once_with(orgunit_uuid, settings)
+    os2sync_client.update_org_unit(orgunit_uuid, fk_org_orggunit.json())
+    os2sync_client.delete_orgunit.assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -77,7 +145,11 @@ async def test_trigger_it_orgunit_update(get_mock, mock_context):
     return_value=(uuid4(), None),
 )
 async def test_trigger_it_orgunit_delete_mo_uuid(get_mock, mock_context):
-    """Delete fk-org org_unit with MO uuid if a uuid is overwritten from an IT-account"""
+    """Delete fk-org org_unit with MO uuid if a uuid is overwritten from an IT-account
+
+    Tests that if the found it-account(s) has different uuids to MOs
+    the account with MOs uuid is deleted
+    """
     settings, graphql_session, os2sync_client = unpack_context(context=mock_context)
     org_unit_uuid = get_mock.return_value[0]
     with patch(
