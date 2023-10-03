@@ -4,6 +4,8 @@
 from typing import Any
 from typing import Callable
 from typing import Generator
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -45,3 +47,11 @@ def mock_settings(
 ) -> Generator[Settings, None, None]:
     """Fixture to mock get_settings."""
     yield set_settings()
+
+
+@pytest.fixture()
+def mock_context():
+    return {
+        "user_context": {"settings": {}, "os2sync_client": MagicMock()},
+        "graphql_session": AsyncMock(),
+    }

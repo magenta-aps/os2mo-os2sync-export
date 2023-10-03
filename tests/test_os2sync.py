@@ -179,13 +179,14 @@ def test_update_users_one_overwritten_uuid_account(mock_settings):
         mock_os2sync_delete.assert_not_called()
 
 
-def test_update_users_deletes_overwritten_uuid_account(mock_settings):
+def test_update_users_overwritten_uuid_account(mock_settings):
     os2sync_client = OS2SyncClient(settings=mock_settings, session=MagicMock())
 
     with patch.object(os2sync_client, "os2sync_delete") as mock_os2sync_delete:
         users = [u2]
         os2sync_client.update_users(user_uuid, users)
-        mock_os2sync_delete.assert_called_once_with(f"{{BASE}}/user/{user_uuid}")
+        # Deleting overwritten uuid accounts happens on it-account events in main.py
+        mock_os2sync_delete.assert_not_called()
 
 
 def test_update_users_no_user(mock_settings):
