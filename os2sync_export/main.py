@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 import logging
-from typing import Any
 from typing import Dict
 from uuid import UUID
 
@@ -10,7 +9,6 @@ import sentry_sdk
 from fastapi import APIRouter
 from fastapi import BackgroundTasks
 from fastapi import FastAPI
-from fastapi import Request
 from fastramqpi.main import FastRAMQPI  # type: ignore
 from gql.client import AsyncClientSession
 from ramqp.depends import Context
@@ -51,14 +49,15 @@ async def index() -> Dict[str, str]:
 
 @fastapi_router.post("/trigger", status_code=202)
 async def trigger_all(
-    request: Request, background_tasks: BackgroundTasks
+    context: Context, background_tasks: BackgroundTasks
 ) -> Dict[str, str]:
-    context: dict[str, Any] = request.app.state.context
+    settings, graphql_session, os2sync_client = unpack_context(context=context)
+
     background_tasks.add_task(
         main,
-        settings=context["user_context"]["settings"],
-        gql_session=context["graphql_session"],
-        os2sync_client=context["user_context"]["os2sync_client"],
+        settings=settings,
+        gql_session=graphql_session,
+        os2sync_client=os2sync_client,
     )
     return {"triggered": "OK"}
 
@@ -243,16 +242,15 @@ async def amqp_trigger_kle(context: Context, uuid: PayloadUUID, _: RateLimit):
 
 @fastapi_router.post("/trigger/user/{uuid}")
 async def trigger_user(
-    request: Request,
+    context: Context,
     uuid: UUID,
 ) -> str:
-    context: dict[str, Any] = request.app.state.context
-    os2sync_client: OS2SyncClient = context["user_context"]["os2sync_client"]
+    settings, graphql_session, os2sync_client = unpack_context(context=context)
 
     sts_users = await get_sts_user(
         str(uuid),
-        gql_session=context["graphql_session"],
-        settings=context["user_context"]["settings"],
+        gql_session=graphql_session,
+        settings=settings,
     )
     os2sync_client.update_users(uuid, sts_users)
     logger.info(f"Synced user to fk-org: {uuid}")
@@ -262,18 +260,15 @@ async def trigger_user(
 
 @fastapi_router.post("/trigger/orgunit/{uuid}", status_code=200)
 async def trigger_orgunit(
-    request: Request,
+    context: Context,
     uuid: UUID,
 ) -> str:
-    context: dict[str, Any] = request.app.state.context
+    settings, _, os2sync_client = unpack_context(context=context)
     try:
-        sts_org_unit = get_sts_orgunit(
-            str(uuid), settings=context["user_context"]["settings"]
-        )
+        sts_org_unit = get_sts_orgunit(str(uuid), settings=settings)
     except ValueError:
         logger.info("Org_unit not found")
         return "Org_unit not found"
-    os2sync_client: OS2SyncClient = context["user_context"]["os2sync_client"]
     os2sync_client.update_org_unit(uuid, sts_org_unit)
     logger.info(f"Synced org_unit to fk-org: {uuid}")
     return "OK"
