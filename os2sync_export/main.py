@@ -10,7 +10,9 @@ from fastapi import APIRouter
 from fastapi import BackgroundTasks
 from fastapi import FastAPI
 from fastramqpi.main import FastRAMQPI  # type: ignore
+from gql import gql
 from gql.client import AsyncClientSession
+from more_itertools import one
 from ramqp.depends import Context
 from ramqp.depends import RateLimit
 from ramqp.mo import MORouter
@@ -84,14 +86,19 @@ async def amqp_trigger_employee(
 
 @amqp_router.register("org_unit")
 async def amqp_trigger_org_unit(context: Context, uuid: PayloadUUID, _: RateLimit):
-    settings, _, os2sync_client = unpack_context(context=context)
+    settings, graphql_session, os2sync_client = unpack_context(context=context)
 
     sts_org_unit = None
-    try:
-        sts_org_unit = get_sts_orgunit(str(uuid), settings=settings)
-    except ValueError:
-        logger.info(f"Event registered but no org_unit was found with {uuid=}")
-        os2sync_client.delete_orgunit(uuid)
+    if await is_relevant(
+        graphql_session,
+        uuid,
+        settings.os2sync_top_unit_uuid,
+    ):
+        try:
+            sts_org_unit = get_sts_orgunit(str(uuid), settings=settings)
+        except ValueError:
+            logger.info(f"Event registered but no org_unit was found with {uuid=}")
+            os2sync_client.delete_orgunit(uuid)
     if sts_org_unit is None:
         os2sync_client.delete_orgunit(uuid)
         return
@@ -111,7 +118,11 @@ async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: RateLimit
         logger.debug(f"No address found {uuid=}")
         return
 
-    if ou_uuid:
+    if ou_uuid and is_relevant(
+        graphql_session,
+        uuid,
+        settings.os2sync_top_unit_uuid,
+    ):
         try:
             sts_org_unit = get_sts_orgunit(ou_uuid, settings)
         except ValueError:
@@ -133,6 +144,40 @@ async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: RateLimit
     )
 
 
+async def is_relevant(
+    gql_session: AsyncClientSession,
+    unit_uuid: UUID,
+    top_unit_uuid: UUID,
+) -> bool:
+    if unit_uuid == top_unit_uuid:
+        return True
+    query = """
+    query MyQuery($uuids: [UUID!]) {
+        org_units(uuids: $uuids) {
+                current {
+                parent {
+                    uuid
+                }
+                }
+            }
+        }
+     """
+    res = await gql_session.execute(
+        gql(query), variable_values={"uuids": str(unit_uuid)}
+    )
+    if not res["org_units"]:
+        logger.warn("No unit found")
+        return False
+    parent = one(res["org_units"])["current"]["parent"]
+    if parent is None:
+        logger.debug
+        return False
+    else:
+        parent = UUID(parent["uuid"])
+
+    return await is_relevant(gql_session, parent, top_unit_uuid)
+
+
 @amqp_router.register("ituser")
 async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit):
     settings, graphql_session, os2sync_client = unpack_context(context=context)
@@ -145,7 +190,9 @@ async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit
         logger.debug(f"Event registered but no it-user found with {uuid=}")
         return
 
-    if ou_uuid:
+    if ou_uuid and await is_relevant(
+        graphql_session, ou_uuid, settings.os2sync_top_unit_uuid
+    ):
         try:
             sts_org_unit = get_sts_orgunit(ou_uuid, settings)
         except ValueError:
@@ -189,7 +236,11 @@ async def amqp_trigger_manager(context: Context, uuid: PayloadUUID, _: RateLimit
         logger.debug(f"Event registered but no manager found with {uuid=}")
         return
 
-    if ou_uuid:
+    if ou_uuid and await is_relevant(
+        graphql_session,
+        ou_uuid,
+        settings.os2sync_top_unit_uuid,
+    ):
         try:
             sts_org_unit = get_sts_orgunit(ou_uuid, settings)
         except ValueError:
@@ -227,7 +278,11 @@ async def amqp_trigger_kle(context: Context, uuid: PayloadUUID, _: RateLimit):
     settings, graphql_session, os2sync_client = unpack_context(context=context)
 
     ou_uuid = await get_kle_org_unit_uuid(graphql_session, uuid)
-    if ou_uuid:
+    if ou_uuid and await is_relevant(
+        graphql_session,
+        ou_uuid,
+        settings.os2sync_top_unit_uuid,
+    ):
         try:
             sts_org_unit = get_sts_orgunit(ou_uuid, settings)
         except ValueError:

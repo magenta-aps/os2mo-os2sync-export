@@ -52,6 +52,6 @@ def mock_settings(
 @pytest.fixture()
 def mock_context():
     return {
-        "user_context": {"settings": {}, "os2sync_client": MagicMock()},
+        "user_context": {"os2sync_client": MagicMock()},
         "graphql_session": AsyncMock(),
     }

@@ -16,12 +16,19 @@ from os2sync_export.os2sync_models import OrgUnit
     "os2sync_export.main.get_ituser_org_unit_and_employee_uuids",
     return_value=(None, uuid4()),
 )
-async def test_trigger_it_user_update(get_mock, mock_context):
+@patch(
+    "os2sync_export.main.is_relevant",
+    return_value=True,
+)
+async def test_trigger_it_user_update(
+    is_relevant_mock, get_mock, mock_context, mock_settings
+):
     """Test react to it-event and update user
 
     Test that we perform an update user (and not a delete) on events for a user
     with one fk-org account found with uuid matching MOs
     """
+    mock_context["user_context"]["settings"] = mock_settings
     settings, _, os2sync_client = unpack_context(context=mock_context)
     # MO persons uuid
     user_uuid = get_mock.return_value[1]
@@ -44,12 +51,19 @@ async def test_trigger_it_user_update(get_mock, mock_context):
     "os2sync_export.main.get_ituser_org_unit_and_employee_uuids",
     return_value=(None, uuid4()),
 )
-async def test_trigger_it_user_delete_mo_uuid(get_mock, mock_context):
+@patch(
+    "os2sync_export.main.is_relevant",
+    return_value=True,
+)
+async def test_trigger_it_user_delete_mo_uuid(
+    is_relevant_mock, get_mock, mock_context, mock_settings
+):
     """Delete fk-org user with MO uuid if a uuid is overwritten from an IT-account
 
     Tests that if the found it-account(s) has different uuids to MOs
     the account with MOs uuid is deleted
     """
+    mock_context["user_context"]["settings"] = mock_settings
     settings, _, os2sync_client = unpack_context(context=mock_context)
     # MO persons uuid
     user_uuid = get_mock.return_value[1]
@@ -72,12 +86,19 @@ async def test_trigger_it_user_delete_mo_uuid(get_mock, mock_context):
     "os2sync_export.main.get_ituser_org_unit_and_employee_uuids",
     return_value=(uuid4(), None),
 )
-async def test_trigger_it_orgunit_update(get_mock, mock_context):
+@patch(
+    "os2sync_export.main.is_relevant",
+    return_value=True,
+)
+async def test_trigger_it_orgunit_update(
+    is_relevant_mock, get_mock, mock_context, mock_settings
+):
     """Test react to it-event and update orgunit
 
     Tests that changes to an orgunits it-accounts leads to the orgunit being
     updated (and not deleted) from fk-org
     """
+    mock_context["user_context"]["settings"] = mock_settings
     settings, _, os2sync_client = unpack_context(context=mock_context)
 
     orgunit_uuid = get_mock.return_value[0]
@@ -99,12 +120,19 @@ async def test_trigger_it_orgunit_update(get_mock, mock_context):
     "os2sync_export.main.get_ituser_org_unit_and_employee_uuids",
     return_value=(uuid4(), None),
 )
-async def test_trigger_it_orgunit_delete_mo_uuid(get_mock, mock_context):
+@patch(
+    "os2sync_export.main.is_relevant",
+    return_value=True,
+)
+async def test_trigger_it_orgunit_delete_mo_uuid(
+    is_relevant_mock, get_mock, mock_context, mock_settings
+):
     """Delete fk-org org_unit with MO uuid if a uuid is overwritten from an IT-account
 
     Tests that if the found it-account(s) has different uuids to MOs
     the account with MOs uuid is deleted
     """
+    mock_context["user_context"]["settings"] = mock_settings
     settings, _, os2sync_client = unpack_context(context=mock_context)
     org_unit_uuid = get_mock.return_value[0]
     with patch(
