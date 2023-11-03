@@ -124,7 +124,7 @@ async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: RateLimit
         settings.os2sync_top_unit_uuid,
     ):
         try:
-            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+            sts_org_unit = get_sts_orgunit(str(ou_uuid), settings)
         except ValueError:
             logger.info("Related org_unit not found")
             return
@@ -194,7 +194,7 @@ async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit
         graphql_session, ou_uuid, settings.os2sync_top_unit_uuid
     ):
         try:
-            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+            sts_org_unit = get_sts_orgunit(str(ou_uuid), settings)
         except ValueError:
             logger.info("Related org_unit not found")
             return
@@ -242,7 +242,7 @@ async def amqp_trigger_manager(context: Context, uuid: PayloadUUID, _: RateLimit
         settings.os2sync_top_unit_uuid,
     ):
         try:
-            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+            sts_org_unit = get_sts_orgunit(str(ou_uuid), settings)
         except ValueError:
             logger.info("Related org_unit not found")
             return
@@ -284,7 +284,7 @@ async def amqp_trigger_kle(context: Context, uuid: PayloadUUID, _: RateLimit):
         settings.os2sync_top_unit_uuid,
     ):
         try:
-            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+            sts_org_unit = get_sts_orgunit(str(ou_uuid), settings)
         except ValueError:
             logger.info("Related org_unit not found")
             return
