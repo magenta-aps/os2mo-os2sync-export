@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+from unittest.mock import AsyncMock
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -8,6 +9,7 @@ import pytest
 
 from os2sync_export.main import amqp_trigger_it_user
 from os2sync_export.main import amqp_trigger_org_unit
+from os2sync_export.main import is_below_top_unit
 from os2sync_export.main import unpack_context
 from os2sync_export.os2sync_models import OrgUnit
 
@@ -50,14 +52,14 @@ async def test_trigger_it_user_update(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("is_relevant", (True, False))
+@pytest.mark.parametrize("is_below_top_unit", (True, False))
 @pytest.mark.parametrize("overwritten_uuid", (True, False))
 @patch(
     "os2sync_export.main.get_ituser_org_unit_and_employee_uuids",
     return_value=(uuid4(), None),
 )
 async def test_trigger_it_orgunit_update(
-    get_mock, overwritten_uuid, is_relevant, mock_context, mock_settings
+    get_mock, overwritten_uuid, is_below_top_unit, mock_context, mock_settings
 ):
     """Test react to it-event and update orgunit
 
@@ -74,12 +76,14 @@ async def test_trigger_it_orgunit_update(
     with patch(
         "os2sync_export.main.get_sts_orgunit", return_value=fk_org_orggunit
     ) as get_org_unit_mock:
-        with patch("os2sync_export.main.is_relevant", return_value=is_relevant):
+        with patch(
+            "os2sync_export.main.is_below_top_unit", return_value=is_below_top_unit
+        ):
             await amqp_trigger_it_user(mock_context, uuid4(), None)
 
     get_mock.assert_awaited_once()
 
-    if is_relevant:
+    if is_below_top_unit:
         get_org_unit_mock.assert_called_once_with(str(orgunit_uuid), settings)
         if overwritten_uuid:
             os2sync_client.delete_orgunit.assert_called_once_with(orgunit_uuid)
@@ -94,10 +98,10 @@ async def test_trigger_it_orgunit_update(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("is_relevant", (True, False))
+@pytest.mark.parametrize("is_below_top_unit", (True, False))
 @pytest.mark.parametrize("overwritten_uuid", (True, False))
 async def test_trigger_orgunit_update(
-    overwritten_uuid, is_relevant, mock_context, mock_settings
+    overwritten_uuid, is_below_top_unit, mock_context, mock_settings
 ):
     """Test react to orgunit event and update it"""
     mock_context["user_context"]["settings"] = mock_settings
@@ -110,10 +114,12 @@ async def test_trigger_orgunit_update(
     with patch(
         "os2sync_export.main.get_sts_orgunit", return_value=fk_org_orggunit
     ) as get_org_unit_mock:
-        with patch("os2sync_export.main.is_relevant", return_value=is_relevant):
+        with patch(
+            "os2sync_export.main.is_below_top_unit", return_value=is_below_top_unit
+        ):
             await amqp_trigger_org_unit(mock_context, orgunit_uuid, None)
 
-    if is_relevant:
+    if is_below_top_unit:
         get_org_unit_mock.assert_called_once_with(str(orgunit_uuid), settings=settings)
         os2sync_client.delete_orgunit.assert_not_called()
     else:
@@ -121,3 +127,38 @@ async def test_trigger_orgunit_update(
         os2sync_client.delete_orgunit.assert_called_once_with(orgunit_uuid)
     # Test that we call update_org_unit on events
     os2sync_client.update_org_unit(orgunit_uuid, fk_org_orggunit.json())
+
+
+@pytest.mark.asyncio
+async def test_is_below_top_unit():
+    unit_uuid = uuid4()
+    top_unit_uuid = uuid4()
+    gql_session_mock = AsyncMock()
+    gql_session_mock.execute.side_effect = [
+        {
+            "org_units": [
+                {
+                    "current": {
+                        "uuid": str(unit_uuid),
+                        "parent": {"uuid": str(top_unit_uuid)},
+                    }
+                }
+            ]
+        }
+    ]
+    assert await is_below_top_unit(
+        gql_session=gql_session_mock, unit_uuid=unit_uuid, top_unit_uuid=top_unit_uuid
+    )
+
+
+@pytest.mark.asyncio
+async def test_is_not_below_top_unit():
+    gql_session_mock = AsyncMock()
+    unit_uuid = uuid4()
+    top_unit_uuid = uuid4()
+    gql_session_mock.execute.side_effect = [
+        {"org_units": [{"current": {"uuid": str(unit_uuid), "parent": None}}]}
+    ]
+    assert not await is_below_top_unit(
+        gql_session=gql_session_mock, unit_uuid=unit_uuid, top_unit_uuid=top_unit_uuid
+    )

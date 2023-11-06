@@ -89,7 +89,7 @@ async def amqp_trigger_org_unit(context: Context, uuid: PayloadUUID, _: RateLimi
     settings, graphql_session, os2sync_client = unpack_context(context=context)
 
     sts_org_unit = None
-    if await is_relevant(
+    if await is_below_top_unit(
         graphql_session,
         uuid,
         settings.os2sync_top_unit_uuid,
@@ -118,7 +118,7 @@ async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: RateLimit
         logger.debug(f"No address found {uuid=}")
         return
 
-    if ou_uuid and is_relevant(
+    if ou_uuid and is_below_top_unit(
         graphql_session,
         uuid,
         settings.os2sync_top_unit_uuid,
@@ -144,11 +144,15 @@ async def amqp_trigger_address(context: Context, uuid: PayloadUUID, _: RateLimit
     )
 
 
-async def is_relevant(
+async def is_below_top_unit(
     gql_session: AsyncClientSession,
     unit_uuid: UUID,
     top_unit_uuid: UUID,
 ) -> bool:
+    """Checks whether an organisation unit is below the top unit.
+
+    This check is necessary because fk-org only supports one top level unit.
+    """
     if unit_uuid == top_unit_uuid:
         return True
     query = """
@@ -170,12 +174,11 @@ async def is_relevant(
         return False
     parent = one(res["org_units"])["current"]["parent"]
     if parent is None:
-        logger.debug
         return False
     else:
         parent = UUID(parent["uuid"])
 
-    return await is_relevant(gql_session, parent, top_unit_uuid)
+    return await is_below_top_unit(gql_session, parent, top_unit_uuid)
 
 
 @amqp_router.register("ituser")
@@ -190,7 +193,7 @@ async def amqp_trigger_it_user(context: Context, uuid: PayloadUUID, _: RateLimit
         logger.debug(f"Event registered but no it-user found with {uuid=}")
         return
 
-    if ou_uuid and await is_relevant(
+    if ou_uuid and await is_below_top_unit(
         graphql_session, ou_uuid, settings.os2sync_top_unit_uuid
     ):
         try:
@@ -236,7 +239,7 @@ async def amqp_trigger_manager(context: Context, uuid: PayloadUUID, _: RateLimit
         logger.debug(f"Event registered but no manager found with {uuid=}")
         return
 
-    if ou_uuid and await is_relevant(
+    if ou_uuid and await is_below_top_unit(
         graphql_session,
         ou_uuid,
         settings.os2sync_top_unit_uuid,
@@ -278,7 +281,7 @@ async def amqp_trigger_kle(context: Context, uuid: PayloadUUID, _: RateLimit):
     settings, graphql_session, os2sync_client = unpack_context(context=context)
 
     ou_uuid = await get_kle_org_unit_uuid(graphql_session, uuid)
-    if ou_uuid and await is_relevant(
+    if ou_uuid and await is_below_top_unit(
         graphql_session,
         ou_uuid,
         settings.os2sync_top_unit_uuid,
