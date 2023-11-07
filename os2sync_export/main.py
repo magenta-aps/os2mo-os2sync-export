@@ -153,18 +153,16 @@ async def is_below_top_unit(
 
     This check is necessary because fk-org only supports one top level unit.
     """
-    if unit_uuid == top_unit_uuid:
-        return True
     query = """
-    query MyQuery($uuids: [UUID!]) {
+    query QueryAncestors($uuids: [UUID!]) {
         org_units(uuids: $uuids) {
-                current {
-                parent {
-                    uuid
-                }
-                }
+            current {
+            ancestors {
+                uuid
+            }
             }
         }
+    }
      """
     res = await gql_session.execute(
         gql(query), variable_values={"uuids": str(unit_uuid)}
@@ -172,13 +170,11 @@ async def is_below_top_unit(
     if not res["org_units"]:
         logger.warn("No unit found")
         return False
-    parent = one(res["org_units"])["current"]["parent"]
-    if parent is None:
+    ancestors = one(res["org_units"])["current"]["ancestors"]
+    if ancestors is None:
         return False
     else:
-        parent = UUID(parent["uuid"])
-
-    return await is_below_top_unit(gql_session, parent, top_unit_uuid)
+        return top_unit_uuid in {UUID(a["uuid"]) for a in ancestors}
 
 
 @amqp_router.register("ituser")

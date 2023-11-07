@@ -139,8 +139,7 @@ async def test_is_below_top_unit():
             "org_units": [
                 {
                     "current": {
-                        "uuid": str(unit_uuid),
-                        "parent": {"uuid": str(top_unit_uuid)},
+                        "ancestors": [{"uuid": str(top_unit_uuid)}],
                     }
                 }
             ]
@@ -157,7 +156,7 @@ async def test_is_not_below_top_unit():
     unit_uuid = uuid4()
     top_unit_uuid = uuid4()
     gql_session_mock.execute.side_effect = [
-        {"org_units": [{"current": {"uuid": str(unit_uuid), "parent": None}}]}
+        {"org_units": [{"current": {"ancestors": [{"uuid": str(uuid4())}]}}]}
     ]
     assert not await is_below_top_unit(
         gql_session=gql_session_mock, unit_uuid=unit_uuid, top_unit_uuid=top_unit_uuid
