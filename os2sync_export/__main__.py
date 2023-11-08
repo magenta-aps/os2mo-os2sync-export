@@ -54,7 +54,7 @@ def read_all_org_units(settings) -> Dict[UUID, OrgUnit]:
 
     # Create os2sync payload for all org_units:
     org_units = (
-        os2mo.get_sts_orgunit(i, settings=settings) for i in os2mo_uuids_present
+        os2mo.get_sts_orgunit(UUID(i), settings=settings) for i in os2mo_uuids_present
     )
     # TODO: Check that only one org_unit has parent=None
 

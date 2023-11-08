@@ -435,8 +435,8 @@ def org_unit_uuids(**kwargs: Any) -> Set[str]:
     return set(map(itemgetter("uuid"), ous))
 
 
-def manager_to_orgunit(unit_uuid: str) -> Optional[str]:
-    manager = os2mo_get("{BASE}/ou/" + unit_uuid + "/details/manager").json()
+def manager_to_orgunit(unit_uuid: UUID) -> Optional[str]:
+    manager = os2mo_get("{BASE}/ou/" + str(unit_uuid) + "/details/manager").json()
     # Return None if the orgunit has no manager or if the manager-role is vacant
     match len(manager):
         case 0:
@@ -581,8 +581,8 @@ def overwrite_unit_uuids(sts_org_unit: Dict, os2sync_uuid_from_it_systems: List)
         )
 
 
-def get_sts_orgunit(uuid: str, settings) -> Optional[OrgUnit]:
-    base = parent = os2mo_get("{BASE}/ou/" + uuid + "/").json()
+def get_sts_orgunit(uuid: UUID, settings) -> Optional[OrgUnit]:
+    base = parent = os2mo_get("{BASE}/ou/" + str(uuid) + "/").json()
 
     if is_ignored(base, settings):
         logger.info("Ignoring %r", base)
@@ -600,7 +600,7 @@ def get_sts_orgunit(uuid: str, settings) -> Optional[OrgUnit]:
         )
         return None
 
-    sts_org_unit = {"ItSystems": [], "Name": base["name"], "Uuid": uuid}
+    sts_org_unit = {"ItSystems": [], "Name": base["name"], "Uuid": str(uuid)}
 
     if base.get("parent") and "uuid" in base["parent"]:
         sts_org_unit["ParentOrgUnitUuid"] = base["parent"]["uuid"]
@@ -609,12 +609,12 @@ def get_sts_orgunit(uuid: str, settings) -> Optional[OrgUnit]:
 
     itsystems_to_orgunit(
         sts_org_unit,
-        os2mo_get("{BASE}/ou/" + uuid + "/details/it").json(),
+        os2mo_get("{BASE}/ou/" + str(uuid) + "/details/it").json(),
         uuid_from_it_systems=settings.os2sync_uuid_from_it_systems,
     )
     addresses_to_orgunit(
         sts_org_unit,
-        os2mo_get("{BASE}/ou/" + uuid + "/details/address").json(),
+        os2mo_get("{BASE}/ou/" + str(uuid) + "/details/address").json(),
     )
 
     if settings.os2sync_sync_managers:
@@ -625,7 +625,7 @@ def get_sts_orgunit(uuid: str, settings) -> Optional[OrgUnit]:
     if has_kle():
         kle_to_orgunit(
             sts_org_unit,
-            os2mo_get("{BASE}/ou/" + uuid + "/details/kle").json(),
+            os2mo_get("{BASE}/ou/" + str(uuid) + "/details/kle").json(),
             use_contact_for_tasks=settings.os2sync_use_contact_for_tasks,
         )
 
