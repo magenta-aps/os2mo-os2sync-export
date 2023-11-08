@@ -95,7 +95,7 @@ async def test_trigger_it_orgunit_update(
     get_mock.assert_awaited_once()
 
     if is_below_top_unit:
-        get_org_unit_mock.assert_called_once_with(str(orgunit_uuid), mock_settings)
+        get_org_unit_mock.assert_called_once_with(orgunit_uuid, mock_settings)
         if overwritten_uuid:
             os2sync_client.delete_orgunit.assert_called_once_with(orgunit_uuid)
         else:
@@ -134,9 +134,7 @@ async def test_trigger_orgunit_update(
             )
 
     if is_below_top_unit:
-        get_org_unit_mock.assert_called_once_with(
-            str(orgunit_uuid), settings=mock_settings
-        )
+        get_org_unit_mock.assert_called_once_with(orgunit_uuid, settings=mock_settings)
         os2sync_client.delete_orgunit.assert_not_called()
     else:
         get_org_unit_mock.assert_not_called()

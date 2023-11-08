@@ -100,7 +100,7 @@ async def amqp_trigger_org_unit(
         settings.os2sync_top_unit_uuid,
     ):
         try:
-            sts_org_unit = get_sts_orgunit(str(uuid), settings=settings)
+            sts_org_unit = get_sts_orgunit(uuid, settings=settings)
         except ValueError:
             logger.info(f"Event registered but no org_unit was found with {uuid=}")
             os2sync_client.delete_orgunit(uuid)
@@ -134,7 +134,7 @@ async def amqp_trigger_address(
         settings.os2sync_top_unit_uuid,
     ):
         try:
-            sts_org_unit = get_sts_orgunit(str(ou_uuid), settings)
+            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
         except ValueError:
             logger.info("Related org_unit not found")
             return
@@ -207,7 +207,7 @@ async def amqp_trigger_it_user(
         graphql_session, ou_uuid, settings.os2sync_top_unit_uuid
     ):
         try:
-            sts_org_unit = get_sts_orgunit(str(ou_uuid), settings)
+            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
         except ValueError:
             logger.info("Related org_unit not found")
             return
@@ -259,7 +259,7 @@ async def amqp_trigger_manager(
         settings.os2sync_top_unit_uuid,
     ):
         try:
-            sts_org_unit = get_sts_orgunit(str(ou_uuid), settings)
+            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
         except ValueError:
             logger.info("Related org_unit not found")
             return
@@ -309,7 +309,7 @@ async def amqp_trigger_kle(
         settings.os2sync_top_unit_uuid,
     ):
         try:
-            sts_org_unit = get_sts_orgunit(str(ou_uuid), settings)
+            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
         except ValueError:
             logger.info("Related org_unit not found")
             return
@@ -346,7 +346,7 @@ async def trigger_orgunit(
     os2sync_client: OS2SyncClient_,
 ) -> str:
     try:
-        sts_org_unit = get_sts_orgunit(str(uuid), settings=settings)
+        sts_org_unit = get_sts_orgunit(uuid, settings=settings)
     except ValueError:
         logger.info("Org_unit not found")
         return "Org_unit not found"

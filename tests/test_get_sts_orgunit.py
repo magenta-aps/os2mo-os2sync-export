@@ -20,5 +20,5 @@ class MockUnitWParent:
 def test_get_sts_orgunit_not_under_top_level(
     mock_os2mo_get, ignored_mock, mock_settings
 ):
-    res = get_sts_orgunit("test", settings=mock_settings)
+    res = get_sts_orgunit(uuid4(), settings=mock_settings)
     assert res is None
