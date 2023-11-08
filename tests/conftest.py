@@ -5,7 +5,6 @@ from typing import Any
 from typing import Callable
 from typing import Generator
 from unittest.mock import AsyncMock
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -49,9 +48,13 @@ def mock_settings(
     yield set_settings()
 
 
-@pytest.fixture()
-def mock_context():
-    return {
-        "user_context": {"os2sync_client": MagicMock()},
-        "graphql_session": AsyncMock(),
-    }
+@pytest.fixture
+def graphql_session() -> Generator[AsyncMock, None, None]:
+    """Fixture for the GraphQL session."""
+    yield AsyncMock()
+
+
+@pytest.fixture
+def os2sync_client() -> Generator[AsyncMock, None, None]:
+    """Fixture for the ModelClient."""
+    yield AsyncMock()

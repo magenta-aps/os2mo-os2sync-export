@@ -10,7 +10,6 @@ import pytest
 from os2sync_export.main import amqp_trigger_it_user
 from os2sync_export.main import amqp_trigger_org_unit
 from os2sync_export.main import is_below_top_unit
-from os2sync_export.main import unpack_context
 from os2sync_export.os2sync_models import OrgUnit
 
 
@@ -21,15 +20,13 @@ from os2sync_export.os2sync_models import OrgUnit
     return_value=(None, uuid4()),
 )
 async def test_trigger_it_user_update(
-    get_mock, overwritten_uuid, mock_context, mock_settings
+    get_mock, overwritten_uuid, mock_settings, os2sync_client, graphql_session
 ):
     """Test react to it-event and update user
 
     Test that we perform an update user (and not a delete) on events for a user
     with one fk-org account found with uuid matching MOs
     """
-    mock_context["user_context"]["settings"] = mock_settings
-    settings, gql_session, os2sync_client = unpack_context(context=mock_context)
 
     # MO persons uuid
     _, user_uuid = get_mock.return_value
@@ -38,10 +35,16 @@ async def test_trigger_it_user_update(
     with patch(
         "os2sync_export.main.get_sts_user", return_value=fk_org_users
     ) as get_user_mock:
-        await amqp_trigger_it_user(mock_context, uuid4(), None)
+        await amqp_trigger_it_user(
+            uuid=uuid4(),
+            settings=mock_settings,
+            graphql_session=graphql_session,
+            os2sync_client=os2sync_client,
+            _=None,
+        )
     get_mock.assert_awaited_once()
     get_user_mock.assert_called_once_with(
-        user_uuid, gql_session=gql_session, settings=settings
+        user_uuid, gql_session=graphql_session, settings=mock_settings
     )
     # Test that we call update_user on events
     os2sync_client.update_users.assert_called_once_with(user_uuid, fk_org_users)
@@ -59,16 +62,18 @@ async def test_trigger_it_user_update(
     return_value=(uuid4(), None),
 )
 async def test_trigger_it_orgunit_update(
-    get_mock, overwritten_uuid, is_below_top_unit, mock_context, mock_settings
+    get_mock,
+    overwritten_uuid,
+    is_below_top_unit,
+    mock_settings,
+    os2sync_client,
+    graphql_session,
 ):
     """Test react to it-event and update orgunit
 
     Tests that changes to an orgunits it-accounts leads to the orgunit being
     updated (and not deleted) from fk-org
     """
-    mock_context["user_context"]["settings"] = mock_settings
-    settings, _, os2sync_client = unpack_context(context=mock_context)
-
     orgunit_uuid = get_mock.return_value[0]
     fk_org_orggunit = (
         OrgUnit(Uuid=uuid4()) if overwritten_uuid else OrgUnit(Uuid=orgunit_uuid)
@@ -79,12 +84,18 @@ async def test_trigger_it_orgunit_update(
         with patch(
             "os2sync_export.main.is_below_top_unit", return_value=is_below_top_unit
         ):
-            await amqp_trigger_it_user(mock_context, uuid4(), None)
+            await amqp_trigger_it_user(
+                uuid=uuid4(),
+                settings=mock_settings,
+                graphql_session=graphql_session,
+                os2sync_client=os2sync_client,
+                _=None,
+            )
 
     get_mock.assert_awaited_once()
 
     if is_below_top_unit:
-        get_org_unit_mock.assert_called_once_with(str(orgunit_uuid), settings)
+        get_org_unit_mock.assert_called_once_with(str(orgunit_uuid), mock_settings)
         if overwritten_uuid:
             os2sync_client.delete_orgunit.assert_called_once_with(orgunit_uuid)
         else:
@@ -101,12 +112,9 @@ async def test_trigger_it_orgunit_update(
 @pytest.mark.parametrize("is_below_top_unit", (True, False))
 @pytest.mark.parametrize("overwritten_uuid", (True, False))
 async def test_trigger_orgunit_update(
-    overwritten_uuid, is_below_top_unit, mock_context, mock_settings
+    overwritten_uuid, is_below_top_unit, mock_settings, os2sync_client, graphql_session
 ):
     """Test react to orgunit event and update it"""
-    mock_context["user_context"]["settings"] = mock_settings
-    settings, _, os2sync_client = unpack_context(context=mock_context)
-
     orgunit_uuid = uuid4()
     fk_org_orggunit = (
         OrgUnit(Uuid=uuid4()) if overwritten_uuid else OrgUnit(Uuid=orgunit_uuid)
@@ -117,10 +125,18 @@ async def test_trigger_orgunit_update(
         with patch(
             "os2sync_export.main.is_below_top_unit", return_value=is_below_top_unit
         ):
-            await amqp_trigger_org_unit(mock_context, orgunit_uuid, None)
+            await amqp_trigger_org_unit(
+                uuid=orgunit_uuid,
+                settings=mock_settings,
+                graphql_session=graphql_session,
+                os2sync_client=os2sync_client,
+                _=None,
+            )
 
     if is_below_top_unit:
-        get_org_unit_mock.assert_called_once_with(str(orgunit_uuid), settings=settings)
+        get_org_unit_mock.assert_called_once_with(
+            str(orgunit_uuid), settings=mock_settings
+        )
         os2sync_client.delete_orgunit.assert_not_called()
     else:
         get_org_unit_mock.assert_not_called()
