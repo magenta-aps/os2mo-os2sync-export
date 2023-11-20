@@ -9,7 +9,7 @@ import pytest
 
 from os2sync_export.main import amqp_trigger_it_user
 from os2sync_export.main import amqp_trigger_org_unit
-from os2sync_export.main import is_below_top_unit
+from os2sync_export.main import is_relevant
 from os2sync_export.os2sync_models import OrgUnit
 
 
@@ -55,7 +55,7 @@ async def test_trigger_it_user_update(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("is_below_top_unit", (True, False))
+@pytest.mark.parametrize("is_relevant", (True, False))
 @pytest.mark.parametrize("overwritten_uuid", (True, False))
 @patch(
     "os2sync_export.main.get_ituser_org_unit_and_employee_uuids",
@@ -64,7 +64,7 @@ async def test_trigger_it_user_update(
 async def test_trigger_it_orgunit_update(
     get_mock,
     overwritten_uuid,
-    is_below_top_unit,
+    is_relevant,
     mock_settings,
     os2sync_client,
     graphql_session,
@@ -81,9 +81,7 @@ async def test_trigger_it_orgunit_update(
     with patch(
         "os2sync_export.main.get_sts_orgunit", return_value=fk_org_orggunit
     ) as get_org_unit_mock:
-        with patch(
-            "os2sync_export.main.is_below_top_unit", return_value=is_below_top_unit
-        ):
+        with patch("os2sync_export.main.is_relevant", return_value=is_relevant):
             await amqp_trigger_it_user(
                 uuid=uuid4(),
                 settings=mock_settings,
@@ -94,7 +92,7 @@ async def test_trigger_it_orgunit_update(
 
     get_mock.assert_awaited_once()
 
-    if is_below_top_unit:
+    if is_relevant:
         get_org_unit_mock.assert_called_once_with(orgunit_uuid, mock_settings)
         if overwritten_uuid:
             os2sync_client.delete_orgunit.assert_called_once_with(orgunit_uuid)
@@ -109,10 +107,10 @@ async def test_trigger_it_orgunit_update(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("is_below_top_unit", (True, False))
+@pytest.mark.parametrize("is_relevant", (True, False))
 @pytest.mark.parametrize("overwritten_uuid", (True, False))
 async def test_trigger_orgunit_update(
-    overwritten_uuid, is_below_top_unit, mock_settings, os2sync_client, graphql_session
+    overwritten_uuid, is_relevant, mock_settings, os2sync_client, graphql_session
 ):
     """Test react to orgunit event and update it"""
     orgunit_uuid = uuid4()
@@ -122,9 +120,7 @@ async def test_trigger_orgunit_update(
     with patch(
         "os2sync_export.main.get_sts_orgunit", return_value=fk_org_orggunit
     ) as get_org_unit_mock:
-        with patch(
-            "os2sync_export.main.is_below_top_unit", return_value=is_below_top_unit
-        ):
+        with patch("os2sync_export.main.is_relevant", return_value=is_relevant):
             await amqp_trigger_org_unit(
                 uuid=orgunit_uuid,
                 settings=mock_settings,
@@ -133,7 +129,7 @@ async def test_trigger_orgunit_update(
                 _=None,
             )
 
-    if is_below_top_unit:
+    if is_relevant:
         get_org_unit_mock.assert_called_once_with(orgunit_uuid, settings=mock_settings)
         os2sync_client.delete_orgunit.assert_not_called()
     else:
@@ -144,9 +140,10 @@ async def test_trigger_orgunit_update(
 
 
 @pytest.mark.asyncio
-async def test_is_below_top_unit():
+async def test_is_relevant(set_settings):
     unit_uuid = uuid4()
     top_unit_uuid = uuid4()
+    mock_settings = set_settings(os2sync_top_unit_uuid=top_unit_uuid)
     gql_session_mock = AsyncMock()
     gql_session_mock.execute.side_effect = [
         {
@@ -159,19 +156,18 @@ async def test_is_below_top_unit():
             ]
         }
     ]
-    assert await is_below_top_unit(
-        gql_session=gql_session_mock, unit_uuid=unit_uuid, top_unit_uuid=top_unit_uuid
+    assert await is_relevant(
+        gql_session=gql_session_mock, unit_uuid=unit_uuid, settings=mock_settings
     )
 
 
 @pytest.mark.asyncio
-async def test_is_not_below_top_unit():
+async def test_is_not_below_top_unit(mock_settings):
     gql_session_mock = AsyncMock()
     unit_uuid = uuid4()
-    top_unit_uuid = uuid4()
     gql_session_mock.execute.side_effect = [
         {"org_units": [{"current": {"ancestors": [{"uuid": str(uuid4())}]}}]}
     ]
-    assert not await is_below_top_unit(
-        gql_session=gql_session_mock, unit_uuid=unit_uuid, top_unit_uuid=top_unit_uuid
+    assert not await is_relevant(
+        gql_session=gql_session_mock, unit_uuid=unit_uuid, settings=mock_settings
     )
