@@ -94,10 +94,10 @@ async def amqp_trigger_org_unit(
     _: RateLimit,
 ) -> None:
     sts_org_unit = None
-    if await is_below_top_unit(
+    if await is_relevant(
         graphql_session,
         uuid,
-        settings.os2sync_top_unit_uuid,
+        settings,
     ):
         try:
             sts_org_unit = get_sts_orgunit(uuid, settings=settings)
@@ -128,10 +128,10 @@ async def amqp_trigger_address(
         logger.debug(f"No address found {uuid=}")
         return
 
-    if ou_uuid and is_below_top_unit(
+    if ou_uuid and is_relevant(
         graphql_session,
         uuid,
-        settings.os2sync_top_unit_uuid,
+        settings,
     ):
         try:
             sts_org_unit = get_sts_orgunit(ou_uuid, settings)
@@ -154,10 +154,10 @@ async def amqp_trigger_address(
     )
 
 
-async def is_below_top_unit(
+async def is_relevant(
     gql_session: AsyncClientSession,
     unit_uuid: UUID,
-    top_unit_uuid: UUID,
+    settings: Settings,
 ) -> bool:
     """Checks whether an organisation unit is below the top unit.
 
@@ -167,9 +167,9 @@ async def is_below_top_unit(
     query QueryAncestors($uuids: [UUID!]) {
         org_units(uuids: $uuids) {
             current {
-            ancestors {
-                uuid
-            }
+                ancestors {
+                    uuid
+                }
             }
         }
     }
@@ -180,11 +180,18 @@ async def is_below_top_unit(
     if not res["org_units"]:
         logger.warn("No unit found")
         return False
-    ancestors = one(res["org_units"])["current"]["ancestors"]
-    if ancestors is None:
-        return False
-    else:
-        return top_unit_uuid in {UUID(a["uuid"]) for a in ancestors}
+
+    org_unit = one(res["org_units"])["current"]
+    # Check that the configured top unit is in the units ancestors
+    is_below_top_uuid: bool = (
+        False
+        if org_unit["ancestors"] is None
+        else settings.os2sync_top_unit_uuid
+        in {UUID(a["uuid"]) for a in org_unit["ancestors"]}
+    )
+
+    logger.debug(f"is_relevant check found that {is_below_top_uuid=}")
+    return is_below_top_uuid
 
 
 @amqp_router.register("ituser")
@@ -203,9 +210,7 @@ async def amqp_trigger_it_user(
         logger.debug(f"Event registered but no it-user found with {uuid=}")
         return
 
-    if ou_uuid and await is_below_top_unit(
-        graphql_session, ou_uuid, settings.os2sync_top_unit_uuid
-    ):
+    if ou_uuid and await is_relevant(graphql_session, ou_uuid, settings):
         try:
             sts_org_unit = get_sts_orgunit(ou_uuid, settings)
         except ValueError:
@@ -253,10 +258,10 @@ async def amqp_trigger_manager(
         logger.debug(f"Event registered but no manager found with {uuid=}")
         return
 
-    if ou_uuid and await is_below_top_unit(
+    if ou_uuid and await is_relevant(
         graphql_session,
         ou_uuid,
-        settings.os2sync_top_unit_uuid,
+        settings,
     ):
         try:
             sts_org_unit = get_sts_orgunit(ou_uuid, settings)
@@ -303,10 +308,10 @@ async def amqp_trigger_kle(
     _: RateLimit,
 ) -> None:
     ou_uuid = await get_kle_org_unit_uuid(graphql_session, uuid)
-    if ou_uuid and await is_below_top_unit(
+    if ou_uuid and await is_relevant(
         graphql_session,
         ou_uuid,
-        settings.os2sync_top_unit_uuid,
+        settings,
     ):
         try:
             sts_org_unit = get_sts_orgunit(ou_uuid, settings)
