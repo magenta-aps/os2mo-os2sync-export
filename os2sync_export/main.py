@@ -159,16 +159,26 @@ async def is_relevant(
     unit_uuid: UUID,
     settings: Settings,
 ) -> bool:
-    """Checks whether an organisation unit is below the top unit.
+    """Checks whether an organisation unit should be synced to fk-org
 
-    This check is necessary because fk-org only supports one top level unit.
+    Checks that
+    * the unit is below the top unit uuid
+    * is part of the correct org_unit_hierarchies
     """
+
+    # Top unit is always relevant
+    if unit_uuid == settings.os2sync_top_unit_uuid:
+        return True
+
     query = """
     query QueryAncestors($uuids: [UUID!]) {
         org_units(uuids: $uuids) {
             current {
                 ancestors {
                     uuid
+                }
+                org_unit_hierarchy_model {
+                    name
                 }
             }
         }
@@ -190,6 +200,19 @@ async def is_relevant(
         in {UUID(a["uuid"]) for a in org_unit["ancestors"]}
     )
 
+    if settings.os2sync_filter_hierarchy_names:
+        # Check that the unit is part of the correct org_unit hierarchy
+        is_in_hierarchies: bool = (
+            False
+            if org_unit["org_unit_hierarchy_model"] is None
+            else org_unit["org_unit_hierarchy_model"]["name"]
+            in settings.os2sync_filter_hierarchy_names
+        )
+
+        logger.debug(
+            f"is_relevant check found that {is_below_top_uuid=},  {is_in_hierarchies=}"
+        )
+        return is_below_top_uuid and is_in_hierarchies
     logger.debug(f"is_relevant check found that {is_below_top_uuid=}")
     return is_below_top_uuid
 
