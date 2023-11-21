@@ -3,10 +3,7 @@
 # SPDX-License-Identifier: MPL-2.0
 import logging
 from typing import cast
-from typing import Dict
-from typing import List
 from typing import Literal
-from typing import Tuple
 from uuid import UUID
 
 from fastramqpi.config import Settings as FastRAMQPISettings  # type: ignore
@@ -33,23 +30,23 @@ class Settings(FastRAMQPISettings, JobSettings):
     os2sync_ca_verify_os2sync: bool = True
     os2sync_ca_verify_os2mo: bool = True
 
-    os2sync_phone_scope_classes: List[UUID] = []
-    os2sync_landline_scope_classes: List[UUID] = []
-    os2sync_email_scope_classes: List[UUID] = []
-    os2sync_ignored_unit_levels: List[UUID] = []
-    os2sync_ignored_unit_types: List[UUID] = []
-    os2sync_templates: Dict = {}
+    os2sync_phone_scope_classes: list[UUID] = []
+    os2sync_landline_scope_classes: list[UUID] = []
+    os2sync_email_scope_classes: list[UUID] = []
+    os2sync_ignored_unit_levels: list[UUID] = []
+    os2sync_ignored_unit_types: list[UUID] = []
+    os2sync_templates: dict = {}
 
     os2sync_sync_managers: bool = False
     os2sync_use_contact_for_tasks: bool = False
-    os2sync_employee_engagement_address: List[str] = []
-    os2sync_uuid_from_it_systems: List[str] = []
+    os2sync_employee_engagement_address: list[str] = []
+    os2sync_uuid_from_it_systems: list[str] = []
 
     os2sync_truncate_length: int = 200
 
     os2sync_user_key_it_system_name: str = "Active Directory"
 
-    os2sync_filter_hierarchy_names: Tuple = tuple()  # Title in MO
+    os2sync_filter_hierarchy_names: tuple = tuple()  # Title in MO
     os2sync_filter_users_by_it_system: bool = False
 
     os2sync_use_extension_field_as_job_function: bool = False
