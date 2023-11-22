@@ -297,7 +297,7 @@ def get_org_unit_hierarchy(titles: Tuple) -> Optional[Tuple[UUID, ...]]:
 async def get_sts_user_raw(
     uuid: str,
     settings: Settings,
-    gql_session: AsyncClientSession,
+    graphql_session: AsyncClientSession,
     fk_org_uuid: Optional[str] = None,
     user_key: Optional[str] = None,
     engagement_uuid: Optional[str] = None,
@@ -329,7 +329,7 @@ async def get_sts_user_raw(
         e
         for e in engagements
         if await is_relevant(
-            gql_session=gql_session,
+            graphql_session=graphql_session,
             unit_uuid=UUID(e["org_unit"]["uuid"]),
             settings=settings,
         )
@@ -397,9 +397,9 @@ def group_accounts(
 
 
 async def get_sts_user(
-    mo_uuid: str, gql_session: AsyncClientSession, settings: Settings
+    mo_uuid: str, graphql_session: AsyncClientSession, settings: Settings
 ) -> List[Optional[Dict[str, Any]]]:
-    users = await get_user_it_accounts(gql_session=gql_session, mo_uuid=mo_uuid)
+    users = await get_user_it_accounts(graphql_session=graphql_session, mo_uuid=mo_uuid)
     try:
         fk_org_accounts = group_accounts(
             users,
@@ -414,7 +414,7 @@ async def get_sts_user(
         await get_sts_user_raw(
             mo_uuid,
             settings=settings,
-            gql_session=gql_session,
+            graphql_session=graphql_session,
             fk_org_uuid=it["uuid"],
             user_key=it["user_key"],
             engagement_uuid=it["engagement_uuid"],
@@ -645,7 +645,7 @@ def get_sts_orgunit(uuid: UUID, settings) -> Optional[OrgUnit]:
 
 
 async def get_user_it_accounts(
-    gql_session: AsyncClientSession, mo_uuid: str
+    graphql_session: AsyncClientSession, mo_uuid: str
 ) -> List[Dict]:
     """Find fk-org user(s) details for the person with given MO uuid"""
     q = gql(
@@ -666,7 +666,7 @@ async def get_user_it_accounts(
         }
     """
     )
-    res = await gql_session.execute(q, variable_values={"uuids": mo_uuid})
+    res = await graphql_session.execute(q, variable_values={"uuids": mo_uuid})
     objects = one(res["employees"])["objects"]
     return one(objects)["itusers"]
 
@@ -680,7 +680,7 @@ def extract_uuid(objects, obj_type) -> str | None:
 
 
 async def get_address_org_unit_and_employee_uuids(
-    gql_session: AsyncClientSession, mo_uuid: UUID
+    graphql_session: AsyncClientSession, mo_uuid: UUID
 ):
     """Fetches org_unit or employee, for an address by its UUID.
 
@@ -701,7 +701,7 @@ async def get_address_org_unit_and_employee_uuids(
     """
     )
     mo_uuid_str = str(mo_uuid)
-    result = await gql_session.execute(
+    result = await graphql_session.execute(
         q,
         variable_values={
             "uuids": mo_uuid_str,
@@ -714,7 +714,7 @@ async def get_address_org_unit_and_employee_uuids(
 
 
 async def get_ituser_org_unit_and_employee_uuids(
-    gql_session: AsyncClientSession, mo_uuid: UUID
+    graphql_session: AsyncClientSession, mo_uuid: UUID
 ):
     """Finds an ituser by its UUID."""
 
@@ -731,7 +731,7 @@ async def get_ituser_org_unit_and_employee_uuids(
     """
     )
     mo_uuid_str = str(mo_uuid)
-    result = await gql_session.execute(
+    result = await graphql_session.execute(
         q,
         variable_values={
             "uuids": mo_uuid_str,
@@ -744,7 +744,7 @@ async def get_ituser_org_unit_and_employee_uuids(
     return org_unit_uuid, employee_uuid
 
 
-async def get_manager_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
+async def get_manager_org_unit_uuid(graphql_session: AsyncClientSession, mo_uuid: UUID):
     """Finds manager org_unit UUID, by manager UUID."""
 
     q = gql(
@@ -759,7 +759,7 @@ async def get_manager_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UU
     """
     )
     mo_uuid_str = str(mo_uuid)
-    result = await gql_session.execute(
+    result = await graphql_session.execute(
         q,
         variable_values={
             "uuids": mo_uuid_str,
@@ -771,7 +771,9 @@ async def get_manager_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UU
     return org_unit_uuid
 
 
-async def get_engagement_employee_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
+async def get_engagement_employee_uuid(
+    graphql_session: AsyncClientSession, mo_uuid: UUID
+):
     """Finds an employee UUID from engagement UUID."""
 
     q = gql(
@@ -786,7 +788,7 @@ async def get_engagement_employee_uuid(gql_session: AsyncClientSession, mo_uuid:
     """
     )
     mo_uuid_str = str(mo_uuid)
-    result = await gql_session.execute(
+    result = await graphql_session.execute(
         q,
         variable_values={
             "uuids": mo_uuid_str,
@@ -798,7 +800,7 @@ async def get_engagement_employee_uuid(gql_session: AsyncClientSession, mo_uuid:
     return employee_uuid
 
 
-async def get_kle_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
+async def get_kle_org_unit_uuid(graphql_session: AsyncClientSession, mo_uuid: UUID):
     """Finds an KLE org_unit UUID, by KLE UUID."""
 
     q = gql(
@@ -813,7 +815,7 @@ async def get_kle_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
     """
     )
     mo_uuid_str = str(mo_uuid)
-    result = await gql_session.execute(
+    result = await graphql_session.execute(
         q,
         variable_values={
             "uuids": mo_uuid_str,
@@ -826,7 +828,7 @@ async def get_kle_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
 
 
 async def is_relevant(
-    gql_session: AsyncClientSession,
+    graphql_session: AsyncClientSession,
     unit_uuid: UUID,
     settings: Settings,
 ) -> bool:
@@ -855,7 +857,7 @@ async def is_relevant(
         }
     }
      """
-    res = await gql_session.execute(
+    res = await graphql_session.execute(
         gql(query), variable_values={"uuids": str(unit_uuid)}
     )
     if not res["org_units"]:

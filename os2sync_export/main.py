@@ -55,7 +55,7 @@ async def trigger_all(
     background_tasks.add_task(
         main,
         settings=settings,
-        gql_session=graphql_session,
+        graphql_session=graphql_session,
         os2sync_client=os2sync_client,
     )
     return {"triggered": "OK"}
@@ -72,7 +72,7 @@ async def amqp_trigger_employee(
     try:
         sts_users = await get_sts_user(
             str(uuid),
-            gql_session=graphql_session,
+            graphql_session=graphql_session,
             settings=settings,
         )
         logger.debug(sts_users)
@@ -142,7 +142,7 @@ async def amqp_trigger_address(
 
     if e_uuid:
         sts_users = await get_sts_user(
-            e_uuid, gql_session=graphql_session, settings=settings
+            e_uuid, graphql_session=graphql_session, settings=settings
         )
         os2sync_client.update_users(e_uuid, sts_users)
         return
@@ -187,7 +187,7 @@ async def amqp_trigger_it_user(
 
     if e_uuid:
         sts_users = await get_sts_user(
-            e_uuid, gql_session=graphql_session, settings=settings
+            e_uuid, graphql_session=graphql_session, settings=settings
         )
         os2sync_client.update_users(e_uuid, sts_users)
 
@@ -249,7 +249,7 @@ async def amqp_trigger_engagement(
 
     if e_uuid:
         sts_users = await get_sts_user(
-            e_uuid, gql_session=graphql_session, settings=settings
+            e_uuid, graphql_session=graphql_session, settings=settings
         )
         os2sync_client.update_users(e_uuid, sts_users)
         return
@@ -292,7 +292,7 @@ async def trigger_user(
 ) -> str:
     sts_users = await get_sts_user(
         str(uuid),
-        gql_session=graphql_session,
+        graphql_session=graphql_session,
         settings=settings,
     )
     os2sync_client.update_users(uuid, sts_users)
