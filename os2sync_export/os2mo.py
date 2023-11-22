@@ -179,7 +179,7 @@ def addresses_to_user(
         user["Email"] = email["name"]
 
 
-def engagements_to_user(user, engagements, use_extension_field=None):
+async def engagements_to_user(user, engagements, graphql_session, settings):
     """
     key_to_sort_by: This is a feature flag used to determine
     whether to use "extension_3" as job function, or display
@@ -187,6 +187,18 @@ def engagements_to_user(user, engagements, use_extension_field=None):
         True - if wanting to be overriden with "extension_3".
         False - if wanting to display "job_function".
     """
+    engagements = [
+        e
+        for e in engagements
+        if await is_relevant(
+            graphql_session=graphql_session,
+            unit_uuid=UUID(e["org_unit"]["uuid"]),
+            settings=settings,
+        )
+    ]
+    # Featureflag in Settings. Set it to True, if wanting to use the extension field.
+    # Default is False.
+    use_extension_field = settings.os2sync_use_extension_field_as_job_function
     for e in engagements:
         e["job_function"] = (
             e.get("extension_3")
@@ -325,19 +337,8 @@ async def get_sts_user_raw(
     ).json()
     if engagement_uuid:
         engagements = list(filter(lambda e: e["uuid"] == engagement_uuid, engagements))
-    engagements = [
-        e
-        for e in engagements
-        if await is_relevant(
-            graphql_session=graphql_session,
-            unit_uuid=UUID(e["org_unit"]["uuid"]),
-            settings=settings,
-        )
-    ]
-    # Featureflag in Settings. Set it to True, if wanting to use the extension field.
-    # Default is False.
-    use_extension_field = settings.os2sync_use_extension_field_as_job_function
-    engagements_to_user(sts_user, engagements, use_extension_field)
+
+    await engagements_to_user(sts_user, engagements, graphql_session, settings)
 
     if not sts_user["Positions"]:
         # return immediately because users with no engagements are not synced.

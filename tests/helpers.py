@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+from uuid import uuid4
+
 from os2sync_export.config import get_os2sync_settings
 
 
@@ -56,8 +58,8 @@ class MoEmployeeMixin:
         return MockResponse()
 
 
-dummy_positions = [{"OrgUnitUuid": "Some-OrgUnit-uuid"}]
+dummy_positions = [{"org_unit": {"uuid": uuid4()}}]
 
 
-def mock_engagements_to_user(user, *args, **kwargs):
+async def mock_engagements_to_user(user, *args, **kwargs):
     user["Positions"] = dummy_positions
