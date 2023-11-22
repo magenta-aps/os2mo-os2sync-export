@@ -179,7 +179,7 @@ def addresses_to_user(
         user["Email"] = email["name"]
 
 
-def engagements_to_user(user, engagements, allowed_unitids, use_extension_field=None):
+def engagements_to_user(user, engagements, use_extension_field=None):
     """
     key_to_sort_by: This is a feature flag used to determine
     whether to use "extension_3" as job function, or display
@@ -195,15 +195,14 @@ def engagements_to_user(user, engagements, allowed_unitids, use_extension_field=
         )
 
     for e in sorted(engagements, key=lambda e: (e["job_function"] + e.get("uuid"))):
-        if e.get("org_unit").get("uuid") in allowed_unitids:
-            user["Positions"].append(
-                {
-                    "OrgUnitUuid": e.get("org_unit").get("uuid"),
-                    "Name": e.get("job_function"),
-                    # Only used to find primary engagements work-address
-                    "is_primary": e.get("is_primary"),
-                }
-            )
+        user["Positions"].append(
+            {
+                "OrgUnitUuid": e.get("org_unit").get("uuid"),
+                "Name": e.get("job_function"),
+                # Only used to find primary engagements work-address
+                "is_primary": e.get("is_primary"),
+            }
+        )
 
 
 def try_get_it_user_key(uuid: str, user_key_it_system_name) -> Optional[str]:
@@ -295,9 +294,10 @@ def get_org_unit_hierarchy(titles: Tuple) -> Optional[Tuple[UUID, ...]]:
     return tuple(UUID(o["uuid"]) for o in filtered_hierarchies)
 
 
-def get_sts_user_raw(
+async def get_sts_user_raw(
     uuid: str,
     settings: Settings,
+    gql_session: AsyncClientSession,
     fk_org_uuid: Optional[str] = None,
     user_key: Optional[str] = None,
     engagement_uuid: Optional[str] = None,
@@ -325,15 +325,19 @@ def get_sts_user_raw(
     ).json()
     if engagement_uuid:
         engagements = list(filter(lambda e: e["uuid"] == engagement_uuid, engagements))
-    allowed_unitids = org_unit_uuids(
-        root=settings.os2sync_top_unit_uuid,
-        hierarchy_uuids=get_org_unit_hierarchy(settings.os2sync_filter_hierarchy_names),
-    )
-
+    engagements = [
+        e
+        for e in engagements
+        if await is_relevant(
+            gql_session=gql_session,
+            unit_uuid=UUID(e["org_unit"]["uuid"]),
+            settings=settings,
+        )
+    ]
     # Featureflag in Settings. Set it to True, if wanting to use the extension field.
     # Default is False.
     use_extension_field = settings.os2sync_use_extension_field_as_job_function
-    engagements_to_user(sts_user, engagements, allowed_unitids, use_extension_field)
+    engagements_to_user(sts_user, engagements, use_extension_field)
 
     if not sts_user["Positions"]:
         # return immediately because users with no engagements are not synced.
@@ -407,9 +411,10 @@ async def get_sts_user(
         fk_org_accounts = [{"engagement_uuid": None, "uuid": None, "user_key": None}]
 
     sts_users = [
-        get_sts_user_raw(
+        await get_sts_user_raw(
             mo_uuid,
             settings=settings,
+            gql_session=gql_session,
             fk_org_uuid=it["uuid"],
             user_key=it["user_key"],
             engagement_uuid=it["engagement_uuid"],
@@ -865,6 +870,13 @@ async def is_relevant(
     # Check that the configured top unit is in the units ancestors
     ancestors = {UUID(a["uuid"]) for a in org_unit["ancestors"]}
     is_below_top_uuid: bool = settings.os2sync_top_unit_uuid in ancestors
+
+    # Check if the unit or any of its ancestors are filtered.
+    if unit_uuid in settings.os2sync_filter_orgunit_uuid or any(
+        uuid in ancestors for uuid in settings.os2sync_filter_orgunit_uuid
+    ):
+        logger.debug("Orgunit is filtered based on settings")
+        return False
 
     if settings.os2sync_filter_hierarchy_names:
         # Check that the unit is part of the correct org_unit hierarchy

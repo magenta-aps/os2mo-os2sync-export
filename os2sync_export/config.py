@@ -51,6 +51,8 @@ class Settings(FastRAMQPISettings, JobSettings):
 
     os2sync_use_extension_field_as_job_function: bool = False
 
+    os2sync_filter_orgunit_uuid: list[UUID] = []
+
     class Config:
         frozen = False
         env_nested_delimiter = "__"
