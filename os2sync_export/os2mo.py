@@ -818,3 +818,66 @@ async def get_kle_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
     objects = one(result["kles"])["objects"]
     org_unit_uuid = extract_uuid(objects, "org_unit_uuid")
     return org_unit_uuid
+
+
+async def is_relevant(
+    gql_session: AsyncClientSession,
+    unit_uuid: UUID,
+    settings: Settings,
+) -> bool:
+    """Checks whether an organisation unit should be synced to fk-org
+
+    Checks that
+    * the unit is below the top unit uuid
+    * is part of the correct org_unit_hierarchies
+    """
+
+    # Top unit is always relevant
+    if unit_uuid == settings.os2sync_top_unit_uuid:
+        return True
+
+    query = """
+    query QueryAncestors($uuids: [UUID!]) {
+        org_units(uuids: $uuids) {
+            current {
+                ancestors {
+                    uuid
+                }
+                org_unit_hierarchy_model {
+                    name
+                }
+            }
+        }
+    }
+     """
+    res = await gql_session.execute(
+        gql(query), variable_values={"uuids": str(unit_uuid)}
+    )
+    if not res["org_units"]:
+        logger.warn("No unit found")
+        return False
+
+    org_unit = one(res["org_units"])["current"]
+
+    if org_unit["ancestors"] is None:
+        # We won't sync other root organisation units than the one specified in settings
+        return False
+    # Check that the configured top unit is in the units ancestors
+    ancestors = {UUID(a["uuid"]) for a in org_unit["ancestors"]}
+    is_below_top_uuid: bool = settings.os2sync_top_unit_uuid in ancestors
+
+    if settings.os2sync_filter_hierarchy_names:
+        # Check that the unit is part of the correct org_unit hierarchy
+        is_in_hierarchies: bool = (
+            False
+            if org_unit["org_unit_hierarchy_model"] is None
+            else org_unit["org_unit_hierarchy_model"]["name"]
+            in settings.os2sync_filter_hierarchy_names
+        )
+
+        logger.debug(
+            f"is_relevant check found that {is_below_top_uuid=},  {is_in_hierarchies=}"
+        )
+        return is_below_top_uuid and is_in_hierarchies
+    logger.debug(f"is_relevant check found that {is_below_top_uuid=}")
+    return is_below_top_uuid
