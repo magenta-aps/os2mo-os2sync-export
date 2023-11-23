@@ -1,12 +1,13 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
-import unittest
 from copy import deepcopy
 from typing import Any
 from typing import Dict
 from typing import Optional
 from unittest.mock import patch
+
+import pytest
 
 from os2sync_export import os2mo
 from os2sync_export.os2mo import get_sts_user_raw
@@ -364,21 +365,25 @@ def patched_session_get(url: str, params: Optional[Dict[Any, Any]] = None, **kwa
     raise ValueError("unexpected url: {}".format(url))
 
 
-class TestsMOAd(unittest.TestCase):
-    @patch("os2sync_export.os2mo.os2mo_get", patched_session_get)
-    @patch.object(os2mo, "engagements_to_user", mock_engagements_to_user)
-    @patch.object(os2mo, "org_unit_uuids", return_value={})
-    def test_mo_client_default(self, org_unit_uuids_mock):
-        expected = {
-            "Email": "solveigk@kolding.dk",
-            "Person": {"Cpr": "0602602389", "Name": "Solveig Kuhlenhenke"},
-            "Positions": dummy_positions,
-            "UserId": "SolveigK_AD_logon",
-            "Uuid": "23d2dfc7-6ceb-47cf-97ed-db6beadcb09b",
-        }
-        settings = dummy_settings
-        settings.os2sync_xfer_cpr = True
-        actual = get_sts_user_raw(
-            uuid, settings=settings, fk_org_uuid=None, user_key="SolveigK_AD_logon"
-        )
-        self.assertEqual(expected, actual)
+@pytest.mark.asyncio
+@patch("os2sync_export.os2mo.os2mo_get", patched_session_get)
+@patch.object(os2mo, "engagements_to_user", mock_engagements_to_user)
+@patch.object(os2mo, "org_unit_uuids", return_value={})
+async def test_mo_client_default(self, graphql_session):
+    expected = {
+        "Email": "solveigk@kolding.dk",
+        "Person": {"Cpr": "0602602389", "Name": "Solveig Kuhlenhenke"},
+        "Positions": dummy_positions,
+        "UserId": "SolveigK_AD_logon",
+        "Uuid": "23d2dfc7-6ceb-47cf-97ed-db6beadcb09b",
+    }
+    settings = dummy_settings
+    settings.os2sync_xfer_cpr = True
+    actual = await get_sts_user_raw(
+        uuid,
+        settings=settings,
+        graphql_session=graphql_session,
+        fk_org_uuid=None,
+        user_key="SolveigK_AD_logon",
+    )
+    assert expected == actual

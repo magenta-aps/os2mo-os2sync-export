@@ -2,9 +2,11 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 import unittest
+from unittest.mock import AsyncMock
 from unittest.mock import patch
 
 from parameterized import parameterized
+from ra_utils.async_to_sync import async_to_sync
 
 from os2sync_export import os2mo
 from os2sync_export.os2mo import get_sts_user_raw as os2mo_get_sts_user_raw
@@ -45,14 +47,15 @@ class TestGetStsUser(unittest.TestCase, MoEmployeeMixin):
             ),
         ]
     )
-    def test_person_template_nickname(
+    @async_to_sync
+    async def test_person_template_nickname(
         self,
         os2sync_templates,
         response_kwargs,
         expected_key,
     ):
         mo_employee_response = self.mock_employee_response(**response_kwargs)
-        sts_user = self._run(
+        sts_user = await self._run(
             mo_employee_response,
             ad_user_key=self._user_key,
             os2sync_templates=os2sync_templates,
@@ -110,14 +113,15 @@ class TestGetStsUser(unittest.TestCase, MoEmployeeMixin):
             ),
         ]
     )
-    def test_user_template_user_id(
+    @async_to_sync
+    async def test_user_template_user_id(
         self,
         os2sync_templates,
         given_ad_user_key,
         expected_user_id,
     ):
         mo_employee_response = self.mock_employee_response()
-        sts_user = self._run(
+        sts_user = await self._run(
             mo_employee_response,
             ad_user_key=given_ad_user_key,
             os2sync_templates=os2sync_templates,
@@ -138,7 +142,7 @@ class TestGetStsUser(unittest.TestCase, MoEmployeeMixin):
     @patch.object(os2mo, "engagements_to_user", mock_engagements_to_user)
     @patch.object(os2mo, "addresses_to_user", return_value=[])
     @patch.object(os2mo, "org_unit_uuids", return_value={})
-    def _run(
+    async def _run(
         self,
         response,
         address_mock,
@@ -149,10 +153,14 @@ class TestGetStsUser(unittest.TestCase, MoEmployeeMixin):
         settings = dummy_settings
         settings.os2sync_xfer_cpr = True
         settings.os2sync_templates = os2sync_templates or {}
-
+        gql_mock = AsyncMock()
         with self._patch("os2mo_get", response):
-            return os2mo_get_sts_user_raw(
-                self._uuid, settings=settings, fk_org_uuid=None, user_key=ad_user_key
+            return await os2mo_get_sts_user_raw(
+                self._uuid,
+                settings=settings,
+                graphql_session=gql_mock,
+                fk_org_uuid=None,
+                user_key=ad_user_key,
             )
 
     def _patch(self, name, return_value):

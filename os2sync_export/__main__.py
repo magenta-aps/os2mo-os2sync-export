@@ -84,7 +84,7 @@ def read_all_user_uuids(org_uuid: str, limit: int = 1_000) -> Set[str]:
 
 
 async def read_all_users(
-    gql_session: AsyncClientSession, settings: Settings
+    graphql_session: AsyncClientSession, settings: Settings
 ) -> Dict[UUID, Dict]:
     """Read all current users from OS2MO
 
@@ -105,7 +105,7 @@ async def read_all_users(
     )
 
     tasks = [
-        os2mo.get_sts_user(uuid, gql_session=gql_session, settings=settings)
+        os2mo.get_sts_user(uuid, graphql_session=graphql_session, settings=settings)
         for uuid in os2mo_uuids_present
     ]
     all_users = await gather_with_concurrency(5, *tasks)
@@ -124,7 +124,7 @@ async def read_all_users(
     return res
 
 
-async def main(settings: Settings, gql_session, os2sync_client):
+async def main(settings: Settings, graphql_session, os2sync_client):
     log_mox_config(settings)
 
     os2sync_client = os2sync_client or OS2SyncClient(settings=settings)
@@ -156,7 +156,7 @@ async def main(settings: Settings, gql_session, os2sync_client):
 
     logger.info("Start syncing users")
     mo_users = await read_all_users(
-        gql_session=gql_session,
+        graphql_session=graphql_session,
         settings=settings,
     )
     assert (

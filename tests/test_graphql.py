@@ -97,13 +97,14 @@ async def test_get_sts_user(
         os2sync_uuid_from_it_systems=["FK-ORG UUID"],
         os2sync_user_key_it_system_name="FK-ORG USERNAME",
     )
-    await get_sts_user(mo_uuid=mo_uuid, gql_session=gql_mock, settings=settings)
+    await get_sts_user(mo_uuid=mo_uuid, graphql_session=gql_mock, settings=settings)
 
     assert len(get_sts_user_raw_mock.call_args_list) == 3
     for c in [
         call(
             mo_uuid,
             settings=settings,
+            graphql_session=gql_mock,
             fk_org_uuid=fk_org_uuid_1,
             user_key=fk_org_user_key_1,
             engagement_uuid=engagement_uuid1,
@@ -111,6 +112,7 @@ async def test_get_sts_user(
         call(
             mo_uuid,
             settings=settings,
+            graphql_session=gql_mock,
             fk_org_uuid=fk_org_uuid_2,
             user_key=fk_org_user_key_2,
             engagement_uuid=engagement_uuid2,
@@ -118,6 +120,7 @@ async def test_get_sts_user(
         call(
             mo_uuid,
             settings=settings,
+            graphql_session=gql_mock,
             fk_org_uuid=fk_org_uuid_3,
             user_key=None,
             engagement_uuid=None,
@@ -135,10 +138,13 @@ async def test_get_sts_user_no_it_accounts(
     gql_mock = AsyncMock()
     gql_mock.execute.return_value = {"employees": [{"objects": [{"itusers": []}]}]}
 
-    await get_sts_user(mo_uuid=mo_uuid, gql_session=gql_mock, settings=mock_settings)
+    await get_sts_user(
+        mo_uuid=mo_uuid, graphql_session=gql_mock, settings=mock_settings
+    )
     get_sts_user_raw_mock.assert_called_once_with(
         mo_uuid,
         settings=mock_settings,
+        graphql_session=gql_mock,
         fk_org_uuid=None,
         user_key=None,
         engagement_uuid=None,

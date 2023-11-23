@@ -179,7 +179,7 @@ def addresses_to_user(
         user["Email"] = email["name"]
 
 
-def engagements_to_user(user, engagements, allowed_unitids, use_extension_field=None):
+async def engagements_to_user(user, engagements, graphql_session, settings):
     """
     key_to_sort_by: This is a feature flag used to determine
     whether to use "extension_3" as job function, or display
@@ -187,6 +187,18 @@ def engagements_to_user(user, engagements, allowed_unitids, use_extension_field=
         True - if wanting to be overriden with "extension_3".
         False - if wanting to display "job_function".
     """
+    engagements = [
+        e
+        for e in engagements
+        if await is_relevant(
+            graphql_session=graphql_session,
+            unit_uuid=UUID(e["org_unit"]["uuid"]),
+            settings=settings,
+        )
+    ]
+    # Feature flag in Settings. Set it to True, if wanting to use the extension field.
+    # Default is False.
+    use_extension_field = settings.os2sync_use_extension_field_as_job_function
     for e in engagements:
         e["job_function"] = (
             e.get("extension_3")
@@ -195,15 +207,14 @@ def engagements_to_user(user, engagements, allowed_unitids, use_extension_field=
         )
 
     for e in sorted(engagements, key=lambda e: (e["job_function"] + e.get("uuid"))):
-        if e.get("org_unit").get("uuid") in allowed_unitids:
-            user["Positions"].append(
-                {
-                    "OrgUnitUuid": e.get("org_unit").get("uuid"),
-                    "Name": e.get("job_function"),
-                    # Only used to find primary engagements work-address
-                    "is_primary": e.get("is_primary"),
-                }
-            )
+        user["Positions"].append(
+            {
+                "OrgUnitUuid": e.get("org_unit").get("uuid"),
+                "Name": e.get("job_function"),
+                # Only used to find primary engagements work-address
+                "is_primary": e.get("is_primary"),
+            }
+        )
 
 
 def try_get_it_user_key(uuid: str, user_key_it_system_name) -> Optional[str]:
@@ -295,9 +306,10 @@ def get_org_unit_hierarchy(titles: Tuple) -> Optional[Tuple[UUID, ...]]:
     return tuple(UUID(o["uuid"]) for o in filtered_hierarchies)
 
 
-def get_sts_user_raw(
+async def get_sts_user_raw(
     uuid: str,
     settings: Settings,
+    graphql_session: AsyncClientSession,
     fk_org_uuid: Optional[str] = None,
     user_key: Optional[str] = None,
     engagement_uuid: Optional[str] = None,
@@ -325,15 +337,8 @@ def get_sts_user_raw(
     ).json()
     if engagement_uuid:
         engagements = list(filter(lambda e: e["uuid"] == engagement_uuid, engagements))
-    allowed_unitids = org_unit_uuids(
-        root=settings.os2sync_top_unit_uuid,
-        hierarchy_uuids=get_org_unit_hierarchy(settings.os2sync_filter_hierarchy_names),
-    )
 
-    # Featureflag in Settings. Set it to True, if wanting to use the extension field.
-    # Default is False.
-    use_extension_field = settings.os2sync_use_extension_field_as_job_function
-    engagements_to_user(sts_user, engagements, allowed_unitids, use_extension_field)
+    await engagements_to_user(sts_user, engagements, graphql_session, settings)
 
     if not sts_user["Positions"]:
         # return immediately because users with no engagements are not synced.
@@ -393,9 +398,9 @@ def group_accounts(
 
 
 async def get_sts_user(
-    mo_uuid: str, gql_session: AsyncClientSession, settings: Settings
+    mo_uuid: str, graphql_session: AsyncClientSession, settings: Settings
 ) -> List[Optional[Dict[str, Any]]]:
-    users = await get_user_it_accounts(gql_session=gql_session, mo_uuid=mo_uuid)
+    users = await get_user_it_accounts(graphql_session=graphql_session, mo_uuid=mo_uuid)
     try:
         fk_org_accounts = group_accounts(
             users,
@@ -407,9 +412,10 @@ async def get_sts_user(
         fk_org_accounts = [{"engagement_uuid": None, "uuid": None, "user_key": None}]
 
     sts_users = [
-        get_sts_user_raw(
+        await get_sts_user_raw(
             mo_uuid,
             settings=settings,
+            graphql_session=graphql_session,
             fk_org_uuid=it["uuid"],
             user_key=it["user_key"],
             engagement_uuid=it["engagement_uuid"],
@@ -640,7 +646,7 @@ def get_sts_orgunit(uuid: UUID, settings) -> Optional[OrgUnit]:
 
 
 async def get_user_it_accounts(
-    gql_session: AsyncClientSession, mo_uuid: str
+    graphql_session: AsyncClientSession, mo_uuid: str
 ) -> List[Dict]:
     """Find fk-org user(s) details for the person with given MO uuid"""
     q = gql(
@@ -661,7 +667,7 @@ async def get_user_it_accounts(
         }
     """
     )
-    res = await gql_session.execute(q, variable_values={"uuids": mo_uuid})
+    res = await graphql_session.execute(q, variable_values={"uuids": mo_uuid})
     objects = one(res["employees"])["objects"]
     return one(objects)["itusers"]
 
@@ -675,7 +681,7 @@ def extract_uuid(objects, obj_type) -> str | None:
 
 
 async def get_address_org_unit_and_employee_uuids(
-    gql_session: AsyncClientSession, mo_uuid: UUID
+    graphql_session: AsyncClientSession, mo_uuid: UUID
 ):
     """Fetches org_unit or employee, for an address by its UUID.
 
@@ -696,7 +702,7 @@ async def get_address_org_unit_and_employee_uuids(
     """
     )
     mo_uuid_str = str(mo_uuid)
-    result = await gql_session.execute(
+    result = await graphql_session.execute(
         q,
         variable_values={
             "uuids": mo_uuid_str,
@@ -709,7 +715,7 @@ async def get_address_org_unit_and_employee_uuids(
 
 
 async def get_ituser_org_unit_and_employee_uuids(
-    gql_session: AsyncClientSession, mo_uuid: UUID
+    graphql_session: AsyncClientSession, mo_uuid: UUID
 ):
     """Finds an ituser by its UUID."""
 
@@ -726,7 +732,7 @@ async def get_ituser_org_unit_and_employee_uuids(
     """
     )
     mo_uuid_str = str(mo_uuid)
-    result = await gql_session.execute(
+    result = await graphql_session.execute(
         q,
         variable_values={
             "uuids": mo_uuid_str,
@@ -739,7 +745,7 @@ async def get_ituser_org_unit_and_employee_uuids(
     return org_unit_uuid, employee_uuid
 
 
-async def get_manager_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
+async def get_manager_org_unit_uuid(graphql_session: AsyncClientSession, mo_uuid: UUID):
     """Finds manager org_unit UUID, by manager UUID."""
 
     q = gql(
@@ -754,7 +760,7 @@ async def get_manager_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UU
     """
     )
     mo_uuid_str = str(mo_uuid)
-    result = await gql_session.execute(
+    result = await graphql_session.execute(
         q,
         variable_values={
             "uuids": mo_uuid_str,
@@ -766,7 +772,9 @@ async def get_manager_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UU
     return org_unit_uuid
 
 
-async def get_engagement_employee_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
+async def get_engagement_employee_uuid(
+    graphql_session: AsyncClientSession, mo_uuid: UUID
+):
     """Finds an employee UUID from engagement UUID."""
 
     q = gql(
@@ -781,7 +789,7 @@ async def get_engagement_employee_uuid(gql_session: AsyncClientSession, mo_uuid:
     """
     )
     mo_uuid_str = str(mo_uuid)
-    result = await gql_session.execute(
+    result = await graphql_session.execute(
         q,
         variable_values={
             "uuids": mo_uuid_str,
@@ -793,7 +801,7 @@ async def get_engagement_employee_uuid(gql_session: AsyncClientSession, mo_uuid:
     return employee_uuid
 
 
-async def get_kle_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
+async def get_kle_org_unit_uuid(graphql_session: AsyncClientSession, mo_uuid: UUID):
     """Finds an KLE org_unit UUID, by KLE UUID."""
 
     q = gql(
@@ -808,7 +816,7 @@ async def get_kle_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
     """
     )
     mo_uuid_str = str(mo_uuid)
-    result = await gql_session.execute(
+    result = await graphql_session.execute(
         q,
         variable_values={
             "uuids": mo_uuid_str,
@@ -818,3 +826,73 @@ async def get_kle_org_unit_uuid(gql_session: AsyncClientSession, mo_uuid: UUID):
     objects = one(result["kles"])["objects"]
     org_unit_uuid = extract_uuid(objects, "org_unit_uuid")
     return org_unit_uuid
+
+
+async def is_relevant(
+    graphql_session: AsyncClientSession,
+    unit_uuid: UUID,
+    settings: Settings,
+) -> bool:
+    """Checks whether an organisation unit should be synced to fk-org
+
+    Checks that
+    * the unit is below the top unit uuid
+    * is part of the correct org_unit_hierarchies
+    """
+
+    # Top unit is always relevant
+    if unit_uuid == settings.os2sync_top_unit_uuid:
+        return True
+
+    query = """
+    query QueryAncestors($uuids: [UUID!]) {
+        org_units(uuids: $uuids) {
+            current {
+                ancestors {
+                    uuid
+                }
+                org_unit_hierarchy_model {
+                    name
+                }
+            }
+        }
+    }
+     """
+    res = await graphql_session.execute(
+        gql(query), variable_values={"uuids": str(unit_uuid)}
+    )
+    if not res["org_units"]:
+        logger.warn("No unit found")
+        return False
+
+    org_unit = one(res["org_units"])["current"]
+
+    if org_unit["ancestors"] is None:
+        # We won't sync other root organisation units than the one specified in settings
+        return False
+    # Check that the configured top unit is in the units ancestors
+    ancestors = {UUID(a["uuid"]) for a in org_unit["ancestors"]}
+    is_below_top_uuid: bool = settings.os2sync_top_unit_uuid in ancestors
+
+    # Check if the unit or any of its ancestors are filtered.
+    if unit_uuid in settings.os2sync_filter_orgunit_uuid or any(
+        uuid in ancestors for uuid in settings.os2sync_filter_orgunit_uuid
+    ):
+        logger.debug(f"Orgunit is filtered based on settings {unit_uuid=}")
+        return False
+
+    if settings.os2sync_filter_hierarchy_names:
+        # Check that the unit is part of the correct org_unit hierarchy
+        is_in_hierarchies: bool = (
+            False
+            if org_unit["org_unit_hierarchy_model"] is None
+            else org_unit["org_unit_hierarchy_model"]["name"]
+            in settings.os2sync_filter_hierarchy_names
+        )
+
+        logger.debug(
+            f"is_relevant check found that {is_below_top_uuid=},  {is_in_hierarchies=}"
+        )
+        return is_below_top_uuid and is_in_hierarchies
+    logger.debug(f"is_relevant check found that {is_below_top_uuid=}")
+    return is_below_top_uuid

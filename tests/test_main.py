@@ -9,7 +9,7 @@ import pytest
 
 from os2sync_export.main import amqp_trigger_it_user
 from os2sync_export.main import amqp_trigger_org_unit
-from os2sync_export.main import is_relevant
+from os2sync_export.os2mo import is_relevant
 from os2sync_export.os2sync_models import OrgUnit
 
 
@@ -44,7 +44,7 @@ async def test_trigger_it_user_update(
         )
     get_mock.assert_awaited_once()
     get_user_mock.assert_called_once_with(
-        user_uuid, gql_session=graphql_session, settings=mock_settings
+        user_uuid, graphql_session=graphql_session, settings=mock_settings
     )
     # Test that we call update_user on events
     os2sync_client.update_users.assert_called_once_with(user_uuid, fk_org_users)
@@ -128,7 +128,6 @@ async def test_trigger_orgunit_update(
                 os2sync_client=os2sync_client,
                 _=None,
             )
-
     if is_relevant:
         get_org_unit_mock.assert_called_once_with(orgunit_uuid, settings=mock_settings)
         os2sync_client.delete_orgunit.assert_not_called()
@@ -144,8 +143,8 @@ async def test_is_relevant(set_settings):
     unit_uuid = uuid4()
     top_unit_uuid = uuid4()
     mock_settings = set_settings(os2sync_top_unit_uuid=top_unit_uuid)
-    gql_session_mock = AsyncMock()
-    gql_session_mock.execute.side_effect = [
+    graphql_session = AsyncMock()
+    graphql_session.execute.side_effect = [
         {
             "org_units": [
                 {
@@ -157,17 +156,17 @@ async def test_is_relevant(set_settings):
         }
     ]
     assert await is_relevant(
-        gql_session=gql_session_mock, unit_uuid=unit_uuid, settings=mock_settings
+        graphql_session=graphql_session, unit_uuid=unit_uuid, settings=mock_settings
     )
 
 
 @pytest.mark.asyncio
 async def test_is_not_below_top_unit(mock_settings):
-    gql_session_mock = AsyncMock()
+    graphql_session = AsyncMock()
     unit_uuid = uuid4()
-    gql_session_mock.execute.side_effect = [
+    graphql_session.execute.side_effect = [
         {"org_units": [{"current": {"ancestors": [{"uuid": str(uuid4())}]}}]}
     ]
     assert not await is_relevant(
-        gql_session=gql_session_mock, unit_uuid=unit_uuid, settings=mock_settings
+        graphql_session=graphql_session, unit_uuid=unit_uuid, settings=mock_settings
     )

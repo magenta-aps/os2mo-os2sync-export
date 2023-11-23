@@ -14,9 +14,6 @@ from fastapi import FastAPI
 from fastramqpi.depends import from_user_context
 from fastramqpi.depends import LegacyGraphQLSession
 from fastramqpi.main import FastRAMQPI  # type: ignore
-from gql import gql
-from gql.client import AsyncClientSession
-from more_itertools import one
 from ramqp.depends import RateLimit
 from ramqp.mo import MORouter
 from ramqp.mo import PayloadUUID
@@ -31,6 +28,7 @@ from os2sync_export.os2mo import get_kle_org_unit_uuid
 from os2sync_export.os2mo import get_manager_org_unit_uuid
 from os2sync_export.os2mo import get_sts_orgunit
 from os2sync_export.os2mo import get_sts_user
+from os2sync_export.os2mo import is_relevant
 from os2sync_export.os2sync import OS2SyncClient
 
 logger = logging.getLogger(__name__)
@@ -57,7 +55,7 @@ async def trigger_all(
     background_tasks.add_task(
         main,
         settings=settings,
-        gql_session=graphql_session,
+        graphql_session=graphql_session,
         os2sync_client=os2sync_client,
     )
     return {"triggered": "OK"}
@@ -74,7 +72,7 @@ async def amqp_trigger_employee(
     try:
         sts_users = await get_sts_user(
             str(uuid),
-            gql_session=graphql_session,
+            graphql_session=graphql_session,
             settings=settings,
         )
         logger.debug(sts_users)
@@ -144,7 +142,7 @@ async def amqp_trigger_address(
 
     if e_uuid:
         sts_users = await get_sts_user(
-            e_uuid, gql_session=graphql_session, settings=settings
+            e_uuid, graphql_session=graphql_session, settings=settings
         )
         os2sync_client.update_users(e_uuid, sts_users)
         return
@@ -152,69 +150,6 @@ async def amqp_trigger_address(
     logger.warn(
         f"Unable to update address, could not find org_unit or employee for: {uuid}"
     )
-
-
-async def is_relevant(
-    gql_session: AsyncClientSession,
-    unit_uuid: UUID,
-    settings: Settings,
-) -> bool:
-    """Checks whether an organisation unit should be synced to fk-org
-
-    Checks that
-    * the unit is below the top unit uuid
-    * is part of the correct org_unit_hierarchies
-    """
-
-    # Top unit is always relevant
-    if unit_uuid == settings.os2sync_top_unit_uuid:
-        return True
-
-    query = """
-    query QueryAncestors($uuids: [UUID!]) {
-        org_units(uuids: $uuids) {
-            current {
-                ancestors {
-                    uuid
-                }
-                org_unit_hierarchy_model {
-                    name
-                }
-            }
-        }
-    }
-     """
-    res = await gql_session.execute(
-        gql(query), variable_values={"uuids": str(unit_uuid)}
-    )
-    if not res["org_units"]:
-        logger.warn("No unit found")
-        return False
-
-    org_unit = one(res["org_units"])["current"]
-    # Check that the configured top unit is in the units ancestors
-    is_below_top_uuid: bool = (
-        False
-        if org_unit["ancestors"] is None
-        else settings.os2sync_top_unit_uuid
-        in {UUID(a["uuid"]) for a in org_unit["ancestors"]}
-    )
-
-    if settings.os2sync_filter_hierarchy_names:
-        # Check that the unit is part of the correct org_unit hierarchy
-        is_in_hierarchies: bool = (
-            False
-            if org_unit["org_unit_hierarchy_model"] is None
-            else org_unit["org_unit_hierarchy_model"]["name"]
-            in settings.os2sync_filter_hierarchy_names
-        )
-
-        logger.debug(
-            f"is_relevant check found that {is_below_top_uuid=},  {is_in_hierarchies=}"
-        )
-        return is_below_top_uuid and is_in_hierarchies
-    logger.debug(f"is_relevant check found that {is_below_top_uuid=}")
-    return is_below_top_uuid
 
 
 @amqp_router.register("ituser")
@@ -252,7 +187,7 @@ async def amqp_trigger_it_user(
 
     if e_uuid:
         sts_users = await get_sts_user(
-            e_uuid, gql_session=graphql_session, settings=settings
+            e_uuid, graphql_session=graphql_session, settings=settings
         )
         os2sync_client.update_users(e_uuid, sts_users)
 
@@ -314,7 +249,7 @@ async def amqp_trigger_engagement(
 
     if e_uuid:
         sts_users = await get_sts_user(
-            e_uuid, gql_session=graphql_session, settings=settings
+            e_uuid, graphql_session=graphql_session, settings=settings
         )
         os2sync_client.update_users(e_uuid, sts_users)
         return
@@ -357,7 +292,7 @@ async def trigger_user(
 ) -> str:
     sts_users = await get_sts_user(
         str(uuid),
-        gql_session=graphql_session,
+        graphql_session=graphql_session,
         settings=settings,
     )
     os2sync_client.update_users(uuid, sts_users)
