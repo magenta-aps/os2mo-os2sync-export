@@ -196,7 +196,7 @@ async def engagements_to_user(user, engagements, graphql_session, settings):
             settings=settings,
         )
     ]
-    # Featureflag in Settings. Set it to True, if wanting to use the extension field.
+    # Feature flag in Settings. Set it to True, if wanting to use the extension field.
     # Default is False.
     use_extension_field = settings.os2sync_use_extension_field_as_job_function
     for e in engagements:
@@ -878,7 +878,7 @@ async def is_relevant(
     if unit_uuid in settings.os2sync_filter_orgunit_uuid or any(
         uuid in ancestors for uuid in settings.os2sync_filter_orgunit_uuid
     ):
-        logger.debug("Orgunit is filtered based on settings")
+        logger.debug(f"Orgunit is filtered based on settings {unit_uuid=}")
         return False
 
     if settings.os2sync_filter_hierarchy_names:
