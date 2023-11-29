@@ -32,7 +32,7 @@ def log_mox_config(settings):
         logger.warning("    %s=%r", k, v)
 
 
-def read_all_org_units(settings) -> Dict[UUID, OrgUnit]:
+def read_all_org_units(settings: Settings) -> Dict[UUID, OrgUnit]:
     """Read all current org_units from OS2MO
 
     Returns a dict mapping uuids to os2sync payload for each org_unit
