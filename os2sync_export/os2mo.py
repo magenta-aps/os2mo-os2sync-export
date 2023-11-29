@@ -286,8 +286,7 @@ def overwrite_position_uuids(sts_user: Dict, os2sync_uuid_from_it_systems: List)
         p["OrgUnitUuid"] = get_fk_org_uuid(it, unit_uuid, os2sync_uuid_from_it_systems)
 
 
-@lru_cache
-def get_org_unit_hierarchy(titles: Tuple) -> Optional[Tuple[UUID, ...]]:
+def get_org_unit_hierarchy(titles: list[str]) -> Optional[Tuple[UUID, ...]]:
     """Find uuids of org_unit_hierarchy classes with the specified titles"""
     if not titles:
         return None
