@@ -142,7 +142,10 @@ async def test_trigger_orgunit_update(
 async def test_is_relevant(set_settings):
     unit_uuid = uuid4()
     top_unit_uuid = uuid4()
-    mock_settings = set_settings(os2sync_top_unit_uuid=top_unit_uuid)
+    line_org = "linjeorganisation"
+    mock_settings = set_settings(
+        os2sync_top_unit_uuid=top_unit_uuid, os2sync_filter_hierarchy_names=[line_org]
+    )
     graphql_session = AsyncMock()
     graphql_session.execute.side_effect = [
         {
@@ -150,6 +153,7 @@ async def test_is_relevant(set_settings):
                 {
                     "current": {
                         "ancestors": [{"uuid": str(top_unit_uuid)}],
+                        "org_unit_hierarchy_model": {"name": line_org},
                     }
                 }
             ]
@@ -166,6 +170,32 @@ async def test_is_not_below_top_unit(mock_settings):
     unit_uuid = uuid4()
     graphql_session.execute.side_effect = [
         {"org_units": [{"current": {"ancestors": [{"uuid": str(uuid4())}]}}]}
+    ]
+    assert not await is_relevant(
+        graphql_session=graphql_session, unit_uuid=unit_uuid, settings=mock_settings
+    )
+
+
+@pytest.mark.asyncio
+async def test_is_relevant_wrong_hierarchy(set_settings):
+    unit_uuid = uuid4()
+    top_unit_uuid = uuid4()
+    line_org = "linjeorganisation"
+    mock_settings = set_settings(
+        os2sync_top_unit_uuid=top_unit_uuid, os2sync_filter_hierarchy_names=[line_org]
+    )
+    graphql_session = AsyncMock()
+    graphql_session.execute.side_effect = [
+        {
+            "org_units": [
+                {
+                    "current": {
+                        "ancestors": [{"uuid": str(top_unit_uuid)}],
+                        "org_unit_hierarchy_model": {"name": "hidden"},
+                    }
+                }
+            ]
+        }
     ]
     assert not await is_relevant(
         graphql_session=graphql_session, unit_uuid=unit_uuid, settings=mock_settings
