@@ -853,6 +853,11 @@ async def is_relevant(
                 org_unit_hierarchy_model {
                     name
                 }
+                itusers {
+                  itsystem {
+                    name
+                  }
+                }
             }
         }
     }
@@ -888,10 +893,15 @@ async def is_relevant(
             else org_unit["org_unit_hierarchy_model"]["name"]
             in settings.os2sync_filter_hierarchy_names
         )
+        # If there are an it-account we sync it regardless of the hierarchy
+        has_it_account: bool = any(
+            it["itsystem"]["name"] in settings.os2sync_uuid_from_it_systems
+            for it in org_unit["itusers"]
+        )
 
         logger.debug(
-            f"is_relevant check found that {is_below_top_uuid=},  {is_in_hierarchies=}"
+            f"is_relevant check found that {is_below_top_uuid=}, {is_in_hierarchies=}, {has_it_account=}"
         )
-        return is_below_top_uuid and is_in_hierarchies
+        return is_below_top_uuid and (is_in_hierarchies or has_it_account)
     logger.debug(f"is_relevant check found that {is_below_top_uuid=}")
     return is_below_top_uuid
