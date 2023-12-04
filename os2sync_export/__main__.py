@@ -171,6 +171,6 @@ async def main(settings: Settings, graphql_session, os2sync_client):
     terminated_users = existing_os2sync_users - set(mo_users)
     logger.info(f"Medarbejdere slettes i OS2Sync: {len(terminated_users)}")
     for uuid in terminated_users:
-        os2sync_client.os2sync_delete("{BASE}/user/" + uuid)
+        os2sync_client.delete_user(uuid)
 
     logger.info("sync users done")
