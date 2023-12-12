@@ -905,3 +905,23 @@ async def is_relevant(
         return is_below_top_uuid and (is_in_hierarchies or has_it_account)
     logger.debug(f"is_relevant check found that {is_below_top_uuid=}")
     return is_below_top_uuid
+
+
+async def find_employees(
+    graphql_session: AsyncClientSession, org_unit_uuid: UUID
+) -> set[UUID]:
+    query = """
+    query QueryEmployees($uuids: [UUID!]) {
+      engagements(org_units: $uuids) {
+        current {
+          person {
+            uuid
+          }
+        }
+      }
+    }
+     """
+    res = await graphql_session.execute(
+        gql(query), variable_values={"uuids": str(org_unit_uuid)}
+    )
+    return {UUID(one(e["current"]["person"])["uuid"]) for e in res["engagements"]}

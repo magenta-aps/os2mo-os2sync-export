@@ -21,6 +21,7 @@ from ramqp.mo import PayloadUUID
 from os2sync_export.__main__ import main
 from os2sync_export.config import get_os2sync_settings
 from os2sync_export.config import Settings
+from os2sync_export.os2mo import find_employees
 from os2sync_export.os2mo import get_address_org_unit_and_employee_uuids
 from os2sync_export.os2mo import get_engagement_employee_uuid
 from os2sync_export.os2mo import get_ituser_org_unit_and_employee_uuids
@@ -104,10 +105,13 @@ async def amqp_trigger_org_unit(
             os2sync_client.delete_orgunit(uuid)
     if sts_org_unit is None:
         os2sync_client.delete_orgunit(uuid)
-        return
+    else:
+        os2sync_client.upsert_org_unit(sts_org_unit)
 
-    os2sync_client.upsert_org_unit(sts_org_unit)
-    logger.info(f"Synced org_unit to fk-org: {uuid=}")
+    logger.info(f"Synced org_unit to fk-org: {uuid=}, now checking engagements")
+    employees = await find_employees(graphql_session, uuid)
+    for e in employees:
+        await amqp_trigger_employee(e, settings, graphql_session, os2sync_client, _)
 
 
 @amqp_router.register("address")
