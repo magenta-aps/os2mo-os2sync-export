@@ -53,6 +53,8 @@ class Settings(FastRAMQPISettings, JobSettings):
 
     os2sync_filter_orgunit_uuid: list[UUID] = []
 
+    os2sync_enable_kle: bool = True
+
     class Config:
         frozen = False
         env_nested_delimiter = "__"
