@@ -169,23 +169,23 @@ python-versions = "*"
 
 [[package]]
 name = "fastapi"
-version = "0.103.0"
+version = "0.109.2"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 
 [package.dependencies]
 pydantic = ">=1.7.4,<1.8 || >1.8,<1.8.1 || >1.8.1,<2.0.0 || >2.0.0,<2.0.1 || >2.0.1,<2.1.0 || >2.1.0,<3.0.0"
-starlette = ">=0.27.0,<0.28.0"
-typing-extensions = ">=4.5.0"
+starlette = ">=0.36.3,<0.37.0"
+typing-extensions = ">=4.8.0"
 
 [package.extras]
-all = ["email-validator (>=2.0.0)", "httpx (>=0.23.0)", "itsdangerous (>=1.1.0)", "jinja2 (>=2.11.2)", "orjson (>=3.2.1)", "pydantic-extra-types (>=2.0.0)", "pydantic-settings (>=2.0.0)", "python-multipart (>=0.0.5)", "pyyaml (>=5.3.1)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0)", "uvicorn[standard] (>=0.12.0)"]
+all = ["email-validator (>=2.0.0)", "httpx (>=0.23.0)", "itsdangerous (>=1.1.0)", "jinja2 (>=2.11.2)", "orjson (>=3.2.1)", "pydantic-extra-types (>=2.0.0)", "pydantic-settings (>=2.0.0)", "python-multipart (>=0.0.7)", "pyyaml (>=5.3.1)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0)", "uvicorn[standard] (>=0.12.0)"]
 
 [[package]]
 name = "fastramqpi"
-version = "1.7.0"
+version = "5.1.0"
 description = "Rammearkitektur AMQP framework (FastAPI + RAMQP)"
 category = "main"
 optional = false
@@ -194,13 +194,15 @@ python-versions = ">=3.10,<4.0"
 [package.dependencies]
 fastapi = ">=0.101,<1.0"
 gql = ">=3.4.0,<4.0.0"
+httpx = ">=0.26.0,<0.27.0"
 more-itertools = ">=9.1.0,<10.0.0"
 prometheus-fastapi-instrumentator = ">=5.9.1,<7.0.0"
 pydantic = ">=1.10.5,<2.0.0"
 ra-utils = ">=1.12.2,<2.0.0"
 raclients = ">=3.0.5,<4.0.0"
-ramqp = ">=9.0.0,<10.0.0"
+ramqp = ">=9.1.1,<10.0.0"
 structlog = ">=23.1.0,<24.0.0"
+tenacity = ">=8.2.3,<9.0.0"
 
 [[package]]
 name = "filelock"
@@ -281,6 +283,24 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
+name = "httpcore"
+version = "1.0.2"
+description = "A minimal low-level HTTP client."
+category = "main"
+optional = false
+python-versions = ">=3.8"
+
+[package.dependencies]
+certifi = "*"
+h11 = ">=0.13,<0.15"
+
+[package.extras]
+asyncio = ["anyio (>=4.0,<5.0)"]
+http2 = ["h2 (>=3,<5)"]
+socks = ["socksio (>=1.0.0,<2.0.0)"]
+trio = ["trio (>=0.22.0,<0.23.0)"]
+
+[[package]]
 name = "httpcore-with-random-feature-branch"
 version = "1.0.0"
 description = "A minimal low-level HTTP client."
@@ -297,6 +317,27 @@ asyncio = ["anyio (>=4.0,<5.0)"]
 http2 = ["h2 (>=3,<5)"]
 socks = ["socksio (>=1.0.0,<2.0.0)"]
 trio = ["trio (>=0.22.0,<0.23.0)"]
+
+[[package]]
+name = "httpx"
+version = "0.26.0"
+description = "The next generation HTTP client."
+category = "main"
+optional = false
+python-versions = ">=3.8"
+
+[package.dependencies]
+anyio = "*"
+certifi = "*"
+httpcore = ">=1.0.0,<2.0.0"
+idna = "*"
+sniffio = "*"
+
+[package.extras]
+brotli = ["brotli", "brotlicffi"]
+cli = ["click (>=8.0.0,<9.0.0)", "pygments (>=2.0.0,<3.0.0)", "rich (>=10,<14)"]
+http2 = ["h2 (>=3,<5)"]
+socks = ["socksio (>=1.0.0,<2.0.0)"]
 
 [[package]]
 name = "httpx-with-httpcore-with-random-feature-branch"
@@ -787,7 +828,7 @@ python-dateutil = ">=2.8.2,<3.0.0"
 
 [[package]]
 name = "ramqp"
-version = "9.0.0"
+version = "9.1.1"
 description = "Rammearkitektur AMQP library (aio_pika wrapper)"
 category = "main"
 optional = false
@@ -796,7 +837,7 @@ python-versions = ">=3.10,<4.0"
 [package.dependencies]
 aio-pika = ">=8.3,<10.0"
 anyio = ">=3.6.2,<4.0.0"
-fastapi = ">=0.95.0,<1.0"
+fastapi = ">=0.108.0,<1.0"
 more-itertools = ">=9.1.0,<10.0.0"
 prometheus-client = ">=0.16,<0.18"
 pydantic = ">=1.10.5,<2.0.0"
@@ -902,17 +943,17 @@ python-versions = "*"
 
 [[package]]
 name = "starlette"
-version = "0.27.0"
+version = "0.36.3"
 description = "The little ASGI library that shines."
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 
 [package.dependencies]
 anyio = ">=3.4.0,<5"
 
 [package.extras]
-full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart", "pyyaml"]
+full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7)", "pyyaml"]
 
 [[package]]
 name = "structlog"
@@ -930,11 +971,11 @@ typing = ["mypy", "rich", "twisted"]
 
 [[package]]
 name = "tenacity"
-version = "8.2.2"
+version = "8.2.3"
 description = "Retry code until it succeeds"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.extras]
 doc = ["reno", "sphinx", "tornado (>=4.5)"]
@@ -958,11 +999,11 @@ telegram = ["requests"]
 
 [[package]]
 name = "typing-extensions"
-version = "4.6.3"
-description = "Backported and Experimental Type Hints for Python 3.7+"
+version = "4.9.0"
+description = "Backported and Experimental Type Hints for Python 3.8+"
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 
 [[package]]
 name = "urllib3"
@@ -1036,7 +1077,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.11.0"
-content-hash = "726016d9e5412c976c233d2fa97b336bfdf447c8a3d400adfb2d50ebe009f790"
+content-hash = "08fb378d11001ce06a5c9ae13ed79141b75fd06ba727d551d7cc3e0eb09db9d7"
 
 [metadata.files]
 aio-pika = [
@@ -1314,12 +1355,12 @@ distlib = [
     {file = "distlib-0.3.6.tar.gz", hash = "sha256:14bad2d9b04d3a36127ac97f30b12a19268f211063d8f8ee4f47108896e11b46"},
 ]
 fastapi = [
-    {file = "fastapi-0.103.0-py3-none-any.whl", hash = "sha256:61ab72c6c281205dd0cbaccf503e829a37e0be108d965ac223779a8479243665"},
-    {file = "fastapi-0.103.0.tar.gz", hash = "sha256:4166732f5ddf61c33e9fa4664f73780872511e0598d4d5434b1816dc1e6d9421"},
+    {file = "fastapi-0.109.2-py3-none-any.whl", hash = "sha256:2c9bab24667293b501cad8dd388c05240c850b58ec5876ee3283c47d6e1e3a4d"},
+    {file = "fastapi-0.109.2.tar.gz", hash = "sha256:f3817eac96fe4f65a2ebb4baa000f394e55f5fccdaf7f75250804bc58f354f73"},
 ]
 fastramqpi = [
-    {file = "fastramqpi-1.7.0-py3-none-any.whl", hash = "sha256:6a9d034d02f205e3809310aeed62c302fc2bd4254a80e19e732ef0c59962d7fe"},
-    {file = "fastramqpi-1.7.0.tar.gz", hash = "sha256:696b23bef2ac3bca23f56c9f872978364647f48d5f4c8c4702ff4783f614a4ca"},
+    {file = "fastramqpi-5.1.0-py3-none-any.whl", hash = "sha256:35494852eea2b7aeab21ddeda6e8d3dead70d7084ea3fced6d0f71936ad14cd5"},
+    {file = "fastramqpi-5.1.0.tar.gz", hash = "sha256:94fd61d70795a96ddb0d0207fb8486c2da9b3dddab9657bcc8d65c295b6e8105"},
 ]
 filelock = [
     {file = "filelock-3.12.2-py3-none-any.whl", hash = "sha256:cbb791cdea2a72f23da6ac5b5269ab0a0d161e9ef0100e653b69049a7706d1ec"},
@@ -1345,9 +1386,17 @@ h11 = [
     {file = "h11-0.14.0-py3-none-any.whl", hash = "sha256:e3fe4ac4b851c468cc8363d500db52c2ead036020723024a109d37346efaa761"},
     {file = "h11-0.14.0.tar.gz", hash = "sha256:8f19fbbe99e72420ff35c00b27a34cb9937e902a8b810e2c88300c6f0a3b699d"},
 ]
+httpcore = [
+    {file = "httpcore-1.0.2-py3-none-any.whl", hash = "sha256:096cc05bca73b8e459a1fc3dcf585148f63e534eae4339559c9b8a8d6399acc7"},
+    {file = "httpcore-1.0.2.tar.gz", hash = "sha256:9fc092e4799b26174648e54b74ed5f683132a464e95643b226e00c2ed2fa6535"},
+]
 httpcore-with-random-feature-branch = [
     {file = "httpcore_with_random_feature_branch-1.0.0-py3-none-any.whl", hash = "sha256:2270ffd462357232e8409f9c41e96ff6fc8532e14811c6520effa407f97cca0d"},
     {file = "httpcore_with_random_feature_branch-1.0.0.tar.gz", hash = "sha256:ca70a12ec110f710824fdaf2d0f5fdf3e4ffed0b1f499bdb6d3238fcb344c2a0"},
+]
+httpx = [
+    {file = "httpx-0.26.0-py3-none-any.whl", hash = "sha256:8915f5a3627c4d47b73e8202457cb28f1266982d1159bd5779d86a80c0eab1cd"},
+    {file = "httpx-0.26.0.tar.gz", hash = "sha256:451b55c30d5185ea6b23c2c793abf9bb237d2a7dfb901ced6ff69ad37ec1dfaf"},
 ]
 httpx-with-httpcore-with-random-feature-branch = [
     {file = "httpx_with_httpcore_with_random_feature_branch-0.25.1-py3-none-any.whl", hash = "sha256:98e9469d3fcdaa3d0777e7cad1ee5f80a5ccde0d1d7b41e19fa190dba2703c1a"},
@@ -1700,8 +1749,8 @@ ramodels = [
     {file = "ramodels-19.5.2.tar.gz", hash = "sha256:867f2ecbf733b97a72168e68df33954fa48c75ea686af27287c80e9eb0badf82"},
 ]
 ramqp = [
-    {file = "ramqp-9.0.0-py3-none-any.whl", hash = "sha256:f8640ea2ca11c6ee4709ddc9eef44fe6604d81b6d0b5638942467f7295ee99c2"},
-    {file = "ramqp-9.0.0.tar.gz", hash = "sha256:09888e9b5db0389aa200c12c7a81392928e2fa5e86362c396b3547f37b3722b0"},
+    {file = "ramqp-9.1.1-py3-none-any.whl", hash = "sha256:8c3624d81b563c5d88b483f36b6060b1c1a1beeb08adaba4b56a479ea22ab81d"},
+    {file = "ramqp-9.1.1.tar.gz", hash = "sha256:e620e589af813d9ca42d727cc4a5909a8b2c4cfa54b013154044b5f5b588fa5e"},
 ]
 requests = [
     {file = "requests-2.31.0-py3-none-any.whl", hash = "sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f"},
@@ -1728,24 +1777,24 @@ sortedcontainers = [
     {file = "sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88"},
 ]
 starlette = [
-    {file = "starlette-0.27.0-py3-none-any.whl", hash = "sha256:918416370e846586541235ccd38a474c08b80443ed31c578a418e2209b3eef91"},
-    {file = "starlette-0.27.0.tar.gz", hash = "sha256:6a6b0d042acb8d469a01eba54e9cda6cbd24ac602c4cd016723117d6a7e73b75"},
+    {file = "starlette-0.36.3-py3-none-any.whl", hash = "sha256:13d429aa93a61dc40bf503e8c801db1f1bca3dc706b10ef2434a36123568f044"},
+    {file = "starlette-0.36.3.tar.gz", hash = "sha256:90a671733cfb35771d8cc605e0b679d23b992f8dcfad48cc60b38cb29aeb7080"},
 ]
 structlog = [
     {file = "structlog-23.1.0-py3-none-any.whl", hash = "sha256:79b9e68e48b54e373441e130fa447944e6f87a05b35de23138e475c05d0f7e0e"},
     {file = "structlog-23.1.0.tar.gz", hash = "sha256:270d681dd7d163c11ba500bc914b2472d2b50a8ef00faa999ded5ff83a2f906b"},
 ]
 tenacity = [
-    {file = "tenacity-8.2.2-py3-none-any.whl", hash = "sha256:2f277afb21b851637e8f52e6a613ff08734c347dc19ade928e519d7d2d8569b0"},
-    {file = "tenacity-8.2.2.tar.gz", hash = "sha256:43af037822bd0029025877f3b2d97cc4d7bb0c2991000a3d59d71517c5c969e0"},
+    {file = "tenacity-8.2.3-py3-none-any.whl", hash = "sha256:ce510e327a630c9e1beaf17d42e6ffacc88185044ad85cf74c0a8887c6a0f88c"},
+    {file = "tenacity-8.2.3.tar.gz", hash = "sha256:5398ef0d78e63f40007c1fb4c0bff96e1911394d2fa8d194f77619c05ff6cc8a"},
 ]
 tqdm = [
     {file = "tqdm-4.65.0-py3-none-any.whl", hash = "sha256:c4f53a17fe37e132815abceec022631be8ffe1b9381c2e6e30aa70edc99e9671"},
     {file = "tqdm-4.65.0.tar.gz", hash = "sha256:1871fb68a86b8fb3b59ca4cdd3dcccbc7e6d613eeed31f4c332531977b89beb5"},
 ]
 typing-extensions = [
-    {file = "typing_extensions-4.6.3-py3-none-any.whl", hash = "sha256:88a4153d8505aabbb4e13aacb7c486c2b4a33ca3b3f807914a9b4c844c471c26"},
-    {file = "typing_extensions-4.6.3.tar.gz", hash = "sha256:d91d5919357fe7f681a9f2b5b4cb2a5f1ef0a1e9f59c4d8ff0d3491e05c0ffd5"},
+    {file = "typing_extensions-4.9.0-py3-none-any.whl", hash = "sha256:af72aea155e91adfc61c3ae9e0e342dbc0cba726d6cba4b6c72c1f34e47291cd"},
+    {file = "typing_extensions-4.9.0.tar.gz", hash = "sha256:23478f88c37f27d76ac8aee6c905017a143b0b1b886c3c9f66bc2fd94f9f5783"},
 ]
 urllib3 = [
     {file = "urllib3-2.0.7-py3-none-any.whl", hash = "sha256:fdb6d215c776278489906c2f8916e6e7d4f5a9b602ccbcfdf7f016fc8da0596e"},
