@@ -138,7 +138,10 @@ async def main(settings: Settings, graphql_session, os2sync_client):
     ):
         os2sync_client.upsert_org_unit(org_unit)
 
-    existing_os2sync_org_units, existing_os2sync_users = os2sync_client.get_hierarchy(
+    (
+        existing_os2sync_org_units,
+        existing_os2sync_users,
+    ) = os2sync_client.get_existing_uuids(
         request_uuid=request_uuid,
     )
 
