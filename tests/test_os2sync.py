@@ -5,7 +5,11 @@ from unittest.mock import ANY
 from unittest.mock import call
 from unittest.mock import MagicMock
 from unittest.mock import patch
+from uuid import UUID
 from uuid import uuid4
+
+import pytest
+from requests import HTTPError
 
 from os2sync_export.os2sync import OS2SyncClient
 from os2sync_export.os2sync_models import OrgUnit
@@ -196,3 +200,52 @@ def test_update_users_no_user(mock_settings):
         users = [None]
         os2sync_client.update_users(user_uuid, users)
         mock_os2sync_delete.assert_called_once_with(f"{{BASE}}/user/{user_uuid}")
+
+
+@pytest.mark.parametrize(
+    "input_org_units",
+    ([], [{"Uuid": str(uuid4())}], [{"Uuid": str(uuid4())}, {"Uuid": str(uuid4())}]),
+)
+@pytest.mark.parametrize(
+    "input_users",
+    ([], [{"Uuid": str(uuid4())}], [{"Uuid": str(uuid4())}, {"Uuid": str(uuid4())}]),
+)
+def test_get_hierarchy(input_org_units, input_users, mock_settings):
+    """Test that org_unit and user uuids are returned correctly"""
+    # Arrange
+    expected_org_units = {UUID(o["Uuid"]) for o in input_org_units}
+    expected_users = {UUID(o["Uuid"]) for o in input_users}
+
+    response = MagicMock()
+    response.json.return_value = {
+        "Result": {"OUs": input_org_units, "Users": input_users}
+    }
+    session = MagicMock()
+    session.get.return_value = response
+    os2sync_client = OS2SyncClient(settings=mock_settings, session=session)
+
+    request_uuid = uuid4()
+    # Act
+    org_units, users = os2sync_client.get_hierarchy(request_uuid=request_uuid)
+    assert org_units == input_org_units
+    assert users == input_users
+
+    org_units, users = os2sync_client.get_existing_uuids(request_uuid=request_uuid)
+    session.get.assert_called_with(
+        f"{mock_settings.os2sync_api_url}/hierarchy/{request_uuid}"
+    )
+
+    # Assert
+    assert org_units == expected_org_units
+    assert users == expected_users
+
+
+def test_get_hierarchy_retry(mock_settings):
+    """Test that we retry on http-errors"""
+    session = MagicMock()
+    session.get.side_effect = [HTTPError, HTTPError, MagicMock()]
+    os2sync_client = OS2SyncClient(settings=mock_settings, session=session)
+    # TODO: overwrite wait-time to avoid waiting 10 seconds during tests
+    os2sync_client.get_existing_uuids(uuid4())
+
+    assert session.get.call_count == 3
