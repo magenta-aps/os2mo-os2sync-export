@@ -7,8 +7,6 @@ from unittest.mock import call
 from unittest.mock import patch
 from uuid import uuid4
 
-import pytest
-
 from os2sync_export.config import Settings
 from os2sync_export.os2mo import get_sts_user
 from os2sync_export.os2mo import group_accounts
@@ -84,7 +82,6 @@ def test_group_by_engagement():
         assert g in groups
 
 
-@pytest.mark.asyncio
 @patch("os2sync_export.os2mo.get_sts_user_raw")
 async def test_get_sts_user(
     get_sts_user_raw_mock, set_settings: Callable[..., Settings]
@@ -129,7 +126,6 @@ async def test_get_sts_user(
         assert c in get_sts_user_raw_mock.call_args_list
 
 
-@pytest.mark.asyncio
 @patch("os2sync_export.os2mo.get_sts_user_raw")
 async def test_get_sts_user_no_it_accounts(
     get_sts_user_raw_mock, mock_settings: Settings

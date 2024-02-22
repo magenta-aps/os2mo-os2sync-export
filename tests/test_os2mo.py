@@ -317,7 +317,6 @@ def test_orgunit_model_invalid_key():
         OrgUnit(**sts_org_unit)
 
 
-@pytest.mark.asyncio
 async def test_get_address_org_unit_and_employee_uuids():
     addr_uuid_mock = uuid4()
     ou_uuid_mock = uuid4()
@@ -355,7 +354,6 @@ async def test_get_address_org_unit_and_employee_uuids():
     assert UUID(result_e_uuid) == e_uuid_mock
 
 
-@pytest.mark.asyncio
 async def test_get_ituser_org_unit_and_employee_uuids():
     ituser_uuid_mock = uuid4()
     ou_uuid_mock = uuid4()
@@ -395,7 +393,6 @@ async def test_get_ituser_org_unit_and_employee_uuids():
     assert UUID(result_e_uuid) == e_uuid_mock
 
 
-@pytest.mark.asyncio
 async def test_get_manager_org_unit_uuid():
     manager_uuid_mock = uuid4()
     ou_uuid_mock = uuid4()
@@ -429,7 +426,6 @@ async def test_get_manager_org_unit_uuid():
     assert UUID(result_ou_uuid) == ou_uuid_mock
 
 
-@pytest.mark.asyncio
 async def test_get_manager_org_unit_uuid_not_found():
     manager_uuid_mock = uuid4()
     graphql_session_mock = AsyncMock()
@@ -446,7 +442,6 @@ async def test_get_manager_org_unit_uuid_not_found():
         )
 
 
-@pytest.mark.asyncio
 async def test_get_engagement_employee_uuid():
     engagement_uuid_mock = uuid4()
     e_uuid_mock = uuid4()
@@ -482,7 +477,6 @@ async def test_get_engagement_employee_uuid():
     assert UUID(result_e_uuid) == e_uuid_mock
 
 
-@pytest.mark.asyncio
 async def test_get_kle_org_unit_uuid():
     kle_uuid_mock = uuid4()
     ou_uuid_mock = uuid4()

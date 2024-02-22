@@ -7,8 +7,6 @@ from typing import Dict
 from typing import Optional
 from unittest.mock import patch
 
-import pytest
-
 from os2sync_export import os2mo
 from os2sync_export.os2mo import get_sts_user_raw
 from tests.helpers import dummy_positions
@@ -365,7 +363,6 @@ def patched_session_get(url: str, params: Optional[Dict[Any, Any]] = None, **kwa
     raise ValueError("unexpected url: {}".format(url))
 
 
-@pytest.mark.asyncio
 @patch("os2sync_export.os2mo.os2mo_get", patched_session_get)
 @patch.object(os2mo, "engagements_to_user", mock_engagements_to_user)
 @patch.object(os2mo, "org_unit_uuids", return_value={})
