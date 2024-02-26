@@ -8,6 +8,7 @@ from typing import Set
 from uuid import UUID
 
 from gql.client import AsyncClientSession
+from more_itertools import all_unique
 from more_itertools import flatten
 from ra_utils.asyncio_utils import gather_with_concurrency
 from ra_utils.tqdm_wrapper import tqdm
@@ -177,3 +178,34 @@ async def main(settings: Settings, graphql_session, os2sync_client):
         os2sync_client.delete_user(uuid)
 
     logger.info("sync users done")
+
+
+async def cleanup_duplicate_engagements(
+    settings: Settings,
+    graphql_session: AsyncClientSession,
+    os2sync_client: OS2SyncClient,
+):
+    """Delete and resync users in fk-org with multiple engagements of the same job-function (name) and same org_unit"""
+    request_uuid = os2sync_client.trigger_hierarchy()
+    _, users = os2sync_client.get_hierarchy(request_uuid=request_uuid)
+    # Find users with duplicated engagements
+    user_uuids = [
+        UUID(item["Uuid"]) for item in users if not all_unique(item["Positions"], tuple)
+    ]
+    logger.info(f"Found {len(user_uuids)} users with duplicated engagements.")
+    logger.info(f"{user_uuids=}")
+
+    users = flatten(
+        [
+            await os2mo.get_sts_user(
+                str(uuid), graphql_session=graphql_session, settings=settings
+            )
+            for uuid in user_uuids
+        ]
+    )
+
+    logger.info("Writing users to os2sync")
+    for user in users:
+        os2sync_client.update_users(user["Uuid"], {**user, "Positions": []})
+        os2sync_client.update_users(user["Uuid"], user)
+    logger.info("Done with cleanup of duplicate engagements")
