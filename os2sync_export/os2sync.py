@@ -123,7 +123,7 @@ class OS2SyncClient:
         stop=stop_after_delay(10 * 60),
         retry=retry_if_exception_type(requests.HTTPError),
     )
-    def get_hierarchy(self, request_uuid: UUID) -> Tuple[Set[UUID], Set[UUID]]:
+    def get_hierarchy(self, request_uuid: UUID) -> Tuple[dict, dict]:
         """Fetches the hierarchy from os2sync. Retries for 10 minutes until it is ready."""
         r = self.session.get(
             f"{self.settings.os2sync_api_url}/hierarchy/{str(request_uuid)}"
@@ -132,8 +132,12 @@ class OS2SyncClient:
         hierarchy = r.json()["Result"]
         if hierarchy is None:
             raise ConnectionError("Check connection to FK-ORG")
-        existing_os2sync_org_units = {UUID(o["Uuid"]) for o in hierarchy["OUs"]}
-        existing_os2sync_users = {UUID(u["Uuid"]) for u in hierarchy["Users"]}
+        return hierarchy["OUs"], hierarchy["Users"]
+
+    def get_existing_uuids(self, request_uuid: UUID) -> Tuple[Set[UUID], Set[UUID]]:
+        org_units, users = self.get_hierarchy(request_uuid=request_uuid)
+        existing_os2sync_org_units = {UUID(o["Uuid"]) for o in org_units}
+        existing_os2sync_users = {UUID(u["Uuid"]) for u in users}
         return existing_os2sync_org_units, existing_os2sync_users
 
     def update_users(self, uuid: UUID, users):

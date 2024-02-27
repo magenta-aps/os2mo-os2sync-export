@@ -5,10 +5,12 @@ from typing import Any
 from typing import Callable
 from typing import Generator
 from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
 
 import pytest
 
 from os2sync_export.config import Settings
+from os2sync_export.os2sync import OS2SyncClient
 
 DEFAULT_AMQP_URL = "amqp://guest:guest@msg_broker:5672/os2mo"
 
@@ -52,6 +54,20 @@ def mock_settings(
 def graphql_session() -> Generator[AsyncMock, None, None]:
     """Fixture for the GraphQL session."""
     yield AsyncMock()
+
+
+@pytest.fixture
+def requests_session() -> Generator[MagicMock, None, None]:
+    """Fixture for the requests session."""
+    yield MagicMock()
+
+
+@pytest.fixture
+def mock_os2sync_client(
+    mock_settings, requests_session
+) -> Generator[OS2SyncClient, None, None]:
+    """Fixture for the os2sync_client."""
+    yield OS2SyncClient(settings=mock_settings, session=requests_session)
 
 
 @pytest.fixture

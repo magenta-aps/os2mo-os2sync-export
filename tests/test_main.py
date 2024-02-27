@@ -13,7 +13,6 @@ from os2sync_export.os2mo import is_relevant
 from os2sync_export.os2sync_models import OrgUnit
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("overwritten_uuid", (True, False))
 @patch(
     "os2sync_export.main.get_ituser_org_unit_and_employee_uuids",
@@ -54,7 +53,6 @@ async def test_trigger_it_user_update(
         os2sync_client.delete_user.assert_not_called()
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("is_relevant", (True, False))
 @pytest.mark.parametrize("overwritten_uuid", (True, False))
 @patch(
@@ -106,7 +104,6 @@ async def test_trigger_it_orgunit_update(
     # Ensure we won't delete the org_unit
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("is_relevant", (True, False))
 @pytest.mark.parametrize("overwritten_uuid", (True, False))
 async def test_trigger_orgunit_update(
@@ -138,7 +135,6 @@ async def test_trigger_orgunit_update(
     os2sync_client.update_org_unit(orgunit_uuid, fk_org_orggunit.json())
 
 
-@pytest.mark.asyncio
 async def test_is_relevant(set_settings):
     unit_uuid = uuid4()
     top_unit_uuid = uuid4()
@@ -165,7 +161,6 @@ async def test_is_relevant(set_settings):
     )
 
 
-@pytest.mark.asyncio
 async def test_is_not_below_top_unit(mock_settings):
     graphql_session = AsyncMock()
     unit_uuid = uuid4()
@@ -177,7 +172,6 @@ async def test_is_not_below_top_unit(mock_settings):
     )
 
 
-@pytest.mark.asyncio
 async def test_is_relevant_wrong_hierarchy(set_settings):
     unit_uuid = uuid4()
     top_unit_uuid = uuid4()
@@ -204,7 +198,6 @@ async def test_is_relevant_wrong_hierarchy(set_settings):
     )
 
 
-@pytest.mark.asyncio
 async def test_is_relevant_has_it_account(set_settings):
     unit_uuid = uuid4()
     top_unit_uuid = uuid4()

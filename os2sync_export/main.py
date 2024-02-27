@@ -18,6 +18,7 @@ from ramqp.depends import RateLimit
 from ramqp.mo import MORouter
 from ramqp.mo import PayloadUUID
 
+from os2sync_export.__main__ import cleanup_duplicate_engagements
 from os2sync_export.__main__ import main
 from os2sync_export.config import get_os2sync_settings
 from os2sync_export.config import Settings
@@ -55,6 +56,22 @@ async def trigger_all(
 ) -> Dict[str, str]:
     background_tasks.add_task(
         main,
+        settings=settings,
+        graphql_session=graphql_session,
+        os2sync_client=os2sync_client,
+    )
+    return {"triggered": "OK"}
+
+
+@fastapi_router.post("/cleanup_duplicate_engagements", status_code=202)
+async def trigger_cleanup_duplicate_engagements(
+    background_tasks: BackgroundTasks,
+    settings: Settings_,
+    graphql_session: LegacyGraphQLSession,
+    os2sync_client: OS2SyncClient_,
+) -> Dict[str, str]:
+    background_tasks.add_task(
+        cleanup_duplicate_engagements,
         settings=settings,
         graphql_session=graphql_session,
         os2sync_client=os2sync_client,
