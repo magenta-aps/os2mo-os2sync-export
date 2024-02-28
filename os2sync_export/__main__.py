@@ -195,6 +195,14 @@ async def cleanup_duplicate_engagements(
     logger.info(f"Found {len(user_uuids)} users with duplicated engagements.")
     logger.info(f"{user_uuids=}")
 
+    if settings.os2sync_uuid_from_it_systems:
+        fk_org_uuid_map = await os2mo.fk_org_uuid_to_mo_uuid(
+            graphql_session=graphql_session,
+            uuids=user_uuids,
+            it_system_names=settings.os2sync_uuid_from_it_systems,
+        )
+        user_uuids = [fk_org_uuid_map.get(u, u) for u in user_uuids]
+
     users = flatten(
         [
             await os2mo.get_sts_user(
