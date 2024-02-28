@@ -19,17 +19,15 @@ async def test_cleanup_duplicate_engagements(
     user_uuid = str(uuid4())
     user_fk_org_uuid = str(uuid4())
     graphql_session.execute.return_value = {
-        "data": {
-            "itusers": [
-                {
-                    "current": {
-                        "person": [{"uuid": user_uuid}],
-                        "user_key": user_fk_org_uuid,
-                        "itsystem": {"name": "FK-org uuid"},
-                    }
+        "itusers": [
+            {
+                "current": {
+                    "person": [{"uuid": user_uuid}],
+                    "user_key": user_fk_org_uuid,
+                    "itsystem": {"name": "FK-org uuid"},
                 }
-            ]
-        }
+            }
+        ]
     }
     os2sync_client.get_hierarchy = MagicMock(
         return_value=(

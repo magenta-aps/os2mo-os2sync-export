@@ -932,23 +932,23 @@ async def fk_org_uuid_to_mo_uuid(
 ):
     query = """
         query GetFKOrgUserMap($user_keys: [String!]) {
-            itusers(user_keys: $user_keys) {
-                current {
-                person {
-                    uuid
-                }
-                user_key
-                }
-                itsystem {
-                    name
-                }
+          itusers(user_keys: $user_keys) {
+            current {
+              person {
+                uuid
+              }
+              user_key
+              itsystem {
+                name
+              }
             }
+          }
         }
-     """
+    """
     res = await graphql_session.execute(
         gql(query), variable_values={"user_keys": [str(u) for u in uuids]}
     )
-    res = res["data"]["itusers"]
+    res = res["itusers"]
     res = filter(lambda i: i["current"]["itsystem"]["name"] in it_system_names, res)
     return {
         UUID(r["current"]["user_key"]): UUID(one(r["current"]["person"])["uuid"])
