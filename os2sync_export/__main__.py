@@ -201,19 +201,18 @@ async def cleanup_duplicate_engagements(
             uuids=user_uuids,
             it_system_names=settings.os2sync_uuid_from_it_systems,
         )
-        user_uuids = [fk_org_uuid_map.get(u, u) for u in user_uuids]
-
-    users = flatten(
-        [
-            await os2mo.get_sts_user(
-                str(uuid), graphql_session=graphql_session, settings=settings
-            )
-            for uuid in user_uuids
-        ]
-    )
 
     logger.info("Writing users to os2sync")
-    for user in users:
-        os2sync_client.update_users(user["Uuid"], {**user, "Positions": []})
-        os2sync_client.update_users(user["Uuid"], user)
+    for user_uuid in user_uuids:
+        os2sync_client.delete_user(user_uuid)
+        mo_uuid = (
+            fk_org_uuid_map.get(user_uuid, user_uuid)
+            if settings.os2sync_uuid_from_it_systems
+            else user_uuid
+        )
+
+        users = await os2mo.get_sts_user(
+            str(mo_uuid), graphql_session=graphql_session, settings=settings
+        )
+        os2sync_client.update_users(user_uuid, users)
     logger.info("Done with cleanup of duplicate engagements")
