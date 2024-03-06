@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
-from unittest.mock import call
 from unittest.mock import MagicMock
 from unittest.mock import patch
+from uuid import UUID
 from uuid import uuid4
 
 from os2sync_export.__main__ import cleanup_duplicate_engagements
@@ -13,6 +13,7 @@ async def test_cleanup_duplicate_engagements(
     mock_settings, graphql_session, os2sync_client
 ):
     os2sync_client.update_users = MagicMock()
+    os2sync_client.delete_user = MagicMock()
     mock_settings.os2sync_uuid_from_it_systems = ["FK-org uuid"]
 
     ou_1 = str(uuid4())
@@ -69,15 +70,15 @@ async def test_cleanup_duplicate_engagements(
         user_uuid, graphql_session=graphql_session, settings=mock_settings
     )
     os2sync_client.get_hierarchy.assert_called_once()
-    assert os2sync_client.update_users.call_count == 2
+    assert os2sync_client.update_users.call_count == 1
 
-    assert os2sync_client.update_users.call_args_list[0] == call(
-        user_fk_org_uuid, {"Uuid": user_fk_org_uuid, "Positions": []}
-    )
-    assert os2sync_client.update_users.call_args_list[1] == call(
-        user_fk_org_uuid,
-        {
-            "Uuid": user_fk_org_uuid,
-            "Positions": [{"Name": "tester", "OrgUnitUuid": ou_1}],
-        },
+    os2sync_client.delete_user.assert_called_with(UUID(user_fk_org_uuid))
+    os2sync_client.update_users.assert_called_once_with(
+        UUID(user_fk_org_uuid),
+        [
+            {
+                "Uuid": user_fk_org_uuid,
+                "Positions": [{"Name": "tester", "OrgUnitUuid": ou_1}],
+            }
+        ],
     )
