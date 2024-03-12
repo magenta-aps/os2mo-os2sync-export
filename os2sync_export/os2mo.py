@@ -928,7 +928,7 @@ async def find_employees(
 
 
 async def fk_org_uuid_to_mo_uuid(
-    graphql_session: AsyncClientSession, uuids: list[UUID], it_system_names: list[str]
+    graphql_session: AsyncClientSession, uuids: set[UUID], it_system_names: list[str]
 ):
     query = """
         query GetFKOrgUserMap($user_keys: [String!]) {
