@@ -189,30 +189,34 @@ async def cleanup_duplicate_engagements(
     request_uuid = os2sync_client.trigger_hierarchy()
     _, users = os2sync_client.get_hierarchy(request_uuid=request_uuid)
     # Find users with duplicated engagements
-    user_uuids = [
+    user_uuids = {
         UUID(item["Uuid"]) for item in users if not all_unique(item["Positions"], tuple)
-    ]
+    }
     logger.info(f"Found {len(user_uuids)} users with duplicated engagements.")
-    logger.info(f"{user_uuids=}")
 
+    logger.info("Deleting users from fk-org.")
+    for user_uuid in user_uuids:
+        os2sync_client.delete_user(user_uuid)
+    logger.info("Done with cleanup of duplicate engagements")
     if settings.os2sync_uuid_from_it_systems:
         fk_org_uuid_map = await os2mo.fk_org_uuid_to_mo_uuid(
             graphql_session=graphql_session,
             uuids=user_uuids,
             it_system_names=settings.os2sync_uuid_from_it_systems,
         )
-
-    logger.info("Writing users to os2sync")
-    for user_uuid in user_uuids:
-        os2sync_client.delete_user(user_uuid)
-        mo_uuid = (
-            fk_org_uuid_map.get(user_uuid, user_uuid)
-            if settings.os2sync_uuid_from_it_systems
-            else user_uuid
-        )
-
-        users = await os2mo.get_sts_user(
-            str(mo_uuid), graphql_session=graphql_session, settings=settings
-        )
-        os2sync_client.update_users(user_uuid, users)
-    logger.info("Done with cleanup of duplicate engagements")
+        user_uuids = {
+            fk_org_uuid_map.get(user_uuid, user_uuid) for user_uuid in user_uuids
+        }
+    logger.warn(
+        f"""
+        Users has been deleted from os2sync and must be uploaded again! Follow these steps:
+        1. Connect to os2syncs database: (password is found in docker-compose.yml)
+        `docker exec -it os2sync_mysql_1 mysql -u os2sync -ppassw0rD os2sync`
+        2. Wait for os2sync to finish deleting the users (check the `queue_users` table)
+        `SELECT COUNT(*) FROM queue_users;`
+        3. Clear the `success_users` table.
+        `DELETE FROM success_users;`
+        4. Trigger sync of the users again:
+        `docker exec -it os2sync_export bash -c "printf '{' '.join(str(u) for u in user_uuids)}' | xargs -d' ' -I % curl -X POST localhost:8000/trigger/user/%"`
+        """
+    )
