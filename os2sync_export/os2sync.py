@@ -103,9 +103,11 @@ class OS2SyncClient:
         )
         org_unit.SOR = org_unit.SOR or current.SOR
 
+        org_unit_info = org_unit.json()
         logger.info(f"Syncing org_unit {org_unit}")
-
-        self.os2sync_post("{BASE}/orgUnit/", json=org_unit.json())
+        if not self.settings.os2sync_v4:
+            org_unit_info.pop("PostSecondary")
+        self.os2sync_post("{BASE}/orgUnit/", json=org_unit_info)
 
     def trigger_hierarchy(self) -> UUID:
         """ "Triggers a job in the os2sync container that gathers the entire hierarchy from FK-ORG

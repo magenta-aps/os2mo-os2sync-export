@@ -47,14 +47,18 @@ u2 = {
 }
 
 
-def test_os2sync_upsert_org_unit_no_changes(mock_os2sync_client):
+@pytest.mark.parametrize("os2sync_v4", [True, False])
+def test_os2sync_upsert_org_unit_no_changes(os2sync_v4, mock_os2sync_client):
     """Test that if there are no changes to an org_unit we won't write to os2sync"""
+    mock_os2sync_client.settings.os2sync_v4 = os2sync_v4
 
     mock_os2sync_client.os2sync_get_org_unit = MagicMock(return_value=o)
     mock_os2sync_client.upsert_org_unit(o)
-
+    org_unit_info = o.json()
+    if not os2sync_v4:
+        org_unit_info.pop("PostSecondary")
     mock_os2sync_client.session.post.assert_called_once_with(
-        f"{mock_os2sync_client.settings.os2sync_api_url}/orgUnit/", json=o.json()
+        f"{mock_os2sync_client.settings.os2sync_api_url}/orgUnit/", json=org_unit_info
     )
 
 
@@ -70,8 +74,10 @@ def test_os2sync_upsert_org_unit_new(mock_os2sync_client):
     )
 
 
-def test_os2sync_upsert_org_unit_changes(mock_os2sync_client):
+@pytest.mark.parametrize("os2sync_v4", [True, False])
+def test_os2sync_upsert_org_unit_changes(os2sync_v4, mock_os2sync_client):
     """If there are changes to an orgunit it is sent to os2sync"""
+    mock_os2sync_client.settings.os2sync_v4 = os2sync_v4
 
     org_unit = o.copy()
 
@@ -79,26 +85,36 @@ def test_os2sync_upsert_org_unit_changes(mock_os2sync_client):
 
     org_unit.Name = "Changed name"
     mock_os2sync_client.upsert_org_unit(org_unit)
+    org_unit_info = org_unit.json()
+    if not os2sync_v4:
+        org_unit_info.pop("PostSecondary")
 
     mock_os2sync_client.session.post.assert_called_once_with(
-        f"{mock_os2sync_client.settings.os2sync_api_url}/orgUnit/", json=org_unit.json()
+        f"{mock_os2sync_client.settings.os2sync_api_url}/orgUnit/", json=org_unit_info
     )
 
 
-def test_os2sync_upsert_org_unit_keep_fk_fields(mock_os2sync_client):
+@pytest.mark.parametrize("os2sync_v4", [True, False])
+def test_os2sync_upsert_org_unit_keep_fk_fields(os2sync_v4, mock_os2sync_client):
     """Test that certain fields are fetched from fk-org. If these fields are found we use their values in the payload"""
+    mock_os2sync_client.settings.os2sync_v4 = os2sync_v4
 
     mock_os2sync_client.os2sync_get_org_unit = MagicMock(return_value=o2)
     mock_os2sync_client.upsert_org_unit(o)
-
+    org_unit_info = o2.json()
+    if not os2sync_v4:
+        org_unit_info.pop("PostSecondary")
     mock_os2sync_client.session.post.assert_called_once_with(
-        f"{mock_os2sync_client.settings.os2sync_api_url}/orgUnit/", json=o2.json()
+        f"{mock_os2sync_client.settings.os2sync_api_url}/orgUnit/", json=org_unit_info
     )
 
 
-def test_os2sync_upsert_org_unit_changes_w_fixed_fields(mock_os2sync_client):
+@pytest.mark.parametrize("os2sync_v4", [True, False])
+def test_os2sync_upsert_org_unit_changes_w_fixed_fields(
+    os2sync_v4, mock_os2sync_client
+):
     """Test that values from fk-org is kept even if there are changes to an orgunit"""
-
+    mock_os2sync_client.settings.os2sync_v4 = os2sync_v4
     org_unit = o.copy()
     fk_org = o2.copy()
     org_unit.Name = "Changed name"
@@ -107,13 +123,18 @@ def test_os2sync_upsert_org_unit_changes_w_fixed_fields(mock_os2sync_client):
     mock_os2sync_client.os2sync_get_org_unit = MagicMock(return_value=fk_org)
     mock_os2sync_client.upsert_org_unit(org_unit)
 
+    org_unit_info = expected.json()
+    if not os2sync_v4:
+        org_unit_info.pop("PostSecondary")
     mock_os2sync_client.session.post.assert_called_once_with(
-        f"{mock_os2sync_client.settings.os2sync_api_url}/orgUnit/", json=expected.json()
+        f"{mock_os2sync_client.settings.os2sync_api_url}/orgUnit/", json=org_unit_info
     )
 
 
-def test_os2sync_upsert_org_unit_ordered_tasks(mock_os2sync_client):
+@pytest.mark.parametrize("os2sync_v4", [True, False])
+def test_os2sync_upsert_org_unit_ordered_tasks(os2sync_v4, mock_os2sync_client):
     """Test the order of 'tasks' doesn't matter."""
+    mock_os2sync_client.settings.os2sync_v4 = os2sync_v4
 
     task1 = uuid4()
     task2 = uuid4()
@@ -126,9 +147,12 @@ def test_os2sync_upsert_org_unit_ordered_tasks(mock_os2sync_client):
 
     mock_os2sync_client.os2sync_get_org_unit = MagicMock(return_value=current)
     mock_os2sync_client.upsert_org_unit(org_unit)
+    org_unit_info = org_unit.json()
+    if not os2sync_v4:
+        org_unit_info.pop("PostSecondary")
 
     mock_os2sync_client.session.post.assert_called_once_with(
-        f"{mock_os2sync_client.settings.os2sync_api_url}/orgUnit/", json=org_unit.json()
+        f"{mock_os2sync_client.settings.os2sync_api_url}/orgUnit/", json=org_unit_info
     )
 
 

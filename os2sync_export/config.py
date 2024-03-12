@@ -55,6 +55,8 @@ class Settings(FastRAMQPISettings, JobSettings):
 
     os2sync_enable_kle: bool = True
 
+    os2sync_v4: bool = False
+
     class Config:
         frozen = False
         env_nested_delimiter = "__"
