@@ -13,7 +13,7 @@ keywords = ["os2mo", "dipex", "os2sync"]
 
 [tool.poetry.dependencies]
 python = "^3.11.0"
-fastramqpi = "^1.7.0"
+fastramqpi = "^5.3.0"
 gql = "^3.5.0"
 Jinja2 = "^3.1"
 prometheus-fastapi-instrumentator = "^6.1.0"
