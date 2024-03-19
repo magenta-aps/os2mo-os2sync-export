@@ -344,7 +344,7 @@ def create_fastramqpi(**kwargs) -> FastRAMQPI:
     settings.start_logging_based_on_settings()
     if settings.sentry_dsn:
         sentry_sdk.init(dsn=settings.sentry_dsn)
-
+    settings.amqp.prefetch_count = 1
     fastramqpi = FastRAMQPI(application_name="os2sync-export", settings=settings)
 
     amqpsystem = fastramqpi.get_amqpsystem()
