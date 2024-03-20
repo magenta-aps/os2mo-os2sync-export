@@ -21,7 +21,7 @@ ra-utils = {extras = ["prometheus-client"], version = "^1.14.0"}
 raclients = "^3.3.3"
 requests = "^2.31.0"
 sentry-sdk = "^1.42.0"
-uvicorn = "^0.28.0"
+uvicorn = "^0.29.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.4"
