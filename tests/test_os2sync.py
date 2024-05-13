@@ -10,6 +10,7 @@ from uuid import uuid4
 import pytest
 from requests import HTTPError
 
+from os2sync_export.os2sync import OS2SyncClient
 from os2sync_export.os2sync_models import OrgUnit
 
 uuid = uuid4()
@@ -196,7 +197,7 @@ def test_update_users_overwritten_uuid_account(mock_os2sync_client):
 
 def test_update_users_no_user(mock_os2sync_client):
     mock_os2sync_client.os2sync_delete = MagicMock()
-    users = [None]
+    users = []
     mock_os2sync_client.update_users(user_uuid, users)
     mock_os2sync_client.os2sync_delete.assert_called_once_with(
         f"{{BASE}}/user/{user_uuid}"
@@ -248,3 +249,15 @@ def test_get_hierarchy_retry(mock_settings, mock_os2sync_client):
     mock_os2sync_client.get_existing_uuids(uuid4())
 
     assert mock_os2sync_client.session.get.call_count == 3
+
+
+def test_update_users_delete_uuid_from_it_user(mock_settings):
+    """Test that when calling update user the user is deleted with the correct uuid if there are no engagements"""
+    uuid = uuid4()
+    client = OS2SyncClient(mock_settings, None)
+    users = [{"Uuid": uuid, "Positions": []}]
+    client.delete_user = MagicMock()
+
+    client.update_users(uuid=uuid4(), users=users)
+
+    client.delete_user.assert_called_once_with(uuid)
