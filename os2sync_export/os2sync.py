@@ -143,13 +143,17 @@ class OS2SyncClient:
         return existing_os2sync_org_units, existing_os2sync_users
 
     def update_users(self, uuid: UUID, users):
-        if all(u is None for u in users):
+        if not users:
             # No fk-org user found. Delete user from fk-org
+            logger.info(f"Deleting user {uuid=} from fk-org")
             self.delete_user(uuid)
             return
 
         for user in users:
-            if user:
+            if not user["Positions"]:
+                logger.info(f"Deleting user {user['Uuid']=} from fk-org")
+                self.delete_user(user["Uuid"])
+            else:
                 logger.info(f"Syncing user {user['Uuid']=} to fk-org")
                 self.os2sync_post("{BASE}/user", json=user)
 

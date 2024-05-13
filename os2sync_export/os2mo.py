@@ -312,7 +312,7 @@ async def get_sts_user_raw(
     fk_org_uuid: Optional[str] = None,
     user_key: Optional[str] = None,
     engagement_uuid: Optional[str] = None,
-) -> Optional[Dict[str, Any]]:
+) -> Dict[str, Any]:
     employee = os2mo_get("{BASE}/e/" + uuid + "/").json()
     user = User(
         dict(
@@ -328,7 +328,7 @@ async def get_sts_user_raw(
     if settings.os2sync_filter_users_by_it_system and user_key is None:
         # Skip user if filter is activated and there are no user_key to find in settings
         # By returning user without any positions it will be removed from fk-org
-        return None
+        return sts_user
 
     # use calculate_primary flag to get the is_primary boolean used in getting work-address
     engagements = os2mo_get(
@@ -341,7 +341,7 @@ async def get_sts_user_raw(
 
     if not sts_user["Positions"]:
         # return immediately because users with no engagements are not synced.
-        return None
+        return sts_user
     if settings.os2sync_uuid_from_it_systems:
         overwrite_position_uuids(sts_user, settings.os2sync_uuid_from_it_systems)
 
@@ -398,7 +398,7 @@ def group_accounts(
 
 async def get_sts_user(
     mo_uuid: str, graphql_session: AsyncClientSession, settings: Settings
-) -> List[Optional[Dict[str, Any]]]:
+) -> List[Dict[str, Any]]:
     users = await get_user_it_accounts(graphql_session=graphql_session, mo_uuid=mo_uuid)
     try:
         fk_org_accounts = group_accounts(
