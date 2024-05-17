@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+import datetime
 import logging
 from functools import lru_cache
 from operator import itemgetter
@@ -18,6 +19,7 @@ from gql.client import AsyncClientSession
 from more_itertools import first
 from more_itertools import one
 from more_itertools import only
+from more_itertools import partition
 from ra_utils.headers import TokenSettings
 
 from os2sync_export.config import get_os2sync_settings
@@ -669,6 +671,64 @@ async def get_user_it_accounts(
     res = await graphql_session.execute(q, variable_values={"uuids": mo_uuid})
     objects = one(res["employees"])["objects"]
     return one(objects)["itusers"]
+
+
+def is_terminated(to_date: str):
+    if to_date is None:
+        return False
+    # TODO: What timezone should we use?
+    return datetime.datetime.fromisoformat(to_date) <= datetime.datetime.now(
+        tz=datetime.timezone.utc
+    )
+
+
+async def check_terminated_accounts(
+    graphql_session: AsyncClientSession,
+    uuid: UUID,
+    os2sync_uuid_from_it_systems: list[str],
+) -> tuple[set[UUID], set[UUID]]:
+    q = gql(
+        """
+        query GetITAccountEnddate($uuids: [UUID!]) {
+          itusers(uuids: $uuids, from_date: null, to_date: null) {
+            objects {
+              employee_uuid
+              org_unit_uuid
+              user_key
+              itsystem{
+                name
+              }
+              validity {
+                to
+              }
+            }
+          }
+        }
+        """
+    )
+    res = await graphql_session.execute(q, variable_values={"uuids": str(uuid)})
+    res = one(res["itusers"])["objects"]
+    relevant_it_users = filter(
+        lambda it: it["itsystem"]["name"] in os2sync_uuid_from_it_systems, res
+    )
+
+    (
+        active_itusers,
+        terminated_itusers,
+    ) = partition(lambda it: is_terminated(it["validity"]["to"]), relevant_it_users)
+    # Ensure we won't delete fk-org users that are actually active because of old registrations
+    active_fk_org_uuids = {o["user_key"] for o in active_itusers}
+    terminated_itusers = [
+        it for it in terminated_itusers if it["user_key"] not in active_fk_org_uuids
+    ]
+
+    terminated_user_uuids = {
+        UUID(o["user_key"]) for o in terminated_itusers if o["employee_uuid"]
+    }
+    terminated_org_unit_uuids = {
+        UUID(o["user_key"]) for o in terminated_itusers if o["org_unit_uuid"]
+    }
+    return terminated_user_uuids, terminated_org_unit_uuids
 
 
 def extract_uuid(objects, obj_type) -> str | None:

@@ -22,6 +22,7 @@ from os2sync_export.__main__ import cleanup_duplicate_engagements
 from os2sync_export.__main__ import main
 from os2sync_export.config import get_os2sync_settings
 from os2sync_export.config import Settings
+from os2sync_export.os2mo import check_terminated_accounts
 from os2sync_export.os2mo import find_employees
 from os2sync_export.os2mo import get_address_org_unit_and_employee_uuids
 from os2sync_export.os2mo import get_engagement_employee_uuid
@@ -181,6 +182,24 @@ async def amqp_trigger_it_user(
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    if settings.os2sync_uuid_from_it_systems:
+        terminated_users, terminated_org_units = await check_terminated_accounts(
+            graphql_session=graphql_session,
+            uuid=uuid,
+            os2sync_uuid_from_it_systems=settings.os2sync_uuid_from_it_systems,
+        )
+
+        for terminate_uuid in terminated_org_units:
+            logger.info(
+                f"Found terminated it-user. Deleting fk-org user with uuid = {terminate_uuid}"
+            )
+            os2sync_client.delete_orgunit(terminate_uuid)
+        for terminate_uuid in terminated_users:
+            logger.info(
+                f"Found terminated it-user. Deleting fk-org user with uuid = {terminate_uuid}"
+            )
+            os2sync_client.delete_user(terminate_uuid)
+
     try:
         ou_uuid, e_uuid = await get_ituser_org_unit_and_employee_uuids(
             graphql_session, uuid
