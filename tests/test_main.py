@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 from unittest.mock import AsyncMock
+from unittest.mock import call
+from unittest.mock import MagicMock
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -225,3 +227,37 @@ async def test_is_relevant_has_it_account(set_settings):
     assert await is_relevant(
         graphql_session=graphql_session, unit_uuid=unit_uuid, settings=mock_settings
     )
+
+
+async def test_amqp_trigger_it_user_no_old_accounts(set_settings):
+    mock_settings = set_settings(os2sync_uuid_from_it_systems=["FK-org uuid"])
+    os2sync_client_mock = MagicMock()
+    with patch(
+        "os2sync_export.main.check_terminated_accounts",
+        return_value=(set(), set()),
+    ):
+        await amqp_trigger_it_user(
+            uuid4(), mock_settings, AsyncMock(), os2sync_client_mock, ""
+        )
+
+    os2sync_client_mock.delete_orgunit.assert_not_called()
+    os2sync_client_mock.delete_user.assert_not_called()
+
+
+async def test_amqp_trigger_it_user_deletes_old_accounts(set_settings):
+    old_user_uuids = {uuid4(), uuid4()}
+    old_org_unit_uuids = {uuid4(), uuid4()}
+    mock_settings = set_settings(os2sync_uuid_from_it_systems=["FK-org uuid"])
+    os2sync_client_mock = MagicMock()
+    with patch(
+        "os2sync_export.main.check_terminated_accounts",
+        return_value=(old_user_uuids, old_org_unit_uuids),
+    ):
+        await amqp_trigger_it_user(
+            uuid4(), mock_settings, AsyncMock(), os2sync_client_mock, ""
+        )
+
+    for uuid in old_org_unit_uuids:
+        assert call(uuid) in os2sync_client_mock.delete_orgunit.call_args_list
+    for uuid in old_user_uuids:
+        assert call(uuid) in os2sync_client_mock.delete_user.call_args_list

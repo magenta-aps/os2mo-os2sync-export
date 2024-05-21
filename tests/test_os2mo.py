@@ -10,11 +10,13 @@ from uuid import UUID
 from uuid import uuid4
 
 import pytest
+from freezegun import freeze_time
 from hypothesis import given
 from hypothesis import strategies as st
 from parameterized import parameterized
 from pydantic import ValidationError
 
+from os2sync_export.os2mo import check_terminated_accounts
 from os2sync_export.os2mo import get_address_org_unit_and_employee_uuids
 from os2sync_export.os2mo import get_engagement_employee_uuid
 from os2sync_export.os2mo import get_ituser_org_unit_and_employee_uuids
@@ -23,6 +25,7 @@ from os2sync_export.os2mo import get_manager_org_unit_uuid
 from os2sync_export.os2mo import get_org_unit_hierarchy
 from os2sync_export.os2mo import get_work_address
 from os2sync_export.os2mo import is_ignored
+from os2sync_export.os2mo import is_terminated
 from os2sync_export.os2mo import kle_to_orgunit
 from os2sync_export.os2mo import manager_to_orgunit
 from os2sync_export.os2mo import org_unit_uuids
@@ -508,3 +511,146 @@ async def test_get_kle_org_unit_uuid():
         },
     )
     assert UUID(result_ou_uuid) == ou_uuid_mock
+
+
+@freeze_time("2024-05-17T00:00:00+02:00")
+def test_is_terminated():
+    # Still active
+    assert not is_terminated(None)
+    # Still active but terminated from next day
+    assert not is_terminated("2024-05-18T00:00:00+02:00")
+    # Terminated days before
+    assert is_terminated("2024-05-01T00:00:00+02:00")
+    # Terminated one hour ago in another timezone
+    assert is_terminated("2024-05-17T00:00:00+03:00")
+    # Terminated right now
+    assert is_terminated("2024-05-17T00:00:00+02:00")
+
+
+@freeze_time("2024-05-17T00:00:00+02:00")
+async def test_check_terminated_it_user():
+    fk_org_uuid = uuid4()
+    graphql_session_mock = MagicMock()
+    graphql_session_mock.execute = AsyncMock(
+        return_value={
+            "itusers": [
+                {
+                    "objects": [
+                        {
+                            "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
+                            "user_key": "New Active fk-org uuid",
+                            "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
+                            "itsystem": {"name": "Omada - AD GUID"},
+                            "validity": {"to": None},
+                            "employee_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
+                            "org_unit_uuid": None,
+                        },
+                        {
+                            "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
+                            "user_key": str(fk_org_uuid),
+                            "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
+                            "itsystem": {"name": "Omada - AD GUID"},
+                            "validity": {"to": "2024-05-01T00:00:00+02:00"},
+                            "employee_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
+                            "org_unit_uuid": None,
+                        },
+                    ]
+                },
+            ]
+        }
+    )
+    os2sync_uuid_from_it_systems = ["Omada - AD GUID"]
+    deleted_users, deleted_org_units = await check_terminated_accounts(
+        graphql_session=graphql_session_mock,
+        uuid=uuid4(),
+        os2sync_uuid_from_it_systems=os2sync_uuid_from_it_systems,
+    )
+    assert deleted_users == {fk_org_uuid}
+    assert deleted_org_units == set()
+
+
+@freeze_time("2024-05-17T00:00:00+02:00")
+async def test_check_terminated_it_user_org_unit():
+    fk_org_uuid = uuid4()
+    graphql_session_mock = MagicMock()
+    graphql_session_mock.execute = AsyncMock(
+        return_value={
+            "itusers": [
+                {
+                    "objects": [
+                        {
+                            "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
+                            "user_key": "New Active fk-org uuid",
+                            "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
+                            "itsystem": {"name": "FK-org UUID"},
+                            "validity": {"to": None},
+                            "employee_uuid": None,
+                            "org_unit_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
+                        },
+                        {
+                            "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
+                            "user_key": str(fk_org_uuid),
+                            "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
+                            "itsystem": {"name": "FK-org UUID"},
+                            "validity": {"to": "2024-05-01T00:00:00+02:00"},
+                            "employee_uuid": None,
+                            "org_unit_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
+                        },
+                    ]
+                },
+            ]
+        }
+    )
+    os2sync_uuid_from_it_systems = ["Omada - AD GUID", "FK-org UUID"]
+    deleted_users, deleted_org_units = await check_terminated_accounts(
+        graphql_session=graphql_session_mock,
+        uuid=uuid4(),
+        os2sync_uuid_from_it_systems=os2sync_uuid_from_it_systems,
+    )
+    assert deleted_users == set()
+    assert deleted_org_units == {fk_org_uuid}
+
+
+@freeze_time("2024-05-17T00:00:00+02:00")
+async def test_check_terminated_it_user_still_active():
+    """What if an it-user was edited in some way which gave the old registration an end date?
+    Could there still be an active acount then?
+    Lets make sure we won't delete fk-org accounts that are still active"""
+    fk_org_uuid = uuid4()
+    graphql_session_mock = MagicMock()
+    graphql_session_mock.execute = AsyncMock(
+        return_value={
+            "itusers": [
+                {
+                    "objects": [
+                        {
+                            "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
+                            "user_key": str(fk_org_uuid),
+                            "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
+                            "itsystem": {"name": "Omada - AD GUID"},
+                            "validity": {"to": None},
+                            "employee_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
+                            "org_unit_uuid": None,
+                        },
+                        {
+                            "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
+                            "user_key": str(fk_org_uuid),
+                            "engagement_uuid": None,
+                            "itsystem": {"name": "Omada - AD GUID"},
+                            "validity": {"to": "2024-05-01T00:00:00+02:00"},
+                            "employee_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
+                            "org_unit_uuid": None,
+                        },
+                    ]
+                },
+            ]
+        }
+    )
+    os2sync_uuid_from_it_systems = ["Omada - AD GUID"]
+    deleted_users, deleted_org_units = await check_terminated_accounts(
+        graphql_session=graphql_session_mock,
+        uuid=uuid4(),
+        os2sync_uuid_from_it_systems=os2sync_uuid_from_it_systems,
+    )
+    assert deleted_users == set()
+    assert deleted_org_units == set()
