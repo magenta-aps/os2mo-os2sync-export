@@ -182,6 +182,14 @@ async def amqp_trigger_it_user(
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    try:
+        ou_uuid, e_uuid = await get_ituser_org_unit_and_employee_uuids(
+            graphql_session, uuid
+        )
+    except ValueError:
+        logger.debug(f"Event registered but no it-user found with {uuid=}")
+        return
+
     if settings.os2sync_uuid_from_it_systems:
         terminated_users, terminated_org_units = await check_terminated_accounts(
             graphql_session=graphql_session,
@@ -199,14 +207,6 @@ async def amqp_trigger_it_user(
                 f"Found terminated it-user. Deleting fk-org user with uuid = {terminate_uuid}"
             )
             os2sync_client.delete_user(terminate_uuid)
-
-    try:
-        ou_uuid, e_uuid = await get_ituser_org_unit_and_employee_uuids(
-            graphql_session, uuid
-        )
-    except ValueError:
-        logger.debug(f"Event registered but no it-user found with {uuid=}")
-        return
 
     if ou_uuid and await is_relevant(graphql_session, ou_uuid, settings):
         try:

@@ -244,7 +244,14 @@ async def test_amqp_trigger_it_user_no_old_accounts(set_settings):
     os2sync_client_mock.delete_user.assert_not_called()
 
 
-async def test_amqp_trigger_it_user_deletes_old_accounts(set_settings):
+@patch("os2sync_export.main.is_relevant")
+@patch(
+    "os2sync_export.main.get_ituser_org_unit_and_employee_uuids",
+    return_value=("Irellevant orgunit", None),
+)
+async def test_amqp_trigger_it_user_deletes_old_accounts(
+    relevant_mock, get_ituser_mock, set_settings
+):
     old_user_uuids = {uuid4(), uuid4()}
     old_org_unit_uuids = {uuid4(), uuid4()}
     mock_settings = set_settings(os2sync_uuid_from_it_systems=["FK-org uuid"])
