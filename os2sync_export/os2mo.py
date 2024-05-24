@@ -712,6 +712,16 @@ async def check_terminated_accounts(
         lambda it: it["itsystem"]["name"] in os2sync_uuid_from_it_systems, res
     )
 
+    def filter_valid_uuid(obj: dict):
+        """Some it-users contain user_keys that are not valid uuids"""
+
+        try:
+            UUID(obj["user_key"])
+            return True
+        except ValueError:
+            return False
+
+    relevant_it_users = filter(filter_valid_uuid, relevant_it_users)
     (
         active_itusers,
         terminated_itusers,
