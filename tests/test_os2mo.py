@@ -654,3 +654,36 @@ async def test_check_terminated_it_user_still_active():
     )
     assert deleted_users == set()
     assert deleted_org_units == set()
+
+
+@freeze_time("2024-05-17T00:00:00+02:00")
+async def test_check_terminated_it_user_invalid_uuid_user_key():
+    fk_org_uuid = "This is an invalid uuid"
+    graphql_session_mock = MagicMock()
+    graphql_session_mock.execute = AsyncMock(
+        return_value={
+            "itusers": [
+                {
+                    "objects": [
+                        {
+                            "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
+                            "user_key": str(fk_org_uuid),
+                            "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
+                            "itsystem": {"name": "Omada - AD GUID"},
+                            "validity": {"to": "2024-05-01T00:00:00+02:00"},
+                            "employee_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
+                            "org_unit_uuid": None,
+                        },
+                    ]
+                },
+            ]
+        }
+    )
+    os2sync_uuid_from_it_systems = ["Omada - AD GUID"]
+    deleted_users, deleted_org_units = await check_terminated_accounts(
+        graphql_session=graphql_session_mock,
+        uuid=uuid4(),
+        os2sync_uuid_from_it_systems=os2sync_uuid_from_it_systems,
+    )
+    assert deleted_users == set()
+    assert deleted_org_units == set()
