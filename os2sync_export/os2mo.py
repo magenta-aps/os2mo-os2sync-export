@@ -493,6 +493,10 @@ def addresses_to_orgunit(orgunit, addresses):
             orgunit["PNR"] = a["name"]
         elif address_type_is(a, user_key="ContactOpenHours"):
             orgunit["ContactOpenHours"] = a["name"]
+        elif address_type_is(a, user_key="Contact"):
+            orgunit["Contact"] = a["name"]
+        elif address_type_is(a, user_key="Location"):
+            orgunit["Location"] = a["name"]
         elif address_type_is(a, user_key="DtrId"):
             orgunit["DtrId"] = a["name"]
 

@@ -16,6 +16,7 @@ from hypothesis import strategies as st
 from parameterized import parameterized
 from pydantic import ValidationError
 
+from os2sync_export.os2mo import addresses_to_orgunit
 from os2sync_export.os2mo import check_terminated_accounts
 from os2sync_export.os2mo import get_address_org_unit_and_employee_uuids
 from os2sync_export.os2mo import get_engagement_employee_uuid
@@ -687,3 +688,33 @@ async def test_check_terminated_it_user_invalid_uuid_user_key():
     )
     assert deleted_users == set()
     assert deleted_org_units == set()
+
+
+def test_address_to_orgunit():
+    location_value = "location_value"
+    contact_value = "contact_value"
+    post_value = str(uuid4())
+    orgunit = {}
+    addresses_to_orgunit(
+        orgunit,
+        [
+            {
+                "name": location_value,
+                "address_type": {"scope": "TEXT", "user_key": "Location"},
+            },
+            {
+                "name": contact_value,
+                "address_type": {"scope": "TEXT", "user_key": "Contact"},
+            },
+            {
+                "name": post_value,
+                "address_type": {
+                    "scope": "DAR",
+                    "user_key": "Something-something-post-adresse",
+                },
+            },
+        ],
+    )
+    assert orgunit["Location"] == location_value
+    assert orgunit["Contact"] == contact_value
+    assert orgunit["Post"] == post_value
