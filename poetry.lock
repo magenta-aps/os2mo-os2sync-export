@@ -980,7 +980,7 @@ structlog = ">=23.1.0,<24.0.0"
 
 [[package]]
 name = "requests"
-version = "2.32.2"
+version = "2.32.3"
 description = "Python HTTP for Humans."
 category = "main"
 optional = false
@@ -1297,7 +1297,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.11.0"
-content-hash = "bf71636218c6efb0bb385f7b0ac548f18ca3b9490a271bd4d89ecad1776bff5c"
+content-hash = "6cf6e096f416b33a2c00379083c094db1bb902537a7328cb1b017b88535152fe"
 
 [metadata.files]
 aio-pika = [
@@ -2126,8 +2126,8 @@ ramqp = [
     {file = "ramqp-9.3.0.tar.gz", hash = "sha256:cdac03edb3c712fb7ed0449f71d12b90290e0a67a2223cae6a0175fdcdcccff2"},
 ]
 requests = [
-    {file = "requests-2.32.2-py3-none-any.whl", hash = "sha256:fc06670dd0ed212426dfeb94fc1b983d917c4f9847c863f313c9dfaaffb7c23c"},
-    {file = "requests-2.32.2.tar.gz", hash = "sha256:dd951ff5ecf3e3b3aa26b40703ba77495dab41da839ae72ef3c8e5d8e2433289"},
+    {file = "requests-2.32.3-py3-none-any.whl", hash = "sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6"},
+    {file = "requests-2.32.3.tar.gz", hash = "sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760"},
 ]
 rich = [
     {file = "rich-13.7.1-py3-none-any.whl", hash = "sha256:4edbae314f59eb482f54e9e30bf00d33350aaa94f4bfcd4e9e3110e64d0d7222"},
