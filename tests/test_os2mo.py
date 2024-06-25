@@ -700,11 +700,11 @@ def test_address_to_orgunit():
         [
             {
                 "name": location_value,
-                "address_type": {"scope": "TEXT", "user_key": "Location"},
+                "address_type": {"scope": "DAR", "user_key": "Location"},
             },
             {
                 "name": contact_value,
-                "address_type": {"scope": "TEXT", "user_key": "Contact"},
+                "address_type": {"scope": "DAR", "user_key": "Contact"},
             },
             {
                 "name": post_value,

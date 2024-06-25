@@ -487,16 +487,17 @@ def addresses_to_orgunit(orgunit, addresses):
             orgunit["Ean"] = a["name"]
         elif a["address_type"]["scope"] == "PHONE":
             orgunit["PhoneNumber"] = a["name"]
+        elif address_type_is(a, user_key="Contact", scope="DAR"):
+            orgunit["Contact"] = a["name"]
+        elif address_type_is(a, user_key="Location", scope="DAR"):
+            orgunit["Location"] = a["name"]
+        # Any DAR address that is not either "Contact" or "Location" is regarded as "Post"
         elif a["address_type"]["scope"] == "DAR":
             orgunit["Post"] = a["name"]
         elif a["address_type"]["scope"] == "PNUMBER":
             orgunit["PNR"] = a["name"]
         elif address_type_is(a, user_key="ContactOpenHours"):
             orgunit["ContactOpenHours"] = a["name"]
-        elif address_type_is(a, user_key="Contact"):
-            orgunit["Contact"] = a["name"]
-        elif address_type_is(a, user_key="Location"):
-            orgunit["Location"] = a["name"]
         elif address_type_is(a, user_key="DtrId"):
             orgunit["DtrId"] = a["name"]
 
