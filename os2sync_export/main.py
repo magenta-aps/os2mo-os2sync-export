@@ -305,7 +305,11 @@ async def amqp_trigger_kle(
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
-    ou_uuid = await get_kle_org_unit_uuid(graphql_session, uuid)
+    try:
+        ou_uuid = await get_kle_org_unit_uuid(graphql_session, uuid)
+    except ValueError:
+        logger.debug(f"Event registered but no KLE found with {uuid=}")
+        return
     if ou_uuid and await is_relevant(
         graphql_session,
         ou_uuid,
