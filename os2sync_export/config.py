@@ -6,14 +6,28 @@ from typing import cast
 from typing import Literal
 from uuid import UUID
 
-from fastramqpi.config import Settings as FastRAMQPISettings  # type: ignore
+from fastramqpi.config import Settings as _FastRAMQPISettings
+from fastramqpi.ramqp.config import AMQPConnectionSettings as _AMQPConnectionSettings
 from pydantic import AnyHttpUrl
-from ra_utils.job_settings import JobSettings
+from pydantic import BaseSettings
 
 logger = logging.getLogger(__name__)
 
 
-class Settings(FastRAMQPISettings, JobSettings):
+# https://git.magenta.dk/rammearkitektur/FastRAMQPI#multilayer-exchanges
+class AMQPConnectionSettings(_AMQPConnectionSettings):
+    upstream_exchange = "os2mo"
+    exchange = "os2sync_export"
+    queue_prefix = "os2sync_export"
+    prefetch_count = 1
+
+
+class FastRAMQPISettings(_FastRAMQPISettings):
+    amqp: AMQPConnectionSettings
+
+
+class Settings(BaseSettings):  # type: ignore
+    fastramqpi: FastRAMQPISettings
     # common:
 
     municipality: str  # Called "municipality.cvr" in settings.json
