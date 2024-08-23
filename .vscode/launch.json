@@ -4,6 +4,7 @@
         {
             "name": "os2sync exporter",
             "type": "python",
+            "python": "${workspaceFolder}/.venv/bin/python",
             "request": "launch",
             "module": "uvicorn",
             "justMyCode": false,
@@ -15,9 +16,9 @@
             ],
             "envFile": "${workspaceFolder}/docker.env",
             "env": {
-                "MO_URL":"http://localhost:5000",
-                "AUTH_SERVER":"http://localhost:5000/auth",
-                "AMQP__URL":"amqp://guest:guest@localhost:5672/",
+                "FASTRAMQPI__MO_URL":"http://localhost:5000",
+                "FASTRAMQPI__AUTH_SERVER":"http://localhost:5000/auth",
+                "FASTRAMQPI__AMQP__URL":"amqp://guest:guest@localhost:5672/",
             }
         }
     ]

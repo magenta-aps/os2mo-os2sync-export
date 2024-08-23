@@ -6,7 +6,6 @@ from typing import Annotated
 from typing import Dict
 from uuid import UUID
 
-import sentry_sdk
 from fastapi import APIRouter
 from fastapi import BackgroundTasks
 from fastapi import Depends
@@ -14,13 +13,12 @@ from fastapi import FastAPI
 from fastramqpi.depends import from_user_context
 from fastramqpi.depends import LegacyGraphQLSession
 from fastramqpi.main import FastRAMQPI  # type: ignore
-from ramqp.depends import RateLimit
-from ramqp.mo import MORouter
-from ramqp.mo import PayloadUUID
+from fastramqpi.ramqp.depends import RateLimit
+from fastramqpi.ramqp.mo import MORouter
+from fastramqpi.ramqp.mo import PayloadUUID
 
 from os2sync_export.__main__ import cleanup_duplicate_engagements
 from os2sync_export.__main__ import main
-from os2sync_export.config import get_os2sync_settings
 from os2sync_export.config import Settings
 from os2sync_export.os2mo import check_terminated_accounts
 from os2sync_export.os2mo import find_employees
@@ -362,13 +360,13 @@ async def trigger_orgunit(
     return "OK"
 
 
-def create_fastramqpi(**kwargs) -> FastRAMQPI:
-    settings: Settings = get_os2sync_settings(**kwargs)
-    settings.start_logging_based_on_settings()
-    if settings.sentry_dsn:
-        sentry_sdk.init(dsn=settings.sentry_dsn)
-    settings.amqp.prefetch_count = 1
-    fastramqpi = FastRAMQPI(application_name="os2sync-export", settings=settings)
+def create_fastramqpi() -> FastRAMQPI:
+    settings: Settings = Settings()
+    fastramqpi = FastRAMQPI(
+        application_name="os2sync-export",
+        settings=settings.fastramqpi,
+        graphql_version=3,
+    )
 
     amqpsystem = fastramqpi.get_amqpsystem()
     amqpsystem.router.registry.update(amqp_router.registry)
@@ -382,6 +380,6 @@ def create_fastramqpi(**kwargs) -> FastRAMQPI:
     return fastramqpi
 
 
-def create_app(**kwargs) -> FastAPI:
-    fastramqpi = create_fastramqpi(**kwargs)
+def create_app() -> FastAPI:
+    fastramqpi = create_fastramqpi()
     return fastramqpi.get_app()

@@ -9,6 +9,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from os2sync_export.config import AMQPConnectionSettings
+from os2sync_export.config import FastRAMQPISettings
 from os2sync_export.config import Settings
 from os2sync_export.os2sync import OS2SyncClient
 
@@ -32,9 +34,11 @@ def set_settings() -> Generator[Callable[..., Settings], None, None]:
             *args,
             municipality=municipality,
             os2sync_top_unit_uuid=os2sync_top_unit_uuid,
-            amqp={"url": amqp_url},
-            client_id=client_id,
-            client_secret=client_secret,
+            fastramqpi=FastRAMQPISettings(
+                amqp=AMQPConnectionSettings(url=amqp_url),
+                client_id=client_id,
+                client_secret=client_secret,
+            ),
             **kwargs
         )
         return settings

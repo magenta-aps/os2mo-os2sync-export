@@ -3,17 +3,21 @@
 # SPDX-License-Identifier: MPL-2.0
 from uuid import uuid4
 
+from os2sync_export.config import AMQPConnectionSettings
+from os2sync_export.config import FastRAMQPISettings
 from os2sync_export.config import get_os2sync_settings
 
 
 # Create dummy settings ignoring any settings.json file.
 # with patch("os2sync_export.config.load_settings", return_value={}):
 dummy_settings = get_os2sync_settings(
-    amqp={"url": "amqp://guest:guest@msg_broker"},
+    fastramqpi=FastRAMQPISettings(
+        amqp=AMQPConnectionSettings(url="amqp://guest:guest@msg_broker"),
+        client_id="os2sync_exporter",
+        client_secret="94923cbb-ca38-4c82-96ca-b96957b6be4e",
+    ),
     municipality="1234",
     os2sync_top_unit_uuid="269a0339-0c8b-472d-9514-aef952a2b4df",
-    client_id="os2sync_exporter",
-    client_secret="94923cbb-ca38-4c82-96ca-b96957b6be4e",
 )
 
 NICKNAME_TEMPLATE = "{% if nickname -%}{{ nickname }}{%- else %}{{ name }}{%- endif %}"

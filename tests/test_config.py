@@ -13,6 +13,5 @@ def test_minimal_settings(set_settings):
 
 
 def test_missing_settings():
-    with pytest.raises(ValidationError) as excinfo:
+    with pytest.raises(ValidationError, match=r".*field required.*"):
         get_os2sync_settings()
-    assert "client_secret\n  field required" in str(excinfo.value)
