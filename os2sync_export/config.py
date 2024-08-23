@@ -2,8 +2,8 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 import logging
-from typing import cast
 from typing import Literal
+from typing import cast
 from uuid import UUID
 
 from fastramqpi.config import Settings as FastRAMQPISettings  # type: ignore

@@ -2,8 +2,8 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 from unittest.mock import AsyncMock
-from unittest.mock import call
 from unittest.mock import MagicMock
+from unittest.mock import call
 from unittest.mock import patch
 from uuid import uuid4
 

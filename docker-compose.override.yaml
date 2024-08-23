@@ -1,0 +1,9 @@
+services:
+  os2sync_export:
+    tty: true
+    stdin_open: true
+    environment:
+      OS2SYNC_SYNC_MANAGERS: "true"
+      OS2SYNC_UUID_FROM_IT_SYSTEMS: '["Active Directory GUID", "SAP"]'
+      OS2SYNC_TEMPLATES: '{"person.name": "{% if nickname -%}{{ nickname }}{%- else %}{{ name }}{%- endif %}"}'
+      OS2SYNC_FILTER_HIERARCHY_NAMES: '["Linjeorganisation", "Eksterne enheder"]'

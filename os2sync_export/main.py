@@ -11,17 +11,17 @@ from fastapi import APIRouter
 from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import FastAPI
-from fastramqpi.depends import from_user_context
 from fastramqpi.depends import LegacyGraphQLSession
+from fastramqpi.depends import from_user_context
 from fastramqpi.main import FastRAMQPI  # type: ignore
-from ramqp.depends import RateLimit
-from ramqp.mo import MORouter
-from ramqp.mo import PayloadUUID
+from fastramqpi.ramqp.depends import RateLimit
+from fastramqpi.ramqp.mo import MORouter
+from fastramqpi.ramqp.mo import PayloadUUID
 
 from os2sync_export.__main__ import cleanup_duplicate_engagements
 from os2sync_export.__main__ import main
-from os2sync_export.config import get_os2sync_settings
 from os2sync_export.config import Settings
+from os2sync_export.config import get_os2sync_settings
 from os2sync_export.os2mo import check_terminated_accounts
 from os2sync_export.os2mo import find_employees
 from os2sync_export.os2mo import get_address_org_unit_and_employee_uuids

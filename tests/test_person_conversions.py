@@ -9,9 +9,9 @@ from parameterized import parameterized
 from os2sync_export.templates import FieldTemplateRenderError
 from os2sync_export.templates import FieldTemplateSyntaxError
 from os2sync_export.templates import Person
-from tests.helpers import dummy_settings
-from tests.helpers import MoEmployeeMixin
 from tests.helpers import NICKNAME_TEMPLATE
+from tests.helpers import MoEmployeeMixin
+from tests.helpers import dummy_settings
 
 
 class TestPerson(unittest.TestCase, MoEmployeeMixin):

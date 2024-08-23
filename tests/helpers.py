@@ -5,7 +5,6 @@ from uuid import uuid4
 
 from os2sync_export.config import get_os2sync_settings
 
-
 # Create dummy settings ignoring any settings.json file.
 # with patch("os2sync_export.config.load_settings", return_value={}):
 dummy_settings = get_os2sync_settings(

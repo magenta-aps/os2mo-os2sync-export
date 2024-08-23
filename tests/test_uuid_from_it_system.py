@@ -7,7 +7,6 @@ from parameterized import parameterized
 
 from os2sync_export.os2mo import get_fk_org_uuid
 
-
 FK_ORG_UUID_IT_SYSTEM = "FK-org uuid"
 AD_OBJECTGUID_IT_SYSTEM = "AD ObjectGuid"
 

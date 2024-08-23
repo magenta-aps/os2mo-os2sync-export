@@ -34,8 +34,8 @@ from os2sync_export.os2mo import overwrite_position_uuids
 from os2sync_export.os2mo import overwrite_unit_uuids
 from os2sync_export.os2mo import partition_kle
 from os2sync_export.os2sync_models import OrgUnit
-from tests.helpers import dummy_settings
 from tests.helpers import MockOs2moGet
+from tests.helpers import dummy_settings
 
 
 class TestsMOAd(unittest.TestCase):

@@ -26,7 +26,7 @@ def set_settings() -> Generator[Callable[..., Settings], None, None]:
         amqp_url: str = DEFAULT_AMQP_URL,
         client_id: str = "tester",
         client_secret: str = "hunter2",
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Settings:
         settings = Settings(
             *args,
@@ -35,7 +35,7 @@ def set_settings() -> Generator[Callable[..., Settings], None, None]:
             amqp={"url": amqp_url},
             client_id=client_id,
             client_secret=client_secret,
-            **kwargs
+            **kwargs,
         )
         return settings
 
@@ -44,7 +44,7 @@ def set_settings() -> Generator[Callable[..., Settings], None, None]:
 
 @pytest.fixture()
 def mock_settings(
-    set_settings: Callable[..., Settings]
+    set_settings: Callable[..., Settings],
 ) -> Generator[Settings, None, None]:
     """Fixture to mock get_settings."""
     yield set_settings()
