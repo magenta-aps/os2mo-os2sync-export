@@ -375,7 +375,7 @@ async def test_mo_client_default(self, graphql_session):
         "Uuid": "23d2dfc7-6ceb-47cf-97ed-db6beadcb09b",
     }
     settings = dummy_settings
-    settings.os2sync_xfer_cpr = True
+    settings.sync_cpr = True
     actual = await get_sts_user_raw(
         uuid,
         settings=settings,

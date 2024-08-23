@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 def get_mo_session():
     session = requests.Session()
-    session.verify = get_os2sync_settings().os2sync_ca_verify_os2mo
+    session.verify = get_os2sync_settings().ca_verify_os2mo
     session.headers = {
         "User-Agent": "os2mo-data-import-and-export",
     }
@@ -200,7 +200,7 @@ async def engagements_to_user(user, engagements, graphql_session, settings):
     ]
     # Feature flag in Settings. Set it to True, if wanting to use the extension field.
     # Default is False.
-    use_extension_field = settings.os2sync_use_extension_field_as_job_function
+    use_extension_field = settings.use_extension_field_as_job_function
     for e in engagements:
         e["job_function"] = (
             e.get("extension_3")
@@ -280,12 +280,12 @@ def get_fk_org_uuid(
     return first(it_uuids, mo_uuid)
 
 
-def overwrite_position_uuids(sts_user: Dict, os2sync_uuid_from_it_systems: List):
+def overwrite_position_uuids(sts_user: Dict, uuid_from_it_systems: List):
     # For each position check the it-system of the org-unit
     for p in sts_user["Positions"]:
         unit_uuid = p["OrgUnitUuid"]
         it = os2mo_get(f"{{BASE}}/ou/{unit_uuid}/details/it").json()
-        p["OrgUnitUuid"] = get_fk_org_uuid(it, unit_uuid, os2sync_uuid_from_it_systems)
+        p["OrgUnitUuid"] = get_fk_org_uuid(it, unit_uuid, uuid_from_it_systems)
 
 
 def get_org_unit_hierarchy(titles: list[str]) -> Optional[Tuple[UUID, ...]]:
@@ -327,7 +327,7 @@ async def get_sts_user_raw(
 
     sts_user = user.to_json()
 
-    if settings.os2sync_filter_users_by_it_system and user_key is None:
+    if settings.filter_users_by_it_system and user_key is None:
         # Skip user if filter is activated and there are no user_key to find in settings
         # By returning user without any positions it will be removed from fk-org
         return sts_user
@@ -344,8 +344,8 @@ async def get_sts_user_raw(
     if not sts_user["Positions"]:
         # return immediately because users with no engagements are not synced.
         return sts_user
-    if settings.os2sync_uuid_from_it_systems:
-        overwrite_position_uuids(sts_user, settings.os2sync_uuid_from_it_systems)
+    if settings.uuid_from_it_systems:
+        overwrite_position_uuids(sts_user, settings.uuid_from_it_systems)
 
     addresses = os2mo_get("{BASE}/e/" + uuid + "/details/address").json()
     if engagement_uuid is not None:
@@ -353,19 +353,19 @@ async def get_sts_user_raw(
     addresses_to_user(
         sts_user,
         addresses=addresses,
-        phone_scope_classes=settings.os2sync_phone_scope_classes,
-        landline_scope_classes=settings.os2sync_landline_scope_classes,
-        email_scope_classes=settings.os2sync_email_scope_classes,
+        phone_scope_classes=settings.phone_scope_classes,
+        landline_scope_classes=settings.landline_scope_classes,
+        email_scope_classes=settings.email_scope_classes,
     )
 
     # Optionally find the work address of employees primary engagement.
-    work_address_names = settings.os2sync_employee_engagement_address
+    work_address_names = settings.employee_engagement_address
     if sts_user["Positions"] and work_address_names:
         sts_user["Location"] = get_work_address(
             sts_user["Positions"], work_address_names
         )
 
-    truncate_length = max(36, settings.os2sync_truncate_length)
+    truncate_length = max(36, settings.truncate_length)
     strip_truncate_and_warn(sts_user, sts_user, length=truncate_length)
 
     return sts_user
@@ -407,8 +407,8 @@ async def get_sts_user(
         )
         fk_org_accounts = group_accounts(
             users,
-            settings.os2sync_uuid_from_it_systems,
-            settings.os2sync_user_key_it_system_name,
+            settings.uuid_from_it_systems,
+            settings.user_key_it_system_name,
         )
     except ValueError:
         logger.warn(f"Unable to map uuid/user_keys from it-systems for {mo_uuid=}.")
@@ -523,7 +523,7 @@ def partition_kle(
     """Collect kle uuids according to kle_aspect.
 
     Default is to return all KLE uuids as Tasks,
-    If the setting 'os2sync_use_contact_for_tasks' is set KLEs will be divided:
+    If the setting 'use_contact_for_tasks' is set KLEs will be divided:
 
     * Aspect "Udførende" goes into "Tasks"
     * Aspect "Ansvarlig" goes into "ContactForTasks"
@@ -574,24 +574,24 @@ def is_ignored(unit, settings):
 
     return (
         unit.get("org_unit_level")
-        and UUID(unit["org_unit_level"]["uuid"]) in settings.os2sync_ignored_unit_levels
+        and UUID(unit["org_unit_level"]["uuid"]) in settings.ignored_unit_levels
     ) or (
         unit.get("org_unit_type")
-        and UUID(unit["org_unit_type"]["uuid"]) in settings.os2sync_ignored_unit_types
+        and UUID(unit["org_unit_type"]["uuid"]) in settings.ignored_unit_types
     )
 
 
-def overwrite_unit_uuids(sts_org_unit: Dict, os2sync_uuid_from_it_systems: List):
+def overwrite_unit_uuids(sts_org_unit: Dict, uuid_from_it_systems: List):
     # Overwrite UUIDs with values from it-account
     uuid = sts_org_unit["Uuid"]
     it = os2mo_get(f"{{BASE}}/ou/{uuid}/details/it").json()
-    sts_org_unit["Uuid"] = get_fk_org_uuid(it, uuid, os2sync_uuid_from_it_systems)
+    sts_org_unit["Uuid"] = get_fk_org_uuid(it, uuid, uuid_from_it_systems)
     # Also check if parent unit has a UUID from an it-account
     parent_uuid = sts_org_unit.get("ParentOrgUnitUuid")
     if parent_uuid:
         it = os2mo_get(f"{{BASE}}/ou/{parent_uuid}/details/it").json()
         sts_org_unit["ParentOrgUnitUuid"] = get_fk_org_uuid(
-            it, parent_uuid, os2sync_uuid_from_it_systems
+            it, parent_uuid, uuid_from_it_systems
         )
 
 
@@ -601,7 +601,7 @@ def get_sts_orgunit(uuid: UUID, settings: Settings) -> Optional[OrgUnit]:
     if is_ignored(base, settings):
         logger.info("Ignoring %r", base)
         return None
-    top_unit_uuid = str(settings.os2sync_top_unit_uuid)
+    top_unit_uuid = str(settings.top_unit_uuid)
     if not parent["uuid"] == top_unit_uuid:
         while parent.get("parent"):
             if parent["uuid"] == top_unit_uuid:
@@ -624,31 +624,29 @@ def get_sts_orgunit(uuid: UUID, settings: Settings) -> Optional[OrgUnit]:
     itsystems_to_orgunit(
         sts_org_unit,
         os2mo_get("{BASE}/ou/" + str(uuid) + "/details/it").json(),
-        uuid_from_it_systems=settings.os2sync_uuid_from_it_systems,
+        uuid_from_it_systems=settings.uuid_from_it_systems,
     )
     addresses_to_orgunit(
         sts_org_unit,
         os2mo_get("{BASE}/ou/" + str(uuid) + "/details/address").json(),
     )
 
-    if settings.os2sync_sync_managers:
+    if settings.sync_managers:
         manager_uuid = manager_to_orgunit(uuid)
         if manager_uuid:
             sts_org_unit["ManagerUuid"] = manager_uuid
 
-    if settings.os2sync_enable_kle and has_kle():
+    if settings.enable_kle and has_kle():
         kle_to_orgunit(
             sts_org_unit,
             os2mo_get("{BASE}/ou/" + str(uuid) + "/details/kle").json(),
-            use_contact_for_tasks=settings.os2sync_use_contact_for_tasks,
+            use_contact_for_tasks=settings.use_contact_for_tasks,
         )
 
-    if settings.os2sync_uuid_from_it_systems:
-        overwrite_unit_uuids(sts_org_unit, settings.os2sync_uuid_from_it_systems)
+    if settings.uuid_from_it_systems:
+        overwrite_unit_uuids(sts_org_unit, settings.uuid_from_it_systems)
 
-    strip_truncate_and_warn(
-        sts_org_unit, sts_org_unit, settings.os2sync_truncate_length
-    )
+    strip_truncate_and_warn(sts_org_unit, sts_org_unit, settings.truncate_length)
 
     return OrgUnit(**sts_org_unit)
 
@@ -692,7 +690,7 @@ def is_terminated(to_date: str):
 async def check_terminated_accounts(
     graphql_session: AsyncClientSession,
     uuid: UUID,
-    os2sync_uuid_from_it_systems: list[str],
+    uuid_from_it_systems: list[str],
 ) -> tuple[set[UUID], set[UUID]]:
     q = gql(
         """
@@ -716,7 +714,7 @@ async def check_terminated_accounts(
     res = await graphql_session.execute(q, variable_values={"uuids": str(uuid)})
     res = one(res["itusers"])["objects"]
     relevant_it_users = filter(
-        lambda it: it["itsystem"]["name"] in os2sync_uuid_from_it_systems, res
+        lambda it: it["itsystem"]["name"] in uuid_from_it_systems, res
     )
 
     def filter_valid_uuid(obj: dict):
@@ -917,7 +915,7 @@ async def is_relevant(
     """
 
     # Top unit is always relevant
-    if unit_uuid == settings.os2sync_top_unit_uuid:
+    if unit_uuid == settings.top_unit_uuid:
         return True
 
     query = """
@@ -953,26 +951,26 @@ async def is_relevant(
         return False
     # Check that the configured top unit is in the units ancestors
     ancestors = {UUID(a["uuid"]) for a in org_unit["ancestors"]}
-    is_below_top_uuid: bool = settings.os2sync_top_unit_uuid in ancestors
+    is_below_top_uuid: bool = settings.top_unit_uuid in ancestors
 
     # Check if the unit or any of its ancestors are filtered.
-    if unit_uuid in settings.os2sync_filter_orgunit_uuid or any(
-        uuid in ancestors for uuid in settings.os2sync_filter_orgunit_uuid
+    if unit_uuid in settings.filter_orgunit_uuid or any(
+        uuid in ancestors for uuid in settings.filter_orgunit_uuid
     ):
         logger.debug(f"Orgunit is filtered based on settings {unit_uuid=}")
         return False
 
-    if settings.os2sync_filter_hierarchy_names:
+    if settings.filter_hierarchy_names:
         # Check that the unit is part of the correct org_unit hierarchy
         is_in_hierarchies: bool = (
             False
             if org_unit["org_unit_hierarchy_model"] is None
             else org_unit["org_unit_hierarchy_model"]["name"]
-            in settings.os2sync_filter_hierarchy_names
+            in settings.filter_hierarchy_names
         )
         # If there are an it-account we sync it regardless of the hierarchy
         has_it_account: bool = any(
-            it["itsystem"]["name"] in settings.os2sync_uuid_from_it_systems
+            it["itsystem"]["name"] in settings.uuid_from_it_systems
             for it in org_unit["itusers"]
         )
 

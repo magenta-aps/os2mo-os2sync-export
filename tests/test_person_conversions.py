@@ -17,7 +17,7 @@ from tests.helpers import NICKNAME_TEMPLATE
 class TestPerson(unittest.TestCase, MoEmployeeMixin):
     @parameterized.expand(
         [
-            # mock CPR, os2sync_xfer_cpr, key of expected CPR value, expected log level
+            # mock CPR, sync_cpr, key of expected CPR value, expected log level
             ("0101013333", True, "cpr_no", logging.DEBUG),
             (None, True, "cpr_no", logging.WARNING),
             ("0101013333", False, None, logging.DEBUG),
@@ -27,7 +27,7 @@ class TestPerson(unittest.TestCase, MoEmployeeMixin):
     def test_transfer_cpr(self, cpr, flag, expected_key, expected_log_level):
         mo_employee = self.mock_employee(cpr=cpr)
         settings = dummy_settings
-        settings.os2sync_xfer_cpr = flag
+        settings.sync_cpr = flag
         person = Person(mo_employee, settings=settings)
         expected_cpr = mo_employee.get(expected_key)
         with self.assertLogs("os2sync_export", expected_log_level):
@@ -74,6 +74,6 @@ class TestPersonNameTemplate(unittest.TestCase, MoEmployeeMixin):
 
     def _gen_settings(self, template):
         settings = dummy_settings
-        settings.os2sync_xfer_cpr = True
-        settings.os2sync_templates = {"person.name": template}
+        settings.sync_cpr = True
+        settings.templates = {"person.name": template}
         return settings

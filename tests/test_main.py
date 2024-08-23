@@ -142,7 +142,7 @@ async def test_is_relevant(set_settings):
     top_unit_uuid = uuid4()
     line_org = "linjeorganisation"
     mock_settings = set_settings(
-        os2sync_top_unit_uuid=top_unit_uuid, os2sync_filter_hierarchy_names=[line_org]
+        top_unit_uuid=top_unit_uuid, filter_hierarchy_names=[line_org]
     )
     graphql_session = AsyncMock()
     graphql_session.execute.side_effect = [
@@ -179,7 +179,7 @@ async def test_is_relevant_wrong_hierarchy(set_settings):
     top_unit_uuid = uuid4()
     line_org = "linjeorganisation"
     mock_settings = set_settings(
-        os2sync_top_unit_uuid=top_unit_uuid, os2sync_filter_hierarchy_names=[line_org]
+        top_unit_uuid=top_unit_uuid, filter_hierarchy_names=[line_org]
     )
     graphql_session = AsyncMock()
     graphql_session.execute.side_effect = [
@@ -206,9 +206,9 @@ async def test_is_relevant_has_it_account(set_settings):
     line_org = "linjeorganisation"
     it_system_name = "FK-org uuid"
     mock_settings = set_settings(
-        os2sync_top_unit_uuid=top_unit_uuid,
-        os2sync_filter_hierarchy_names=[line_org],
-        os2sync_uuid_from_it_systems=[it_system_name],
+        top_unit_uuid=top_unit_uuid,
+        filter_hierarchy_names=[line_org],
+        uuid_from_it_systems=[it_system_name],
     )
     graphql_session = AsyncMock()
     graphql_session.execute.side_effect = [
@@ -230,7 +230,7 @@ async def test_is_relevant_has_it_account(set_settings):
 
 
 async def test_amqp_trigger_it_user_no_old_accounts(set_settings):
-    mock_settings = set_settings(os2sync_uuid_from_it_systems=["FK-org uuid"])
+    mock_settings = set_settings(uuid_from_it_systems=["FK-org uuid"])
     os2sync_client_mock = MagicMock()
     with patch(
         "os2sync_export.main.check_terminated_accounts",
@@ -254,7 +254,7 @@ async def test_amqp_trigger_it_user_deletes_old_accounts(
 ):
     old_user_uuids = {uuid4(), uuid4()}
     old_org_unit_uuids = {uuid4(), uuid4()}
-    mock_settings = set_settings(os2sync_uuid_from_it_systems=["FK-org uuid"])
+    mock_settings = set_settings(uuid_from_it_systems=["FK-org uuid"])
     os2sync_client_mock = MagicMock()
     with patch(
         "os2sync_export.main.check_terminated_accounts",

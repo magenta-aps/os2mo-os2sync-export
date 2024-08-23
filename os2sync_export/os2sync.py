@@ -33,7 +33,7 @@ class OS2SyncClient:
         if self.settings.os2sync_api_url == "stub":
             return stub.Session()
 
-        session.verify = self.settings.os2sync_ca_verify_os2sync
+        session.verify = self.settings.ca_verify_os2sync
         session.headers["User-Agent"] = "os2mo-data-import-and-export"
         session.headers["CVR"] = self.settings.municipality
         return session
@@ -75,7 +75,7 @@ class OS2SyncClient:
         return r
 
     def delete_orgunit(self, uuid: UUID):
-        if uuid == self.settings.os2sync_top_unit_uuid:
+        if uuid == self.settings.top_unit_uuid:
             logger.error("Received event to delete top_unit_uuid - ignoring.")
             return
         logger.info("delete orgunit %s", uuid)

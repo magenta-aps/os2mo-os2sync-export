@@ -188,11 +188,11 @@ async def amqp_trigger_it_user(
         logger.debug(f"Event registered but no it-user found with {uuid=}")
         return
 
-    if settings.os2sync_uuid_from_it_systems:
+    if settings.uuid_from_it_systems:
         terminated_users, terminated_org_units = await check_terminated_accounts(
             graphql_session=graphql_session,
             uuid=uuid,
-            os2sync_uuid_from_it_systems=settings.os2sync_uuid_from_it_systems,
+            uuid_from_it_systems=settings.uuid_from_it_systems,
         )
 
         for terminate_uuid in terminated_org_units:

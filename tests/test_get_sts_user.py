@@ -151,8 +151,8 @@ class TestGetStsUser(unittest.TestCase, MoEmployeeMixin):
         os2sync_templates=None,
     ):
         settings = dummy_settings
-        settings.os2sync_xfer_cpr = True
-        settings.os2sync_templates = os2sync_templates or {}
+        settings.sync_cpr = True
+        settings.templates = os2sync_templates or {}
         gql_mock = AsyncMock()
         with self._patch("os2mo_get", response):
             return await os2mo_get_sts_user_raw(
