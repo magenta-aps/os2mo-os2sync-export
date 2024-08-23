@@ -13,7 +13,7 @@ async def test_cleanup_duplicate_engagements(
 ):
     os2sync_client.update_users = MagicMock()
     os2sync_client.delete_user = MagicMock()
-    mock_settings.os2sync_uuid_from_it_systems = ["FK-org uuid"]
+    mock_settings.uuid_from_it_systems = ["FK-org uuid"]
 
     ou_1 = str(uuid4())
     user_fk_org_uuid = str(uuid4())

@@ -32,7 +32,7 @@ class FieldRenderer:
         """Prepare the field renderer, parsing all Jinja templates defined in
         `config`.
 
-        :param config: dictionary, usually `settings.os2sync_templates`
+        :param config: dictionary, usually `settings.templates`
         """
 
         # Configure Jinja environment to raise exception on unknown variables
@@ -93,7 +93,7 @@ class Entity:
 
         self.context = context
         self.settings = settings
-        self.field_renderer = FieldRenderer(self.settings.os2sync_templates)
+        self.field_renderer = FieldRenderer(self.settings.templates)
 
     def to_json(self) -> Dict[str, Any]:
         """Return a dictionary suitable for inclusion in a JSON payload."""
@@ -142,7 +142,7 @@ class Person(Entity):
     """Models a `Person` entity in the OS2Sync REST API"""
 
     def to_json(self) -> Dict[str, Any]:
-        if self.settings.os2sync_xfer_cpr:
+        if self.settings.sync_cpr:
             cpr = self.context.get("cpr_no")
             if not cpr:
                 logger.warning("no 'cpr_no' for user %r", self.context["uuid"])

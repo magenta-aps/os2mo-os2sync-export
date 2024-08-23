@@ -17,7 +17,7 @@ dummy_settings = get_os2sync_settings(
         client_secret="94923cbb-ca38-4c82-96ca-b96957b6be4e",
     ),
     municipality="1234",
-    os2sync_top_unit_uuid="269a0339-0c8b-472d-9514-aef952a2b4df",
+    top_unit_uuid="269a0339-0c8b-472d-9514-aef952a2b4df",
 )
 
 NICKNAME_TEMPLATE = "{% if nickname -%}{{ nickname }}{%- else %}{{ name }}{%- endif %}"

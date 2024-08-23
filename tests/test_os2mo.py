@@ -42,8 +42,8 @@ class TestsMOAd(unittest.TestCase):
     def test_is_ignored(self):
         settings = dummy_settings
         il1, il2, iu1, iu2 = [uuid4() for u in range(4)]
-        settings.os2sync_ignored_unit_levels = [il1, il2]
-        settings.os2sync_ignored_unit_types = [iu1, iu2]
+        settings.ignored_unit_levels = [il1, il2]
+        settings.ignored_unit_types = [iu1, iu2]
         unit = {
             "org_unit_level": {"uuid": str(uuid4())},
             "org_unit_type": {"uuid": str(uuid4())},
@@ -91,18 +91,16 @@ class TestsMOAd(unittest.TestCase):
             },
         ]
         settings = dummy_settings
-        settings.os2sync_use_contact_for_tasks = (
+        settings.use_contact_for_tasks = (
             True if testsettings.get("os2sync_use_contact_for_tasks") else False
         )
 
-        tasks, contact_for_tasks = partition_kle(
-            kles, settings.os2sync_use_contact_for_tasks
-        )
+        tasks, contact_for_tasks = partition_kle(kles, settings.use_contact_for_tasks)
         self.assertListEqual(expected_tasks, tasks)
         self.assertListEqual(expected_contactfortasks, contact_for_tasks)
         org_unit = {}
         kle_to_orgunit(
-            org_unit, kles, use_contact_for_tasks=settings.os2sync_use_contact_for_tasks
+            org_unit, kles, use_contact_for_tasks=settings.use_contact_for_tasks
         )
         self.assertListEqual(expected_tasks, org_unit.get("Tasks"))
         self.assertListEqual(
@@ -560,11 +558,11 @@ async def test_check_terminated_it_user():
             ]
         }
     )
-    os2sync_uuid_from_it_systems = ["Omada - AD GUID"]
+    uuid_from_it_systems = ["Omada - AD GUID"]
     deleted_users, deleted_org_units = await check_terminated_accounts(
         graphql_session=graphql_session_mock,
         uuid=uuid4(),
-        os2sync_uuid_from_it_systems=os2sync_uuid_from_it_systems,
+        uuid_from_it_systems=uuid_from_it_systems,
     )
     assert deleted_users == {fk_org_uuid}
     assert deleted_org_units == set()
@@ -602,11 +600,11 @@ async def test_check_terminated_it_user_org_unit():
             ]
         }
     )
-    os2sync_uuid_from_it_systems = ["Omada - AD GUID", "FK-org UUID"]
+    uuid_from_it_systems = ["Omada - AD GUID", "FK-org UUID"]
     deleted_users, deleted_org_units = await check_terminated_accounts(
         graphql_session=graphql_session_mock,
         uuid=uuid4(),
-        os2sync_uuid_from_it_systems=os2sync_uuid_from_it_systems,
+        uuid_from_it_systems=uuid_from_it_systems,
     )
     assert deleted_users == set()
     assert deleted_org_units == {fk_org_uuid}
@@ -647,11 +645,11 @@ async def test_check_terminated_it_user_still_active():
             ]
         }
     )
-    os2sync_uuid_from_it_systems = ["Omada - AD GUID"]
+    uuid_from_it_systems = ["Omada - AD GUID"]
     deleted_users, deleted_org_units = await check_terminated_accounts(
         graphql_session=graphql_session_mock,
         uuid=uuid4(),
-        os2sync_uuid_from_it_systems=os2sync_uuid_from_it_systems,
+        uuid_from_it_systems=uuid_from_it_systems,
     )
     assert deleted_users == set()
     assert deleted_org_units == set()
@@ -680,11 +678,11 @@ async def test_check_terminated_it_user_invalid_uuid_user_key():
             ]
         }
     )
-    os2sync_uuid_from_it_systems = ["Omada - AD GUID"]
+    uuid_from_it_systems = ["Omada - AD GUID"]
     deleted_users, deleted_org_units = await check_terminated_accounts(
         graphql_session=graphql_session_mock,
         uuid=uuid4(),
-        os2sync_uuid_from_it_systems=os2sync_uuid_from_it_systems,
+        uuid_from_it_systems=uuid_from_it_systems,
     )
     assert deleted_users == set()
     assert deleted_org_units == set()

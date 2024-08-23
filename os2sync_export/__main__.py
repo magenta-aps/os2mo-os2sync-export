@@ -41,10 +41,8 @@ def read_all_org_units(settings: Settings) -> Dict[UUID, OrgUnit]:
     logger.info("read_all_org_units starting")
     # Read all relevant org_unit uuids from os2mo
     os2mo_uuids_present = os2mo.org_unit_uuids(
-        root=settings.os2sync_top_unit_uuid,
-        hierarchy_uuids=os2mo.get_org_unit_hierarchy(
-            settings.os2sync_filter_hierarchy_names
-        ),
+        root=settings.top_unit_uuid,
+        hierarchy_uuids=os2mo.get_org_unit_hierarchy(settings.filter_hierarchy_names),
     )
 
     logger.info(f"Aktive Orgenheder fundet i OS2MO {len(os2mo_uuids_present)}")
@@ -146,7 +144,7 @@ async def main(settings: Settings, graphql_session, os2sync_client):
         request_uuid=request_uuid,
     )
 
-    if settings.os2sync_autowash:
+    if settings.autowash:
         # Delete any org_unit not in os2mo
         assert (
             mo_org_units
@@ -198,11 +196,11 @@ async def cleanup_duplicate_engagements(
     for user_uuid in user_uuids:
         os2sync_client.delete_user(user_uuid)
     logger.info("Done with cleanup of duplicate engagements")
-    if settings.os2sync_uuid_from_it_systems:
+    if settings.uuid_from_it_systems:
         fk_org_uuid_map = await os2mo.fk_org_uuid_to_mo_uuid(
             graphql_session=graphql_session,
             uuids=user_uuids,
-            it_system_names=settings.os2sync_uuid_from_it_systems,
+            it_system_names=settings.uuid_from_it_systems,
         )
         user_uuids = {
             fk_org_uuid_map.get(user_uuid, user_uuid) for user_uuid in user_uuids

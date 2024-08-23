@@ -24,7 +24,7 @@ def set_settings() -> Generator[Callable[..., Settings], None, None]:
     def setup_mock_settings(
         *args: Any,
         municipality=1234,
-        os2sync_top_unit_uuid="baccbf9b-d699-4118-a6fe-aeb813631a15",
+        top_unit_uuid="baccbf9b-d699-4118-a6fe-aeb813631a15",
         amqp_url: str = DEFAULT_AMQP_URL,
         client_id: str = "tester",
         client_secret: str = "hunter2",
@@ -33,7 +33,7 @@ def set_settings() -> Generator[Callable[..., Settings], None, None]:
         settings = Settings(
             *args,
             municipality=municipality,
-            os2sync_top_unit_uuid=os2sync_top_unit_uuid,
+            top_unit_uuid=top_unit_uuid,
             fastramqpi=FastRAMQPISettings(
                 amqp=AMQPConnectionSettings(url=amqp_url),
                 client_id=client_id,
