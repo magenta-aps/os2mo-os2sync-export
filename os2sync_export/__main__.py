@@ -1,12 +1,12 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
-import logging
 from operator import itemgetter
 from typing import Dict
 from typing import Set
 from uuid import UUID
 
+import structlog
 from gql.client import AsyncClientSession
 from more_itertools import all_unique
 from more_itertools import flatten
@@ -18,7 +18,7 @@ from os2sync_export.config import Settings
 from os2sync_export.os2sync import OS2SyncClient
 from os2sync_export.os2sync_models import OrgUnit
 
-logger = logging.getLogger(__name__)
+logger = structlog.stdlib.get_logger()
 
 
 def log_mox_config(settings):
