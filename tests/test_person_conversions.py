@@ -1,10 +1,11 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
-import logging
 import unittest
 
+from more_itertools import one
 from parameterized import parameterized
+from structlog.testing import capture_logs
 
 from os2sync_export.templates import FieldTemplateRenderError
 from os2sync_export.templates import FieldTemplateSyntaxError
@@ -17,11 +18,11 @@ from tests.helpers import NICKNAME_TEMPLATE
 class TestPerson(unittest.TestCase, MoEmployeeMixin):
     @parameterized.expand(
         [
-            # mock CPR, sync_cpr, key of expected CPR value, expected log level
-            ("0101013333", True, "cpr_no", logging.DEBUG),
-            (None, True, "cpr_no", logging.WARNING),
-            ("0101013333", False, None, logging.DEBUG),
-            (None, False, None, logging.DEBUG),
+            # mock CPR, os2sync_xfer_cpr, key of expected CPR value, expected log level
+            ("0101013333", True, "cpr_no", "debug"),
+            (None, True, "cpr_no", "warning"),
+            ("0101013333", False, None, "debug"),
+            (None, False, None, "debug"),
         ]
     )
     def test_transfer_cpr(self, cpr, flag, expected_key, expected_log_level):
@@ -30,11 +31,12 @@ class TestPerson(unittest.TestCase, MoEmployeeMixin):
         settings.sync_cpr = flag
         person = Person(mo_employee, settings=settings)
         expected_cpr = mo_employee.get(expected_key)
-        with self.assertLogs("os2sync_export", expected_log_level):
+        with capture_logs() as cap_log:
             self.assertDictEqual(
                 person.to_json(),
                 {"Name": mo_employee["name"], "Cpr": expected_cpr},
             )
+            assert one(cap_log)["log_level"] == expected_log_level
 
 
 class TestPersonNameTemplate(unittest.TestCase, MoEmployeeMixin):

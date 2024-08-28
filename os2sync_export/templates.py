@@ -1,12 +1,12 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
-import logging
 from typing import Any
 from typing import Dict
 from typing import Optional
 from uuid import UUID
 
+import structlog
 from jinja2 import Environment
 from jinja2 import StrictUndefined
 from jinja2 import Template
@@ -14,7 +14,7 @@ from jinja2.exceptions import TemplateSyntaxError
 
 from os2sync_export.config import Settings
 
-logger = logging.getLogger(__name__)
+logger = structlog.stdlib.get_logger()
 
 
 class FieldTemplateSyntaxError(Exception):

@@ -2,11 +2,12 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 import json
-import logging
 from uuid import uuid4
 
+import structlog
 
-logger = logging.getLogger(__name__)
+
+logger = structlog.stdlib.get_logger()
 
 
 class Session:

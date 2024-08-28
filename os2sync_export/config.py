@@ -1,17 +1,17 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
-import logging
 from typing import cast
 from typing import Literal
 from uuid import UUID
 
+import structlog
 from fastramqpi.config import Settings as _FastRAMQPISettings
 from fastramqpi.ramqp.config import AMQPConnectionSettings as _AMQPConnectionSettings
 from pydantic import AnyHttpUrl
 from pydantic import BaseSettings
 
-logger = logging.getLogger(__name__)
+logger = structlog.stdlib.get_logger()
 
 
 # https://git.magenta.dk/rammearkitektur/FastRAMQPI#multilayer-exchanges
