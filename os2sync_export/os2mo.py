@@ -401,8 +401,10 @@ def group_accounts(
 async def get_sts_user(
     mo_uuid: str, graphql_session: AsyncClientSession, settings: Settings
 ) -> List[Dict[str, Any]]:
-    users = await get_user_it_accounts(graphql_session=graphql_session, mo_uuid=mo_uuid)
     try:
+        users = await get_user_it_accounts(
+            graphql_session=graphql_session, mo_uuid=mo_uuid
+        )
         fk_org_accounts = group_accounts(
             users,
             settings.os2sync_uuid_from_it_systems,
