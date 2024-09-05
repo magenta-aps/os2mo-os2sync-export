@@ -34,12 +34,19 @@ logger = logging.getLogger(__name__)
 
 def get_mo_session():
     session = requests.Session()
-    session.verify = get_os2sync_settings().ca_verify_os2mo
+    settings = get_os2sync_settings()
+    session.verify = settings.ca_verify_os2mo
+
     session.headers = {
         "User-Agent": "os2mo-data-import-and-export",
     }
 
-    session_headers = TokenSettings().get_headers()
+    session_headers = TokenSettings(
+        auth_server=settings.fastramqpi.auth_server,
+        client_id=settings.fastramqpi.client_id,
+        client_secret=settings.fastramqpi.client_secret.get_secret_value(),
+        auth_realm=settings.fastramqpi.auth_realm,
+    ).get_headers()
 
     if session_headers:
         session.headers.update(session_headers)
@@ -116,7 +123,7 @@ def strip_truncate_and_warn(d, root, length):
 
 def os2mo_get(url, **params):
     # format url like {BASE}/service
-    mo_url = get_os2sync_settings().mo_url
+    mo_url = get_os2sync_settings().fastramqpi.mo_url
 
     url = url.format(BASE=f"{mo_url}/service")
     session = get_mo_session()
