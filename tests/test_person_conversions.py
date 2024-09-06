@@ -4,15 +4,15 @@
 import unittest
 
 from more_itertools import one
-from parameterized import parameterized
+from parameterized import parameterized  # type: ignore
 from structlog.testing import capture_logs
 
 from os2sync_export.templates import FieldTemplateRenderError
 from os2sync_export.templates import FieldTemplateSyntaxError
 from os2sync_export.templates import Person
-from tests.helpers import dummy_settings
-from tests.helpers import MoEmployeeMixin
 from tests.helpers import NICKNAME_TEMPLATE
+from tests.helpers import MoEmployeeMixin
+from tests.helpers import dummy_settings
 
 
 class TestPerson(unittest.TestCase, MoEmployeeMixin):

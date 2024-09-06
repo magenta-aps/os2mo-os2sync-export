@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: MPL-2.0
 from uuid import uuid4
 
+from pydantic import SecretStr
+
 from os2sync_export.config import AMQPConnectionSettings
 from os2sync_export.config import FastRAMQPISettings
 from os2sync_export.config import get_os2sync_settings
-from pydantic import SecretStr
-
 
 # Create dummy settings ignoring any settings.json file.
 # with patch("os2sync_export.config.load_settings", return_value={}):
