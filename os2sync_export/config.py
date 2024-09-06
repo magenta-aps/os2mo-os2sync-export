@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class AMQPConnectionSettings(_AMQPConnectionSettings):
     upstream_exchange = "os2mo"
     exchange = "os2sync_export"
-    queue_prefix = "os2sync_export"
+    queue_prefix = "os2sync-export"
     prefetch_count = 1
 
 
