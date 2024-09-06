@@ -13,7 +13,7 @@ import pytest
 from freezegun import freeze_time
 from hypothesis import given
 from hypothesis import strategies as st
-from parameterized import parameterized
+from parameterized import parameterized  # type: ignore
 from pydantic import ValidationError
 
 from os2sync_export.os2mo import addresses_to_orgunit
@@ -219,7 +219,6 @@ class TestsMOAd(unittest.TestCase):
 @patch("os2sync_export.os2mo.organization_uuid", return_value="root_uuid")
 @given(st.tuples(st.uuids()))
 def test_org_unit_uuids(root_mock, hierarchy_uuids):
-    session_mock = MagicMock()
     with patch("os2sync_export.os2mo.os2mo_get") as session_mock:
         session_mock.return_value = MockOs2moGet({"items": [{"uuid": "test"}]})
         org_unit_uuids(hierarchy_uuids=hierarchy_uuids)

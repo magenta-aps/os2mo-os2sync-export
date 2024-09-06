@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from uuid import uuid4
 
-from parameterized import parameterized
+from parameterized import parameterized  # type: ignore
 
 from os2sync_export.os2mo import get_fk_org_uuid
 

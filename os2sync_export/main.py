@@ -360,8 +360,8 @@ async def trigger_orgunit(
     return "OK"
 
 
-def create_fastramqpi() -> FastRAMQPI:
-    settings: Settings = Settings()
+def create_fastramqpi(**kwargs) -> FastRAMQPI:
+    settings: Settings = Settings(**kwargs)
     fastramqpi = FastRAMQPI(
         application_name="os2sync-export",
         settings=settings.fastramqpi,
