@@ -91,8 +91,8 @@ async def test_get_sts_user(
         "employees": [{"objects": [{"itusers": query_response}]}]
     }
     settings = set_settings(
-        os2sync_uuid_from_it_systems=["FK-ORG UUID"],
-        os2sync_user_key_it_system_name="FK-ORG USERNAME",
+        uuid_from_it_systems=["FK-ORG UUID"],
+        user_key_it_system_name="FK-ORG USERNAME",
     )
     await get_sts_user(mo_uuid=mo_uuid, graphql_session=gql_mock, settings=settings)
 
