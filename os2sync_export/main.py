@@ -10,8 +10,8 @@ from fastapi import APIRouter
 from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import FastAPI
-from fastramqpi.depends import from_user_context
 from fastramqpi.depends import LegacyGraphQLSession
+from fastramqpi.depends import from_user_context
 from fastramqpi.main import FastRAMQPI  # type: ignore
 from fastramqpi.ramqp.depends import RateLimit
 from fastramqpi.ramqp.mo import MORouter

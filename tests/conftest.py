@@ -6,8 +6,9 @@ from typing import Callable
 from typing import Generator
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
-from pydantic import SecretStr
+
 import pytest
+from pydantic import SecretStr
 
 from os2sync_export.config import AMQPConnectionSettings
 from os2sync_export.config import FastRAMQPISettings

@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
-from typing import cast
 from typing import Literal
+from typing import cast
 from uuid import UUID
 
 import structlog

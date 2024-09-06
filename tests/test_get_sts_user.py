@@ -10,11 +10,11 @@ from ra_utils.async_to_sync import async_to_sync
 
 from os2sync_export import os2mo
 from os2sync_export.os2mo import get_sts_user_raw as os2mo_get_sts_user_raw
+from tests.helpers import NICKNAME_TEMPLATE
+from tests.helpers import MoEmployeeMixin
 from tests.helpers import dummy_positions
 from tests.helpers import dummy_settings
 from tests.helpers import mock_engagements_to_user
-from tests.helpers import MoEmployeeMixin
-from tests.helpers import NICKNAME_TEMPLATE
 
 
 class TestGetStsUser(unittest.TestCase, MoEmployeeMixin):

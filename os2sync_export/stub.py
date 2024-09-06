@@ -6,7 +6,6 @@ from uuid import uuid4
 
 import structlog
 
-
 logger = structlog.stdlib.get_logger()
 
 
