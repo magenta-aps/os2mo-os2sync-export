@@ -68,6 +68,7 @@ class Settings(BaseSettings):  # type: ignore
     filter_orgunit_uuid: list[UUID] = []
 
     enable_kle: bool = True
+    new: bool = False
 
     class Config:
         frozen = False
