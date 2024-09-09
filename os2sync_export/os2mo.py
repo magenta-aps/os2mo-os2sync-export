@@ -6,6 +6,7 @@ from functools import lru_cache
 from operator import itemgetter
 from typing import Any
 from typing import Dict
+from typing import Iterator
 from typing import List
 from typing import Optional
 from typing import Set
@@ -22,8 +23,8 @@ from more_itertools import only
 from more_itertools import partition
 from ra_utils.headers import TokenSettings
 
-from os2sync_export.config import get_os2sync_settings
 from os2sync_export.config import Settings
+from os2sync_export.config import get_os2sync_settings
 from os2sync_export.os2sync_models import OrgUnit
 from os2sync_export.priority_by_class import choose_public_address
 from os2sync_export.templates import Person
@@ -720,7 +721,7 @@ async def check_terminated_accounts(
     )
     res = await graphql_session.execute(q, variable_values={"uuids": str(uuid)})
     res = one(res["itusers"])["objects"]
-    relevant_it_users = filter(
+    relevant_it_users: Iterator = filter(
         lambda it: it["itsystem"]["name"] in uuid_from_it_systems, res
     )
 
@@ -735,13 +736,13 @@ async def check_terminated_accounts(
 
     relevant_it_users = filter(filter_valid_uuid, relevant_it_users)
     (
-        active_itusers,
-        terminated_itusers,
+        active_itusers_,
+        terminated_itusers_,
     ) = partition(lambda it: is_terminated(it["validity"]["to"]), relevant_it_users)
     # Ensure we won't delete fk-org users that are actually active because of old registrations
-    active_fk_org_uuids = {o["user_key"] for o in active_itusers}
+    active_fk_org_uuids = {o["user_key"] for o in active_itusers_}
     terminated_itusers = [
-        it for it in terminated_itusers if it["user_key"] not in active_fk_org_uuids
+        it for it in terminated_itusers_ if it["user_key"] not in active_fk_org_uuids
     ]
 
     terminated_user_uuids = {
@@ -1031,8 +1032,10 @@ async def fk_org_uuid_to_mo_uuid(
         gql(query), variable_values={"user_keys": [str(u) for u in uuids]}
     )
     res = res["itusers"]
-    res = filter(lambda i: i["current"]["itsystem"]["name"] in it_system_names, res)
+    itusers: Iterator = filter(
+        lambda i: i["current"]["itsystem"]["name"] in it_system_names, res
+    )
     return {
         UUID(r["current"]["user_key"]): UUID(one(r["current"]["person"])["uuid"])
-        for r in res
+        for r in itusers
     }

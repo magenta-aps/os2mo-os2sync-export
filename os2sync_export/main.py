@@ -10,8 +10,8 @@ from fastapi import APIRouter
 from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import FastAPI
-from fastramqpi.depends import from_user_context
 from fastramqpi.depends import LegacyGraphQLSession
+from fastramqpi.depends import from_user_context
 from fastramqpi.main import FastRAMQPI  # type: ignore
 from fastramqpi.ramqp.depends import RateLimit
 from fastramqpi.ramqp.mo import MORouter
@@ -92,7 +92,9 @@ async def amqp_trigger_employee(
             graphql_session=graphql_session,
             settings=settings,
         )
-        logger.debug(sts_users)
+        logger.debug(
+            f"Event registered for person with {uuid=}", fk_org_users=sts_users
+        )
     except ValueError:
         os2sync_client.delete_user(uuid)
         logger.info(f"No fk-org user was found for {uuid=}. Deleting from fk-org")
@@ -360,8 +362,8 @@ async def trigger_orgunit(
     return "OK"
 
 
-def create_fastramqpi() -> FastRAMQPI:
-    settings: Settings = Settings()
+def create_fastramqpi(**kwargs) -> FastRAMQPI:
+    settings: Settings = Settings(**kwargs)
     fastramqpi = FastRAMQPI(
         application_name="os2sync-export",
         settings=settings.fastramqpi,

@@ -3,10 +3,9 @@
 # SPDX-License-Identifier: MPL-2.0
 from uuid import uuid4
 
-from parameterized import parameterized
+from parameterized import parameterized  # type: ignore
 
 from os2sync_export.os2mo import get_fk_org_uuid
-
 
 FK_ORG_UUID_IT_SYSTEM = "FK-org uuid"
 AD_OBJECTGUID_IT_SYSTEM = "AD ObjectGuid"
