@@ -13,7 +13,7 @@ keywords = ["os2mo", "dipex", "os2sync"]
 
 [tool.poetry.dependencies]
 python = "^3.11.0"
-fastramqpi = "^10.0.0"
+fastramqpi = "^10.0.3"
 gql = "^3.5.0"
 Jinja2 = "^3.1"
 prometheus-fastapi-instrumentator = "^6.1.0"
@@ -22,6 +22,7 @@ raclients = "^3.3.5"
 requests = "^2.32.3"
 uvicorn = "^0.30.6"
 os2mo-data-import = "^6.2.0"
+fastapi = "0.112.3"
 
 
 [tool.poetry.group.pre-commit.dependencies]
