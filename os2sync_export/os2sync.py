@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
-import logging
 from typing import Dict
 from typing import Optional
 from typing import Set
@@ -9,6 +8,7 @@ from typing import Tuple
 from uuid import UUID
 
 import requests
+import structlog
 from tenacity import retry
 from tenacity import retry_if_exception_type
 from tenacity import stop_after_delay
@@ -19,7 +19,7 @@ from os2sync_export.config import get_os2sync_settings
 from os2sync_export.os2sync_models import OrgUnit
 
 retry_max_time = 60
-logger = logging.getLogger(__name__)
+logger = structlog.stdlib.get_logger()
 
 
 class OS2SyncClient:

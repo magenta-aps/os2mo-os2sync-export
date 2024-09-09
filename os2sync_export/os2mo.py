@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 import datetime
-import logging
 from functools import lru_cache
 from operator import itemgetter
 from typing import Any
@@ -14,6 +13,7 @@ from typing import Tuple
 from uuid import UUID
 
 import requests
+import structlog
 from gql import gql
 from gql.client import AsyncClientSession
 from more_itertools import first
@@ -29,7 +29,7 @@ from os2sync_export.priority_by_class import choose_public_address
 from os2sync_export.templates import Person
 from os2sync_export.templates import User
 
-logger = logging.getLogger(__name__)
+logger = structlog.stdlib.get_logger()
 
 
 def get_mo_session():

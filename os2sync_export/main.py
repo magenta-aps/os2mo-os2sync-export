@@ -1,11 +1,11 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
-import logging
 from typing import Annotated
 from typing import Dict
 from uuid import UUID
 
+import structlog
 from fastapi import APIRouter
 from fastapi import BackgroundTasks
 from fastapi import Depends
@@ -32,7 +32,7 @@ from os2sync_export.os2mo import get_sts_user
 from os2sync_export.os2mo import is_relevant
 from os2sync_export.os2sync import OS2SyncClient
 
-logger = logging.getLogger(__name__)
+logger = structlog.stdlib.get_logger()
 
 fastapi_router = APIRouter()
 amqp_router = MORouter()
