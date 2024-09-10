@@ -156,7 +156,11 @@ def convert_mo_to_fk_user(
 ) -> User:
     assert user.person
     mo_person = one(user.person)
-    person = Person(Name=mo_person.given_name, Cpr=mo_person.cpr_number)
+
+    person = Person(
+        Name=mo_person.nickname or mo_person.name,
+        Cpr=mo_person.cpr_number if settings.sync_cpr else None,
+    )
     positions = [
         Position(Name=p.job_function.name, OrgUnitUuid=one(p.org_unit).uuid)
         for p in user.engagement or []

@@ -9,11 +9,8 @@ query ReadUser($uuids: UUID!) {
         external_id
         person {
           cpr_number
-          given_name
-          surname
-          nickname_given_name
-          nickname_surname
-
+          name
+          nickname
         }
         engagement {
           org_unit {

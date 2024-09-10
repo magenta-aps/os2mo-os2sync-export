@@ -52,11 +52,7 @@ landline_class_uuid = LANDLINE_CLASS_UUID
 
 def gen_os2mo_it_user() -> ReadUserItusersObjectsCurrent:
     person = ReadUserItusersObjectsCurrentPerson(
-        cpr_number="1234567890",
-        given_name="Bob",
-        surname="",
-        nickname_given_name="",
-        nickname_surname="",
+        cpr_number="1234567890", name="Bob", nickname="Bobby"
     )
     engagement = ReadUserItusersObjectsCurrentEngagement(
         org_unit=[ReadUserItusersObjectsCurrentEngagementOrgUnit(uuid=uuid4())],
@@ -99,7 +95,7 @@ def test_convert_mo_to_fk_user(set_settings):
     fk_user = convert_mo_to_fk_user(os2mo_it_user, settings)
     assert fk_user.Uuid == USER_UUID
     assert fk_user.UserId == "BOB"
-    assert fk_user.Person.Name == "Bob"
+    assert fk_user.Person.Name == "Bobby"
     assert fk_user.Positions[0].Name == "tester"
     assert fk_user.Email == "test@example.com"
     assert fk_user.Landline == "+45 0987654321"
