@@ -26,6 +26,10 @@ query ReadUser($uuids: UUID!) {
         email: addresses {
           address_type(filter: { scope: "EMAIL" }) {
             scope
+            uuid
+          }
+          visibility {
+            user_key
           }
           value
         }
@@ -33,6 +37,9 @@ query ReadUser($uuids: UUID!) {
           address_type(filter: { scope: "PHONE" }) {
             uuid
             scope
+          }
+          visibility {
+            user_key
           }
           value
         }
