@@ -164,21 +164,23 @@ def convert_mo_to_fk_user(
     landline = first(
         filter(
             lambda p: p.address_type.uuid in settings.landline_scope_classes, user.phone
-        )
-    ).value
+        ),
+        default=None,
+    )
 
     mobile = first(
         filter(
             lambda p: p.address_type.uuid not in settings.landline_scope_classes,
             user.phone,
-        )
-    ).value
+        ),
+        default=None,
+    )
     return User(
         Person=person,
         Positions=positions,
         Uuid=UUID(user.external_id),
         UserId=user.user_key,
-        Email=first(user.email).value,
-        Landline=landline,
-        PhoneNumber=mobile,
+        Email=x.value if (x := first(user.email, default=None)) is not None else None,
+        Landline=landline.value if landline is not None else None,
+        PhoneNumber=mobile.value if mobile is not None else None,
     )

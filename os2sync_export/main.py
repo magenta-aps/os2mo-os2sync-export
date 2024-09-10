@@ -10,6 +10,7 @@ from fastapi import APIRouter
 from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import FastAPI
+from fastapi.encoders import jsonable_encoder
 from fastramqpi.depends import LegacyGraphQLSession
 from fastramqpi.depends import from_user_context
 from fastramqpi.main import FastRAMQPI  # type: ignore
@@ -357,10 +358,10 @@ async def trigger_user_new(
     os2sync_client: OS2SyncClient_,
 ) -> str:
     result = await graphql_client.read_user(uuid)
-    fk_org_user = one(result.objects).current
-    assert fk_org_user
-    convert_mo_to_fk_user(user=fk_org_user, settings=settings)
-    # os2sync_client.os2sync_post("{BASE}/user", json=fk_org_user)
+    current = one(result.objects).current
+    assert current
+    fk_org_user = convert_mo_to_fk_user(user=current, settings=settings)
+    os2sync_client.os2sync_post("{BASE}/user", json=jsonable_encoder(fk_org_user))
     logger.info(f"Synced user to fk-org: {uuid}")
     return "ok"
 
