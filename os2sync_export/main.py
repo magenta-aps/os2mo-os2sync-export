@@ -359,7 +359,7 @@ async def trigger_user_new(
     result = await graphql_client.read_user(uuid)
     fk_org_user = one(result.objects).current
     assert fk_org_user
-    convert_mo_to_fk_user(user=fk_org_user)
+    convert_mo_to_fk_user(user=fk_org_user, settings=settings)
     # os2sync_client.os2sync_post("{BASE}/user", json=fk_org_user)
     logger.info(f"Synced user to fk-org: {uuid}")
     return "ok"

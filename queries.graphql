@@ -25,14 +25,13 @@ query ReadUser($uuids: UUID!) {
         }
         email: addresses {
           address_type(filter: { scope: "EMAIL" }) {
-            name
             scope
           }
           value
         }
         phone: addresses {
           address_type(filter: { scope: "PHONE" }) {
-            name
+            uuid
             scope
           }
           value
