@@ -363,7 +363,12 @@ async def read_fk_users_from_person(graphql_client: GraphQLClient, uuid: UUID):
     return fk_accounts, ad_accounts
 
 
-async def read_person_accounts(graphql_client: GraphQLClient, uuid: UUID):
+async def read_person_accounts(
+    graphql_client: GraphQLClient,
+    uuid: UUID,
+    top_unit_uuid: UUID,
+    hierarchy_user_keys: list[str],
+):
     fk_accounts, ad_accounts = await read_fk_users_from_person(
         graphql_client=graphql_client, uuid=uuid
     )
@@ -378,8 +383,37 @@ async def read_person_accounts(graphql_client: GraphQLClient, uuid: UUID):
             filter(lambda fk: fk.external_id == f.external_id, fk_accounts)
         )
         fk_uuid = relevant_fk_account.user_key if relevant_fk_account else f.external_id
-        mo_user_info = await graphql_client.read_user(f.uuid)
-        yield fk_uuid, one(mo_user_info.objects).current
+        mo_user_info = await graphql_client.read_user(uuids=f.uuid)
+        current = one(mo_user_info.objects).current
+
+        def filter_engagements_by_ancestor(
+            eng,
+        ):
+            org_unit = one(eng.org_unit)
+            return org_unit.uuid == top_unit_uuid or top_unit_uuid in {
+                o.uuid for o in org_unit.ancestors
+            }
+
+        if current is None or current.engagement is None:
+            yield fk_uuid, None
+        assert current and current.engagement
+
+        current.engagement = list(
+            filter(filter_engagements_by_ancestor, current.engagement)
+        )
+        if hierarchy_user_keys:
+
+            def filter_engagements_by_hierarchy(
+                eng,
+            ):
+                org_unit = one(eng.org_unit)
+                return only(org_unit.org_unit_hierarchy_model) in hierarchy_user_keys
+
+            current.engagement = list(
+                filter(filter_engagements_by_hierarchy, current.engagement)
+            )
+
+        yield fk_uuid, current
 
     # delete
     # for each fk-account with no matching AD/Omada account - delete fk-org user
@@ -393,13 +427,22 @@ async def trigger_user_new(
     os2sync_client: OS2SyncClient_,
 ) -> str:
     async for fk_uuid, user_info in read_person_accounts(
-        graphql_client=graphql_client, uuid=uuid
+        graphql_client=graphql_client,
+        uuid=uuid,
+        top_unit_uuid=settings.top_unit_uuid,
+        hierarchy_user_keys=settings.filter_hierarchy_names,
     ):
         fk_org_user = convert_mo_to_fk_user(
             fk_org_uuid=fk_uuid, user=user_info, settings=settings
         )
-        os2sync_client.os2sync_post("{BASE}/user", json=jsonable_encoder(fk_org_user))
-        logger.info(f"Synced user to fk-org: {uuid}")
+        if fk_org_user.Positions:
+            os2sync_client.os2sync_post(
+                "{BASE}/user", json=jsonable_encoder(fk_org_user)
+            )
+            logger.info(f"Synced user to fk-org: {uuid}")
+        else:
+            os2sync_client.delete_user(fk_uuid)
+            logger.info(f"Deleted user without relevant engagement: {uuid}")
 
     return "ok"
 
