@@ -18,6 +18,7 @@ from fastramqpi.ramqp.depends import RateLimit
 from fastramqpi.ramqp.mo import MORouter
 from fastramqpi.ramqp.mo import PayloadUUID
 from more_itertools import one
+from more_itertools import only
 
 from os2sync_export.__main__ import cleanup_duplicate_engagements
 from os2sync_export.__main__ import main
@@ -187,6 +188,8 @@ async def amqp_trigger_it_user(
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    if settings.new:
+        return
     try:
         ou_uuid, e_uuid = await get_ituser_org_unit_and_employee_uuids(
             graphql_session, uuid
@@ -350,6 +353,38 @@ async def trigger_user(
     return "OK"
 
 
+async def read_fk_users_from_person(graphql_client: GraphQLClient, uuid: UUID):
+    it_accounts = await graphql_client.read_user_i_t_accounts(uuid)
+    current_accounts = one(it_accounts.objects).current
+    if current_accounts is None:
+        return
+    fk_accounts = current_accounts.fk_org_users
+    ad_accounts = current_accounts.a_d_users
+    return fk_accounts, ad_accounts
+
+
+async def read_person_accounts(graphql_client: GraphQLClient, uuid: UUID):
+    fk_accounts, ad_accounts = await read_fk_users_from_person(
+        graphql_client=graphql_client, uuid=uuid
+    )
+    # create
+    # For each AD account that has no fk-account - create one
+    # This step could be moved into it-user event handling!
+
+    # update
+    # For each fk-account (including newly created) with a matching AD/Omada account - update fk-org user
+    for f in ad_accounts:
+        relevant_fk_account = only(
+            filter(lambda fk: fk.external_id == f.external_id, fk_accounts)
+        )
+        fk_uuid = relevant_fk_account.user_key if relevant_fk_account else f.external_id
+        mo_user_info = await graphql_client.read_user(f.uuid)
+        yield fk_uuid, one(mo_user_info.objects).current
+
+    # delete
+    # for each fk-account with no matching AD/Omada account - delete fk-org user
+
+
 @fastapi_router.post("/trigger/new/user/{uuid}")
 async def trigger_user_new(
     uuid: UUID,
@@ -357,12 +392,15 @@ async def trigger_user_new(
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
 ) -> str:
-    result = await graphql_client.read_user(uuid)
-    current = one(result.objects).current
-    assert current
-    fk_org_user = convert_mo_to_fk_user(user=current, settings=settings)
-    os2sync_client.os2sync_post("{BASE}/user", json=jsonable_encoder(fk_org_user))
-    logger.info(f"Synced user to fk-org: {uuid}")
+    async for fk_uuid, user_info in read_person_accounts(
+        graphql_client=graphql_client, uuid=uuid
+    ):
+        fk_org_user = convert_mo_to_fk_user(
+            fk_org_uuid=fk_uuid, user=user_info, settings=settings
+        )
+        os2sync_client.os2sync_post("{BASE}/user", json=jsonable_encoder(fk_org_user))
+        logger.info(f"Synced user to fk-org: {uuid}")
+
     return "ok"
 
 

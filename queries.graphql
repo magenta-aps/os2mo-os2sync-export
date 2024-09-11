@@ -44,3 +44,21 @@ query ReadUser($uuids: UUID!) {
     }
   }
 }
+
+query ReadUserITAccounts($uuids: UUID!) {
+  employees(filter: { uuids: [$uuids] }) {
+    objects {
+      current {
+        fk_org_users: itusers(filter: { itsystem: { user_keys: "FK-org" } }) {
+          user_key
+          external_id
+        }
+        AD_users: itusers(filter: { itsystem: { user_keys: "AD" } }) {
+          uuid
+          user_key
+          external_id
+        }
+      }
+    }
+  }
+}

@@ -36,7 +36,8 @@ from os2sync_export.os2sync_models import User
 from os2sync_export.os2sync_models import convert_mo_to_fk_user
 
 LANDLINE_CLASS_UUID = uuid4()
-USER_UUID = uuid4()
+FK_ORG_USER_UUID = uuid4()
+OBJECTGUID = uuid4()
 
 
 def test_os2sync_user_model_no_input():
@@ -82,7 +83,7 @@ def gen_os2mo_it_user() -> ReadUserItusersObjectsCurrent:
     return ReadUserItusersObjectsCurrent(
         person=[person],
         user_key="BOB",
-        external_id=str(USER_UUID),
+        external_id=str(OBJECTGUID),
         email=[email],
         phone=[mobile, landline],
         engagement=[engagement],
@@ -92,8 +93,10 @@ def gen_os2mo_it_user() -> ReadUserItusersObjectsCurrent:
 def test_convert_mo_to_fk_user(set_settings):
     os2mo_it_user = gen_os2mo_it_user()
     settings = set_settings(landline_scope_classes=[LANDLINE_CLASS_UUID])
-    fk_user = convert_mo_to_fk_user(os2mo_it_user, settings)
-    assert fk_user.Uuid == USER_UUID
+    fk_user = convert_mo_to_fk_user(
+        fk_org_uuid=FK_ORG_USER_UUID, user=os2mo_it_user, settings=settings
+    )
+    assert fk_user.Uuid == FK_ORG_USER_UUID
     assert fk_user.UserId == "BOB"
     assert fk_user.Person.Name == "Bobby"
     assert fk_user.Positions[0].Name == "tester"

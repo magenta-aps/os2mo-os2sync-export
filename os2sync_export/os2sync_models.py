@@ -152,7 +152,7 @@ class User(BaseModel):
 
 
 def convert_mo_to_fk_user(
-    user: ReadUserItusersObjectsCurrent, settings: Settings
+    fk_org_uuid: UUID, user: ReadUserItusersObjectsCurrent, settings: Settings
 ) -> User:
     assert user.person
     mo_person = one(user.person)
@@ -182,7 +182,7 @@ def convert_mo_to_fk_user(
     return User(
         Person=person,
         Positions=positions,
-        Uuid=UUID(user.external_id),
+        Uuid=fk_org_uuid,
         UserId=user.user_key,
         Email=x.value if (x := first(user.email, default=None)) is not None else None,
         Landline=landline.value if landline is not None else None,
