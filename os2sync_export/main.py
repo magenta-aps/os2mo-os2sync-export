@@ -368,6 +368,7 @@ async def read_person_accounts(
     uuid: UUID,
     top_unit_uuid: UUID,
     hierarchy_user_keys: list[str],
+    filtered_org_units: list[UUID],
 ):
     fk_accounts, ad_accounts = await read_fk_users_from_person(
         graphql_client=graphql_client, uuid=uuid
@@ -401,6 +402,20 @@ async def read_person_accounts(
         current.engagement = list(
             filter(filter_engagements_by_ancestor, current.engagement)
         )
+
+        def filter_engagements_by_org_unit_filter(
+            eng,
+        ):
+            org_unit = one(eng.org_unit)
+            return org_unit.uuid != filtered_org_units and not {
+                o.uuid for o in org_unit.ancestors
+            }.intersection(set(filtered_org_units))
+
+        if filtered_org_units:
+            current.engagement = list(
+                filter(filter_engagements_by_org_unit_filter, current.engagement)
+            )
+
         if hierarchy_user_keys:
 
             def filter_engagements_by_hierarchy(
@@ -431,6 +446,7 @@ async def trigger_user_new(
         uuid=uuid,
         top_unit_uuid=settings.top_unit_uuid,
         hierarchy_user_keys=settings.filter_hierarchy_names,
+        filtered_org_units=settings.filter_orgunit_uuid,
     ):
         fk_org_user = convert_mo_to_fk_user(
             fk_org_uuid=fk_uuid, user=user_info, settings=settings
