@@ -21,6 +21,12 @@ query ReadUser($uuids: UUID!) {
             ancestors {
               uuid
             }
+            org_unit_level {
+              uuid
+            }
+            unit_type {
+              uuid
+            }
           }
           job_function {
             name

@@ -63,6 +63,8 @@ def gen_os2mo_it_user() -> ReadUserItusersObjectsCurrent:
             ReadUserItusersObjectsCurrentEngagementOrgUnit(
                 uuid=uuid4(),
                 org_unit_hierarchy_model=None,
+                org_unit_level=None,
+                unit_type=None,
                 ancestors=[
                     ReadUserItusersObjectsCurrentEngagementOrgUnitAncestors(
                         uuid=uuid4()
