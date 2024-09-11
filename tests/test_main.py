@@ -33,6 +33,7 @@ async def test_trigger_it_user_update(
     _, user_uuid = get_mock.return_value
     # Fk-org users for this person - same uuid as i os2mo
     fk_org_users = [{"Uuid": uuid4() if overwritten_uuid else user_uuid}]
+    graphql_client = AsyncMock()
     with patch(
         "os2sync_export.main.get_sts_user", return_value=fk_org_users
     ) as get_user_mock:
@@ -40,12 +41,13 @@ async def test_trigger_it_user_update(
             uuid=uuid4(),
             settings=mock_settings,
             graphql_session=graphql_session,
+            graphql_client=graphql_client,
             os2sync_client=os2sync_client,
             _=None,
         )
     get_mock.assert_awaited_once()
     get_user_mock.assert_called_once_with(
-        user_uuid, graphql_session=graphql_session, settings=mock_settings
+        user_uuid, graphql_client=graphql_client, settings=mock_settings
     )
     # Test that we call update_user on events
     os2sync_client.update_users.assert_called_once_with(user_uuid, fk_org_users)
@@ -86,6 +88,7 @@ async def test_trigger_it_orgunit_update(
                 uuid=uuid4(),
                 settings=mock_settings,
                 graphql_session=graphql_session,
+                graphql_client=AsyncMock(),
                 os2sync_client=os2sync_client,
                 _=None,
             )
@@ -237,7 +240,7 @@ async def test_amqp_trigger_it_user_no_old_accounts(set_settings):
         return_value=(set(), set()),
     ):
         await amqp_trigger_it_user(
-            uuid4(), mock_settings, AsyncMock(), os2sync_client_mock, ""
+            uuid4(), mock_settings, AsyncMock(), AsyncMock(), os2sync_client_mock, ""
         )
 
     os2sync_client_mock.delete_orgunit.assert_not_called()
@@ -261,7 +264,7 @@ async def test_amqp_trigger_it_user_deletes_old_accounts(
         return_value=(old_user_uuids, old_org_unit_uuids),
     ):
         await amqp_trigger_it_user(
-            uuid4(), mock_settings, AsyncMock(), os2sync_client_mock, ""
+            uuid4(), mock_settings, AsyncMock(), AsyncMock(), os2sync_client_mock, ""
         )
 
     for uuid in old_org_unit_uuids:

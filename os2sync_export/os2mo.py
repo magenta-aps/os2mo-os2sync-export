@@ -25,6 +25,7 @@ from ra_utils.headers import TokenSettings
 
 from os2sync_export.config import Settings
 from os2sync_export.config import get_os2sync_settings
+from os2sync_export.depends import GraphQLClient
 from os2sync_export.os2sync_models import OrgUnit
 from os2sync_export.priority_by_class import choose_public_address
 from os2sync_export.templates import Person
@@ -318,7 +319,7 @@ def get_org_unit_hierarchy(titles: list[str]) -> Optional[Tuple[UUID, ...]]:
 async def get_sts_user_raw(
     uuid: str,
     settings: Settings,
-    graphql_session: AsyncClientSession,
+    graphql_client: GraphQLClient,
     fk_org_uuid: Optional[str] = None,
     user_key: Optional[str] = None,
     engagement_uuid: Optional[str] = None,
@@ -347,7 +348,7 @@ async def get_sts_user_raw(
     if engagement_uuid:
         engagements = list(filter(lambda e: e["uuid"] == engagement_uuid, engagements))
 
-    await engagements_to_user(sts_user, engagements, graphql_session, settings)
+    await engagements_to_user(sts_user, engagements, graphql_client, settings)
 
     if not sts_user["Positions"]:
         # return immediately because users with no engagements are not synced.
@@ -407,11 +408,13 @@ def group_accounts(
 
 
 async def get_sts_user(
-    mo_uuid: str, graphql_session: AsyncClientSession, settings: Settings
+    mo_uuid: str,
+    graphql_client: GraphQLClient,
+    settings: Settings,
 ) -> List[Dict[str, Any]]:
     try:
         users = await get_user_it_accounts(
-            graphql_session=graphql_session, mo_uuid=mo_uuid
+            graphql_client=graphql_client, mo_uuid=UUID(mo_uuid)
         )
         fk_org_accounts = group_accounts(
             users,
@@ -426,7 +429,7 @@ async def get_sts_user(
         await get_sts_user_raw(
             mo_uuid,
             settings=settings,
-            graphql_session=graphql_session,
+            graphql_client=graphql_client,
             fk_org_uuid=it["uuid"],
             user_key=it["user_key"],
             engagement_uuid=it["engagement_uuid"],
@@ -660,28 +663,11 @@ def get_sts_orgunit(uuid: UUID, settings: Settings) -> Optional[OrgUnit]:
 
 
 async def get_user_it_accounts(
-    graphql_session: AsyncClientSession, mo_uuid: str
+    graphql_client: GraphQLClient, mo_uuid: UUID
 ) -> List[Dict]:
     """Find fk-org user(s) details for the person with given MO uuid"""
-    q = gql(
-        """
-    query GetITAccounts($uuids: [UUID!]) {
-        employees(uuids: $uuids) {
-            objects {
-              itusers {
-                uuid
-                user_key
-                engagement_uuid
-                itsystem {
-                  name
-                }
-              }
-            }
-          }
-        }
-    """
-    )
-    res = await graphql_session.execute(q, variable_values={"uuids": mo_uuid})
+    it = await graphql_client.get_i_t_accounts([mo_uuid])
+    res = one(it).dict()
     objects = one(res["employees"])["objects"]
     return one(objects)["itusers"]
 

@@ -15,6 +15,7 @@ from ra_utils.tqdm_wrapper import tqdm
 
 from os2sync_export import os2mo
 from os2sync_export.config import Settings
+from os2sync_export.depends import GraphQLClient
 from os2sync_export.os2sync import OS2SyncClient
 from os2sync_export.os2sync_models import OrgUnit
 
@@ -83,7 +84,7 @@ def read_all_user_uuids(org_uuid: str, limit: int = 1_000) -> Set[str]:
 
 
 async def read_all_users(
-    graphql_session: AsyncClientSession, settings: Settings
+    graphql_client: GraphQLClient, settings: Settings
 ) -> Dict[UUID, Dict]:
     """Read all current users from OS2MO
 
@@ -104,7 +105,7 @@ async def read_all_users(
     )
 
     tasks = [
-        os2mo.get_sts_user(uuid, graphql_session=graphql_session, settings=settings)
+        os2mo.get_sts_user(uuid, graphql_client=graphql_client, settings=settings)
         for uuid in os2mo_uuids_present
     ]
     all_users = await gather_with_concurrency(5, *tasks)
@@ -123,7 +124,7 @@ async def read_all_users(
     return res
 
 
-async def main(settings: Settings, graphql_session, os2sync_client):
+async def main(settings: Settings, graphql_client, os2sync_client):
     log_mox_config(settings)
 
     os2sync_client = os2sync_client or OS2SyncClient(settings=settings)
@@ -156,7 +157,7 @@ async def main(settings: Settings, graphql_session, os2sync_client):
 
     logger.info("Start syncing users")
     mo_users = await read_all_users(
-        graphql_session=graphql_session,
+        graphql_client=graphql_client,
         settings=settings,
     )
     assert mo_users, "No mo-users were found. Stopping os2sync_export to ensure we won't delete every user from fk-org. Again"

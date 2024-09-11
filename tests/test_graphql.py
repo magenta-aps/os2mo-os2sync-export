@@ -82,26 +82,34 @@ def test_group_by_engagement():
         assert g in groups
 
 
+class HasDict:
+    def __init__(self, inputdict) -> None:
+        self.inputdict = inputdict
+
+    def dict(self):
+        return self.inputdict
+
+
 @patch("os2sync_export.os2mo.get_sts_user_raw")
 async def test_get_sts_user(
     get_sts_user_raw_mock, set_settings: Callable[..., Settings]
 ):
     gql_mock = AsyncMock()
-    gql_mock.execute.return_value = {
-        "employees": [{"objects": [{"itusers": query_response}]}]
-    }
+    gql_mock.get_i_t_accounts.return_value = [
+        HasDict({"employees": [{"objects": [{"itusers": query_response}]}]})
+    ]
     settings = set_settings(
         uuid_from_it_systems=["FK-ORG UUID"],
         user_key_it_system_name="FK-ORG USERNAME",
     )
-    await get_sts_user(mo_uuid=mo_uuid, graphql_session=gql_mock, settings=settings)
+    await get_sts_user(mo_uuid=mo_uuid, graphql_client=gql_mock, settings=settings)
 
     assert len(get_sts_user_raw_mock.call_args_list) == 3
     for c in [
         call(
             mo_uuid,
             settings=settings,
-            graphql_session=gql_mock,
+            graphql_client=gql_mock,
             fk_org_uuid=fk_org_uuid_1,
             user_key=fk_org_user_key_1,
             engagement_uuid=engagement_uuid1,
@@ -109,7 +117,7 @@ async def test_get_sts_user(
         call(
             mo_uuid,
             settings=settings,
-            graphql_session=gql_mock,
+            graphql_client=gql_mock,
             fk_org_uuid=fk_org_uuid_2,
             user_key=fk_org_user_key_2,
             engagement_uuid=engagement_uuid2,
@@ -117,7 +125,7 @@ async def test_get_sts_user(
         call(
             mo_uuid,
             settings=settings,
-            graphql_session=gql_mock,
+            graphql_client=gql_mock,
             fk_org_uuid=fk_org_uuid_3,
             user_key=None,
             engagement_uuid=None,
@@ -134,13 +142,11 @@ async def test_get_sts_user_no_it_accounts(
     gql_mock = AsyncMock()
     gql_mock.execute.return_value = {"employees": [{"objects": [{"itusers": []}]}]}
 
-    await get_sts_user(
-        mo_uuid=mo_uuid, graphql_session=gql_mock, settings=mock_settings
-    )
+    await get_sts_user(mo_uuid=mo_uuid, graphql_client=gql_mock, settings=mock_settings)
     get_sts_user_raw_mock.assert_called_once_with(
         mo_uuid,
         settings=mock_settings,
-        graphql_session=gql_mock,
+        graphql_client=gql_mock,
         fk_org_uuid=None,
         user_key=None,
         engagement_uuid=None,

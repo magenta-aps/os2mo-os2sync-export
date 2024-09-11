@@ -158,7 +158,7 @@ class TestGetStsUser(unittest.TestCase, MoEmployeeMixin):
             return await os2mo_get_sts_user_raw(
                 self._uuid,
                 settings=settings,
-                graphql_session=gql_mock,
+                graphql_client=gql_mock,
                 fk_org_uuid=None,
                 user_key=ad_user_key,
             )

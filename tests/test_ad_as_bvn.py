@@ -379,7 +379,7 @@ async def test_mo_client_default(self, graphql_session):
     actual = await get_sts_user_raw(
         uuid,
         settings=settings,
-        graphql_session=graphql_session,
+        graphql_client=graphql_session,
         fk_org_uuid=None,
         user_key="SolveigK_AD_logon",
     )
