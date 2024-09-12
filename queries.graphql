@@ -1,9 +1,20 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
 
-query Version {
-  version {
-    mo_version
-    mo_hash
+query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
+  employees(filter: { uuids: [$uuid] }) {
+    objects {
+      current {
+        fk_org_users: itusers(filter: { itsystem: { user_keys: "FK-org" } }) {
+          user_key
+          external_id
+        }
+        AD_users: itusers(filter: { itsystem: { user_keys: $it_user_keys } }) {
+          uuid
+          user_key
+          external_id
+        }
+      }
+    }
   }
 }
