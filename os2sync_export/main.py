@@ -53,6 +53,8 @@ async def trigger_all(
     graphql_session: LegacyGraphQLSession,
     os2sync_client: OS2SyncClient_,
 ) -> Dict[str, str]:
+    if settings.new:
+        raise NotImplementedError
     background_tasks.add_task(
         main,
         settings=settings,
@@ -69,6 +71,8 @@ async def trigger_cleanup_duplicate_engagements(
     graphql_session: LegacyGraphQLSession,
     os2sync_client: OS2SyncClient_,
 ) -> Dict[str, str]:
+    if settings.new:
+        raise NotImplementedError
     background_tasks.add_task(
         cleanup_duplicate_engagements,
         settings=settings,
@@ -86,6 +90,8 @@ async def amqp_trigger_employee(
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    if settings.new:
+        raise NotImplementedError
     try:
         sts_users = await get_sts_user(
             str(uuid),
@@ -110,6 +116,8 @@ async def amqp_trigger_org_unit(
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    if settings.new:
+        raise NotImplementedError
     sts_org_unit = None
     if await is_relevant(
         graphql_session,
@@ -140,6 +148,8 @@ async def amqp_trigger_address(
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    if settings.new:
+        raise NotImplementedError
     try:
         ou_uuid, e_uuid = await get_address_org_unit_and_employee_uuids(
             graphql_session, uuid
@@ -182,6 +192,8 @@ async def amqp_trigger_it_user(
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    if settings.new:
+        raise NotImplementedError
     try:
         ou_uuid, e_uuid = await get_ituser_org_unit_and_employee_uuids(
             graphql_session, uuid
@@ -250,6 +262,8 @@ async def amqp_trigger_manager(
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    if settings.new:
+        raise NotImplementedError
     try:
         ou_uuid = await get_manager_org_unit_uuid(graphql_session, uuid)
     except ValueError:
@@ -281,6 +295,8 @@ async def amqp_trigger_engagement(
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    if settings.new:
+        raise NotImplementedError
     try:
         e_uuid = await get_engagement_employee_uuid(graphql_session, uuid)
     except ValueError:
@@ -305,6 +321,8 @@ async def amqp_trigger_kle(
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    if settings.new:
+        raise NotImplementedError
     try:
         ou_uuid = await get_kle_org_unit_uuid(graphql_session, uuid)
     except ValueError:
@@ -334,6 +352,8 @@ async def trigger_user(
     graphql_session: LegacyGraphQLSession,
     os2sync_client: OS2SyncClient_,
 ) -> str:
+    if settings.new:
+        raise NotImplementedError
     sts_users = await get_sts_user(
         str(uuid),
         graphql_session=graphql_session,
