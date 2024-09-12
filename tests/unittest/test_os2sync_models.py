@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+from uuid import UUID
 from uuid import uuid4
 
 import pytest
@@ -45,12 +46,14 @@ email_class_uuid = uuid4()
 landline_class_uuid = LANDLINE_CLASS_UUID
 
 
-def gen_engagement() -> ReadUserItusersObjectsCurrentEngagement:
+def gen_engagement(
+    org_unit_uuid: UUID = uuid4(),
+) -> ReadUserItusersObjectsCurrentEngagement:
     engagement = ReadUserItusersObjectsCurrentEngagement(
         **{  # type: ignore
             "org_unit": [
                 {
-                    "uuid": uuid4(),
+                    "uuid": org_unit_uuid,
                     "org_unit_hierarchy_model": None,
                     "org_unit_level": None,
                     "unit_type": None,
@@ -64,7 +67,7 @@ def gen_engagement() -> ReadUserItusersObjectsCurrentEngagement:
 
 
 def gen_os2mo_it_user(
-    engagement: ReadUserItusersObjectsCurrentEngagement,
+    engagement: list[ReadUserItusersObjectsCurrentEngagement] | None,
 ) -> ReadUserItusersObjectsCurrent:
     person = ReadUserItusersObjectsCurrentPerson(
         cpr_number="1234567890", name="Bob", nickname="Bobby"
@@ -97,12 +100,12 @@ def gen_os2mo_it_user(
         external_id=str(OBJECTGUID),
         email=[email],
         phone=[mobile, landline],
-        engagement=[engagement],
+        engagement=engagement,
     )
 
 
 def test_convert_mo_to_fk_user(set_settings):
-    os2mo_it_user = gen_os2mo_it_user(engagement=gen_engagement())
+    os2mo_it_user = gen_os2mo_it_user(engagement=[gen_engagement()])
     settings = set_settings(landline_scope_classes=[LANDLINE_CLASS_UUID])
     fk_user = convert_mo_to_fk_user(
         fk_org_uuid=FK_ORG_USER_UUID, user=os2mo_it_user, settings=settings
@@ -114,3 +117,11 @@ def test_convert_mo_to_fk_user(set_settings):
     assert fk_user.Email == "test@example.com"
     assert fk_user.Landline == "+45 0987654321"
     assert fk_user.PhoneNumber == "1234567890"
+
+
+def test_no_engagements(mock_settings):
+    os2mo_it_user = gen_os2mo_it_user(engagement=[])
+    with pytest.raises(ValueError):
+        convert_mo_to_fk_user(
+            fk_org_uuid=FK_ORG_USER_UUID, user=os2mo_it_user, settings=mock_settings
+        )
