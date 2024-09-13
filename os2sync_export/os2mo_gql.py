@@ -30,7 +30,7 @@ async def read_fk_users_from_person(
     )
     current_accounts = one(it_accounts.objects).current
     if current_accounts is None:
-        return
+        return [], []
     fk_accounts = current_accounts.fk_org_users
     ad_accounts = current_accounts.a_d_users
     return fk_accounts, ad_accounts
