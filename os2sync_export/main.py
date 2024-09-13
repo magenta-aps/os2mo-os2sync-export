@@ -16,7 +16,6 @@ from fastramqpi.main import FastRAMQPI  # type: ignore
 from fastramqpi.ramqp.depends import RateLimit
 from fastramqpi.ramqp.mo import MORouter
 from fastramqpi.ramqp.mo import PayloadUUID
-from more_itertools import one
 
 from os2sync_export.__main__ import cleanup_duplicate_engagements
 from os2sync_export.__main__ import main
@@ -33,6 +32,7 @@ from os2sync_export.os2mo import get_manager_org_unit_uuid
 from os2sync_export.os2mo import get_sts_orgunit
 from os2sync_export.os2mo import get_sts_user
 from os2sync_export.os2mo import is_relevant
+from os2sync_export.os2mo_gql import sync_mo_user_to_fk_org
 from os2sync_export.os2sync import OS2SyncClient
 
 logger = structlog.stdlib.get_logger()
@@ -348,20 +348,6 @@ async def amqp_trigger_kle(
     logger.warn(f"Unable to update ituser, could not find owners for ituser: {uuid}")
 
 
-async def read_fk_users_from_person(
-    graphql_client: GraphQLClient, uuid: UUID, it_user_keys: list[str]
-):
-    it_accounts = await graphql_client.read_user_i_t_accounts(
-        uuid=uuid, it_user_keys=it_user_keys
-    )
-    current_accounts = one(it_accounts.objects).current
-    if current_accounts is None:
-        return
-    fk_accounts = current_accounts.fk_org_users
-    ad_accounts = current_accounts.a_d_users
-    return fk_accounts, ad_accounts
-
-
 @fastapi_router.post("/trigger/user/{uuid}")
 async def trigger_user(
     uuid: UUID,
@@ -371,19 +357,10 @@ async def trigger_user(
     os2sync_client: OS2SyncClient_,
 ) -> str:
     if settings.new:
-        fk_org_users, ad_users = await read_fk_users_from_person(
-            graphql_client=graphql_client,
-            uuid=uuid,
-            it_user_keys=settings.uuid_from_it_systems,
+        await sync_mo_user_to_fk_org(
+            graphql_client=graphql_client, uuid=uuid, settings=settings
         )
 
-        logger.info(
-            "Found the following itusers",
-            uuid=uuid,
-            fk_org_users=fk_org_users,
-            ad_users=ad_users,
-        )
-        raise NotImplementedError
     sts_users = await get_sts_user(
         str(uuid),
         graphql_session=graphql_session,
