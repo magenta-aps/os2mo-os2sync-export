@@ -165,3 +165,6 @@ class OS2SyncClient:
             self.upsert_org_unit(org_unit)
         else:
             self.delete_orgunit(uuid)
+
+    def sync_user(self, user):
+        raise NotImplementedError

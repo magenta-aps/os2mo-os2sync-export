@@ -32,7 +32,7 @@ from os2sync_export.os2mo import get_manager_org_unit_uuid
 from os2sync_export.os2mo import get_sts_orgunit
 from os2sync_export.os2mo import get_sts_user
 from os2sync_export.os2mo import is_relevant
-from os2sync_export.os2mo_gql import sync_mo_user_to_fk_org
+from os2sync_export.os2mo_gql import OS2SyncExporter
 from os2sync_export.os2sync import OS2SyncClient
 
 logger = structlog.stdlib.get_logger()
@@ -357,9 +357,12 @@ async def trigger_user(
     os2sync_client: OS2SyncClient_,
 ) -> str:
     if settings.new:
-        await sync_mo_user_to_fk_org(
-            graphql_client=graphql_client, uuid=uuid, settings=settings
+        os2sync_exporter = OS2SyncExporter(
+            settings=settings,
+            os2sync_client=os2sync_client,
+            graphql_client=graphql_client,
         )
+        await os2sync_exporter.sync_mo_user_to_fk_org(uuid=uuid)
 
     sts_users = await get_sts_user(
         str(uuid),
