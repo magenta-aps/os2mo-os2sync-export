@@ -68,6 +68,10 @@ class Settings(BaseSettings):  # type: ignore
     filter_orgunit_uuid: list[UUID] = []
 
     enable_kle: bool = True
+    # This flag toggles the new integration which uses a completely different than the old integration
+    # Use only when it-users exists in mo with the new format, eg:
+    # AD-accounts having samaccountname in user_key, ObjectGUID as external_id and addresses and engagements attached to the it-user.
+    new: bool = False
 
     class Config:
         frozen = False
