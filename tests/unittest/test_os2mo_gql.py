@@ -31,14 +31,49 @@ async def test_sync_mo_user_to_fk_one_it_user(
             "objects": [
                 {
                     "current": {
-                        "AD_users": [
+                        "itusers": [
                             {
                                 "uuid": uuid4(),
                                 "user_key": str(uuid4()),
-                                "external_id": str(uuid4),
+                                "external_id": str(uuid4()),
+                                "phone": [
+                                    {
+                                        "address_type": {
+                                            "uuid": uuid4(),
+                                            "scope": "PHONE",
+                                        },
+                                        "visibility": {"user_key": "PUBLIC"},
+                                        "value": "11223344",
+                                    }
+                                ],
+                                "email": [
+                                    {
+                                        "address_type": {
+                                            "uuid": uuid4(),
+                                            "scope": "EMAIL",
+                                        },
+                                        "visibility": {"user_key": "PUBLIC"},
+                                        "value": "bsg@digital-identity.dk",
+                                    }
+                                ],
+                                "person": [
+                                    {
+                                        "name": "Brian Storm Graversen",
+                                        "nickname": "",
+                                        "cpr_number": 1234567890,
+                                    }
+                                ],
+                                "engagement": [
+                                    {
+                                        "org_unit": [{"uuid": uuid4()}],
+                                        "job_function": {
+                                            "name": "open source developer"
+                                        },
+                                    }
+                                ],
                             }
                         ],
-                        "fk_org_users": [],
+                        "fk_org_uuids": [],
                     }
                 }
             ]
@@ -66,7 +101,7 @@ async def test_sync_mo_user_to_fk_delete_user(
                         "fk_org_users": [
                             {
                                 "user_key": str(uuid4()),
-                                "external_id": str(uuid4),
+                                "external_id": str(uuid4()),
                             }
                         ],
                     }
