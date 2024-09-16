@@ -9,6 +9,7 @@ from uuid import UUID
 
 import requests
 import structlog
+from fastapi.encoders import jsonable_encoder
 from tenacity import retry
 from tenacity import retry_if_exception_type
 from tenacity import stop_after_delay
@@ -17,6 +18,7 @@ from tenacity import wait_fixed
 from os2sync_export import stub
 from os2sync_export.config import get_os2sync_settings
 from os2sync_export.os2sync_models import OrgUnit
+from os2sync_export.os2sync_models import User
 
 retry_max_time = 60
 logger = structlog.stdlib.get_logger()
@@ -139,6 +141,9 @@ class OS2SyncClient:
         existing_os2sync_org_units = {UUID(o["Uuid"]) for o in org_units}
         existing_os2sync_users = {UUID(u["Uuid"]) for u in users}
         return existing_os2sync_org_units, existing_os2sync_users
+
+    def update_user(self, user: User):
+        self.os2sync_post("{BASE}/user", json=jsonable_encoder(user))
 
     def update_users(self, uuid: UUID, users):
         if not users:

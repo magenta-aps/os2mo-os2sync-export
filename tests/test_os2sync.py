@@ -8,10 +8,13 @@ from uuid import UUID
 from uuid import uuid4
 
 import pytest
+from fastapi.encoders import jsonable_encoder
+from pydantic import ValidationError
 from requests import HTTPError
 
 from os2sync_export.os2sync import OS2SyncClient
 from os2sync_export.os2sync_models import OrgUnit
+from os2sync_export.os2sync_models import User
 
 uuid = uuid4()
 o = OrgUnit(Name="test", Uuid=uuid, ParentOrgUnitUuid=None)
@@ -239,3 +242,32 @@ def test_update_users_delete_uuid_from_it_user(mock_settings):
     client.update_users(uuid=uuid4(), users=users)
 
     client.delete_user.assert_called_once_with(uuid)
+
+
+def test_update_user(mock_settings):
+    client = OS2SyncClient(mock_settings, None)
+    client.session = MagicMock()
+    user = User(
+        **{
+            "Uuid": uuid4(),
+            "UserId": "BG",
+            "Person": {"Name": "Brian"},
+            "Positions": [{"OrgUnitUuid": uuid4(), "Name": "Open Source Developer"}],
+        }
+    )
+    client.update_user(user=user)
+    client.session.post.assert_called_once_with(
+        "http://os2sync:5000/api/user", json=jsonable_encoder(user)
+    )
+
+
+def test_user_no_positions():
+    with pytest.raises(ValidationError):
+        User(
+            **{
+                "Uuid": uuid4(),
+                "UserId": "BG",
+                "Person": {"Name": "Brian"},
+                "Positions": [],
+            }
+        )
