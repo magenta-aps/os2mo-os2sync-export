@@ -358,7 +358,10 @@ async def trigger_user(
 ) -> str:
     if settings.new:
         await sync_mo_user_to_fk_org(
-            graphql_client=graphql_client, uuid=uuid, settings=settings
+            graphql_client=graphql_client,
+            settings=settings,
+            os2sync_client=os2sync_client,
+            uuid=uuid,
         )
 
     sts_users = await get_sts_user(

@@ -5,14 +5,45 @@ query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
   employees(filter: { uuids: [$uuid] }) {
     objects {
       current {
-        fk_org_users: itusers(filter: { itsystem: { user_keys: "FK-org" } }) {
+        fk_org_uuids: itusers(filter: { itsystem: { user_keys: "FK-org" } }) {
           user_key
           external_id
         }
-        AD_users: itusers(filter: { itsystem: { user_keys: $it_user_keys } }) {
+        itusers: itusers(filter: { itsystem: { user_keys: $it_user_keys } }) {
           uuid
           user_key
           external_id
+          person {
+            cpr_number
+            name
+            nickname
+          }
+          engagement {
+            org_unit {
+              uuid
+            }
+            job_function {
+              name
+            }
+          }
+          email: addresses {
+            address_type(filter: { scope: "EMAIL" }) {
+              uuid
+            }
+            visibility {
+              user_key
+            }
+            value
+          }
+          phone: addresses {
+            address_type(filter: { scope: "PHONE" }) {
+              uuid
+            }
+            visibility {
+              user_key
+            }
+            value
+          }
         }
       }
     }
