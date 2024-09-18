@@ -302,3 +302,21 @@ def test_convert_and_filter_different_user_key(mock_settings):
     )
     assert one(os2sync_update).Uuid == UUID(it_user.external_id)
     assert os2sync_delete == set([UUID(fk_org_user.external_id)])
+
+
+def test_convert_and_filter_no_engagement(mock_settings):
+    """Tests that when an account has no engagements it is deleted"""
+    user_key = "SamAccountName"
+    it_user = BASE_ITUSER_RESPONSE.copy()
+    fk_org_user = ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids(
+        external_id=str(uuid4()), user_key=user_key
+    )
+    it_user.user_key = user_key
+    it_user.engagement = []
+    os2sync_update, os2sync_delete = convert_and_filter(
+        settings=mock_settings, it_users=[it_user], fk_org_users=[fk_org_user]
+    )
+    assert os2sync_update == []
+    assert os2sync_delete == set(
+        [UUID(fk_org_user.external_id)],
+    )
