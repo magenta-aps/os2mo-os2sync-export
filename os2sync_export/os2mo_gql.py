@@ -69,11 +69,21 @@ def convert_and_filter(
     delete_fk_org_users = {
         UUID(fk_org_user.external_id)
         for fk_org_user in fk_org_users
-        if fk_org_user.external_id not in {a.external_id for a in it_users}
+        if fk_org_user.user_key not in {a.user_key for a in it_users}
     }
-
+    # Map user-keys to uuids using uuids from FK-org it account if it exists, else use the it-users external id (eg objectGUID)
+    fk_org_uuids = {
+        it.user_key: UUID(
+            only({f.external_id for f in fk_org_users if f.user_key == it.user_key})
+            or it.external_id
+        )
+        for it in it_users
+    }
     return [
-        convert_to_os2sync(settings, it_user) for it_user in it_users
+        convert_to_os2sync(
+            settings=settings, it=it_user, uuid=fk_org_uuids[it_user.user_key]
+        )
+        for it_user in it_users
     ], delete_fk_org_users
 
 
@@ -86,7 +96,7 @@ async def delete_mo_fk_org_users(
 def convert_to_os2sync(
     settings: Settings,
     it: ReadUserITAccountsEmployeesObjectsCurrentItusers,
-    uuid: UUID | None = None,
+    uuid: UUID,
 ) -> User:
     assert it.person
     assert it.engagement
@@ -104,7 +114,7 @@ def convert_to_os2sync(
     ]
 
     return User(
-        Uuid=uuid or UUID(it.external_id),
+        Uuid=uuid,
         UserId=it.user_key,
         Person=person,
         Positions=positions,
