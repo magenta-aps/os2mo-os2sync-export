@@ -94,7 +94,12 @@ def convert_to_os2sync(
     cpr = mo_person.cpr_number if settings.sync_cpr else None
     person = Person(Name=mo_person.nickname or mo_person.name, Cpr=cpr)
     positions = [
-        Position(Name=i.job_function.name, OrgUnitUuid=one(i.org_unit).uuid)
+        Position(
+            Name=i.extension_3
+            if settings.use_extension_field_as_job_function and i.extension_3
+            else i.job_function.name,
+            OrgUnitUuid=one(i.org_unit).uuid,
+        )
         for i in it.engagement
     ]
 

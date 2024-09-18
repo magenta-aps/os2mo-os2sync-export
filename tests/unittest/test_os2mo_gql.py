@@ -147,7 +147,11 @@ BASE_ITUSER_RESPONSE = ReadUserITAccountsEmployeesObjectsCurrentItusers(
     external_id=str(uuid4()),
     email=[],
     phone=[],
-    person=[],
+    person=[
+        ReadUserITAccountsEmployeesObjectsCurrentItusersPerson(
+            name="Brian", nickname="", cpr_number=None
+        )
+    ],
     engagement=[
         ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement(
             **{"job_function": {"name": "tester"}, "org_unit": [{"uuid": uuid4()}]}  # type: ignore
@@ -192,3 +196,27 @@ def test_convert_to_os2sync_cpr(sync_cpr, set_settings):
         assert os2sync_user.Person.Cpr == "1234567890"
     else:
         assert os2sync_user.Person.Cpr is None
+
+
+@pytest.mark.parametrize("use_extension_field_as_job_function", [True, False])
+def test_convert_to_os2sync_extension_job_function(
+    use_extension_field_as_job_function, set_settings
+):
+    settings = set_settings(
+        use_extension_field_as_job_function=use_extension_field_as_job_function
+    )
+    mo_it_user = BASE_ITUSER_RESPONSE.copy()
+    mo_it_user.engagement = [
+        ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement(
+            **{
+                "extension_3": "Konge",
+                "org_unit": [{"uuid": uuid4()}],
+                "job_function": {"name": "Udvikler"},
+            }
+        )
+    ]
+    os2sync_user = convert_to_os2sync(settings, mo_it_user)
+    if use_extension_field_as_job_function:
+        assert os2sync_user.Positions[0].Name == "Konge"
+    else:
+        assert os2sync_user.Positions[0].Name == "Udvikler"

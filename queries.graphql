@@ -19,6 +19,7 @@ query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
             nickname
           }
           engagement {
+            extension_3
             org_unit {
               uuid
             }
