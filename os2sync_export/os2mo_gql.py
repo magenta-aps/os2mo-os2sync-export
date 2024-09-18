@@ -72,7 +72,9 @@ def convert_and_filter(
         if fk_org_user.external_id not in {a.external_id for a in it_users}
     }
 
-    return [convert_to_os2sync(it_user) for it_user in it_users], delete_fk_org_users
+    return [
+        convert_to_os2sync(settings, it_user) for it_user in it_users
+    ], delete_fk_org_users
 
 
 async def delete_mo_fk_org_users(
@@ -82,12 +84,15 @@ async def delete_mo_fk_org_users(
 
 
 def convert_to_os2sync(
-    it: ReadUserITAccountsEmployeesObjectsCurrentItusers, uuid: UUID | None = None
+    settings: Settings,
+    it: ReadUserITAccountsEmployeesObjectsCurrentItusers,
+    uuid: UUID | None = None,
 ) -> User:
     assert it.person
     assert it.engagement
     mo_person = one(it.person)
-    person = Person(Name=mo_person.nickname or mo_person.name, Cpr=mo_person.cpr_number)
+    cpr = mo_person.cpr_number if settings.sync_cpr else None
+    person = Person(Name=mo_person.nickname or mo_person.name, Cpr=cpr)
     positions = [
         Position(Name=i.job_function.name, OrgUnitUuid=one(i.org_unit).uuid)
         for i in it.engagement
