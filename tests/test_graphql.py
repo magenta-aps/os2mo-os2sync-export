@@ -55,7 +55,7 @@ query_response = [
 
 
 def test_group_by_engagement_noop():
-    groups = group_accounts(query_response, [], None)
+    groups = group_accounts(query_response, [], [])
     assert len(groups) == 3
     for g in groups:
         assert g.get("uuid") is None
@@ -92,7 +92,7 @@ async def test_get_sts_user(
     }
     settings = set_settings(
         uuid_from_it_systems=["FK-ORG UUID"],
-        user_key_it_system_name="FK-ORG USERNAME",
+        user_key_it_system_names=["FK-ORG USERNAME"],
     )
     await get_sts_user(mo_uuid=mo_uuid, graphql_session=gql_mock, settings=settings)
 

@@ -58,7 +58,7 @@ class Settings(BaseSettings):  # type: ignore
 
     truncate_length: int = 200
 
-    user_key_it_system_name: str = "Active Directory"
+    user_key_it_system_names: list[str] = ["Active Directory"]
 
     filter_hierarchy_names: list[str] = []  # Title in MO
     filter_users_by_it_system: bool = False

@@ -380,14 +380,16 @@ async def get_sts_user_raw(
 
 
 def group_accounts(
-    users: List[Dict], uuid_from_it_systems: List[str], user_key_it_system_name: str
+    users: List[Dict],
+    uuid_from_it_systems: List[str],
+    user_key_it_system_names: list[str],
 ) -> List:
     """Groups it accounts by their associated engagement"""
     # Find all unique engagement_uuids
     engagement_uuids = {u["engagement_uuid"] for u in users}
     # Find relevant it-systems containing user_keys
     user_keys = list(
-        filter(lambda x: x["itsystem"]["name"] == user_key_it_system_name, users)
+        filter(lambda x: x["itsystem"]["name"] in user_key_it_system_names, users)
     )
     # Find relevant it-systems containing uuids
     uuids = list(filter(lambda x: x["itsystem"]["name"] in uuid_from_it_systems, users))
@@ -416,7 +418,7 @@ async def get_sts_user(
         fk_org_accounts = group_accounts(
             users,
             settings.uuid_from_it_systems,
-            settings.user_key_it_system_name,
+            settings.user_key_it_system_names,
         )
     except ValueError:
         logger.warn(f"Unable to map uuid/user_keys from it-systems for {mo_uuid=}.")
