@@ -137,6 +137,21 @@ def choose_public_address(
     return tmp.value if tmp else None
 
 
+def find_phone_numbers(
+    phones: list[ReadUserITAccountsEmployeesObjectsCurrentItusersPhone],
+    landline_scope_classes: list[UUID],
+    phone_scope_classes: list[UUID],
+) -> tuple[str | None, str | None]:
+    """Find landline numbers and mobile numbers from the users phone numbers"""
+    mobile_candidates, landline_candidates = partition(
+        lambda p: p.address_type.uuid in landline_scope_classes, phones
+    )
+    landline = choose_public_address(landline_candidates, landline_scope_classes)
+    mobile = choose_public_address(mobile_candidates, phone_scope_classes)
+
+    return landline, mobile
+
+
 def convert_to_os2sync(
     settings: Settings,
     it: ReadUserITAccountsEmployeesObjectsCurrentItusers,
@@ -149,13 +164,10 @@ def convert_to_os2sync(
     mo_person = one(it.person)
     cpr = mo_person.cpr_number if settings.sync_cpr else None
     person = Person(Name=mo_person.nickname or mo_person.name, Cpr=cpr)
-    landline_candidates, mobile_candidates = partition(
-        lambda p: p.address_type.uuid in settings.landline_scope_classes, it.phone
+    landline, mobile = find_phone_numbers(
+        it.phone, settings.landline_scope_classes, settings.phone_scope_classes
     )
-    landline = choose_public_address(
-        landline_candidates, settings.landline_scope_classes
-    )
-    mobile = choose_public_address(mobile_candidates, settings.phone_scope_classes)
+
     email = choose_public_address(it.email, settings.email_scope_classes)
 
     positions = [
