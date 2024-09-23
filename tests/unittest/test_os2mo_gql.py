@@ -355,6 +355,27 @@ ADDRESS_TYPE_UUID = uuid4()
             [ADDRESS_TYPE_UUID],
             "correct",
         ),
+        (
+            # two emails, choose correct by visibility
+            [
+                ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(
+                    **{
+                        "value": "wrong",
+                        "address_type": {"uuid": ADDRESS_TYPE_UUID},
+                        "visibility": {"user_key": "SECRET"},
+                    }
+                ),
+                ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(
+                    **{
+                        "value": "correct",
+                        "address_type": {"uuid": ADDRESS_TYPE_UUID},
+                        "visibility": {"user_key": "PUBLIC"},
+                    }
+                ),
+            ],
+            [ADDRESS_TYPE_UUID],
+            "correct",
+        ),
     ],
 )
 def test_choose_address_emails(emails, priority, expected):

@@ -116,13 +116,20 @@ def choose_public_address(
 ) -> str | None:
     if not candidates:
         return None
+    # Filter visibility
+    candidates_filtered = [
+        c
+        for c in candidates
+        if c.visibility is None or c.visibility.user_key == "PUBLIC"
+    ]
+
     if priority == []:
-        tmp = first(candidates, default=None)
+        tmp = first(candidates_filtered, default=None)
         return tmp.value if tmp else None
 
     try:
         tmp = min(
-            (c for c in candidates if c.address_type.uuid in priority),
+            (c for c in candidates_filtered if c.address_type.uuid in priority),
             key=lambda p: priority.index(p.address_type.uuid),
         )
     except ValueError:
