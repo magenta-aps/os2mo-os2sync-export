@@ -19,6 +19,8 @@ fk_org_user_key_1 = "AndersA"
 fk_org_uuid_2 = str(uuid4())
 fk_org_user_key_2 = "AAnd"
 fk_org_uuid_3 = str(uuid4())
+omada_username = "OmAdA"
+ad_username = "saMAcCouNtnAme"
 
 query_response = [
     {
@@ -124,6 +126,51 @@ async def test_get_sts_user(
         ),
     ]:
         assert c in get_sts_user_raw_mock.call_args_list
+
+
+@patch("os2sync_export.os2mo.get_sts_user_raw")
+async def test_get_sts_user_duplicate_username_no_uuid_itsystem(
+    get_sts_user_raw_mock, set_settings: Callable[..., Settings]
+):
+    """Currently only relevant for Frederikshavn"""
+    query_response_frederikshavn = [
+        {
+            "uuid": str(uuid4()),
+            "user_key": fk_org_uuid_2,
+            "engagement_uuid": None,
+            "itsystem": {"name": "FK-ORG UUID"},
+        },
+        {
+            "uuid": str(uuid4()),
+            "user_key": omada_username,
+            "engagement_uuid": None,
+            "itsystem": {"name": "OMADA USERNAME"},
+        },
+        {
+            "uuid": str(uuid4()),
+            "user_key": ad_username,
+            "engagement_uuid": None,
+            "itsystem": {"name": "AD USERNAME"},
+        },
+    ]
+
+    gql_mock = AsyncMock()
+    gql_mock.execute.return_value = {
+        "employees": [{"objects": [{"itusers": query_response_frederikshavn}]}]
+    }
+    settings = set_settings(
+        uuid_from_it_systems=["FK-ORG UUID"],
+        user_key_it_system_names=["OMADA USERNAME", "AD USERNAME"],
+    )
+    await get_sts_user(mo_uuid=mo_uuid, graphql_session=gql_mock, settings=settings)
+    get_sts_user_raw_mock.assert_called_once_with(
+        mo_uuid,
+        settings=settings,
+        graphql_session=gql_mock,
+        fk_org_uuid=fk_org_uuid_2,
+        user_key=omada_username,
+        engagement_uuid=None,
+    )
 
 
 @patch("os2sync_export.os2mo.get_sts_user_raw")

@@ -397,14 +397,25 @@ def group_accounts(
     # Find uuid and user_key for each engagement.
     for eng_uuid in engagement_uuids:
         uuid = only(u["user_key"] for u in uuids if u["engagement_uuid"] == eng_uuid)
-        user_key = only(
-            u["user_key"] for u in user_keys if u["engagement_uuid"] == eng_uuid
-        )
+        try:
+            user_key = min(
+                [u for u in user_keys if u["engagement_uuid"] == eng_uuid],
+                key=lambda it: user_key_it_system_names.index(it["itsystem"]["name"]),
+            )["user_key"]
+        except ValueError:
+            user_key = None
         fk_org_accounts.append(
             {"engagement_uuid": eng_uuid, "uuid": uuid, "user_key": user_key}
         )
     if fk_org_accounts == []:
-        return [{"engagement_uuid": None, "uuid": None, "user_key": None}]
+        try:
+            user_key = min(
+                user_keys,
+                key=lambda it: user_key_it_system_names.index(it["itsystem"]["name"]),
+            )["user_key"]
+        except ValueError:
+            user_key = None
+        return [{"engagement_uuid": None, "uuid": None, "user_key": user_key}]
     return fk_org_accounts
 
 
