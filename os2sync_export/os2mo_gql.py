@@ -114,7 +114,19 @@ def choose_public_address(
     | Iterable[ReadUserITAccountsEmployeesObjectsCurrentItusersPhone],
     priority: list[UUID],
 ) -> str | None:
-    tmp = first(candidates, default=None)
+    if not candidates:
+        return None
+    if priority == []:
+        tmp = first(candidates, default=None)
+        return tmp.value if tmp else None
+
+    try:
+        tmp = min(
+            (c for c in candidates if c.address_type.uuid in priority),
+            key=lambda p: priority.index(p.address_type.uuid),
+        )
+    except ValueError:
+        tmp = None
     return tmp.value if tmp else None
 
 

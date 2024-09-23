@@ -326,10 +326,14 @@ def test_convert_and_filter_no_engagement(mock_settings):
     )
 
 
+ADDRESS_TYPE_UUID = uuid4()
+
+
 @pytest.mark.parametrize(
     "emails,priority,expected",
     [
         (
+            # One email, no priority, no visibility - choose it.
             [
                 ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(
                     **{"value": "test", "address_type": {"uuid": uuid4()}}
@@ -337,10 +341,22 @@ def test_convert_and_filter_no_engagement(mock_settings):
             ],
             [],
             "test",
-        )
+        ),
+        (
+            # two emails, choose correct by priority
+            [
+                ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(
+                    **{"value": "wrong", "address_type": {"uuid": uuid4()}}
+                ),
+                ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(
+                    **{"value": "correct", "address_type": {"uuid": ADDRESS_TYPE_UUID}}
+                ),
+            ],
+            [ADDRESS_TYPE_UUID],
+            "correct",
+        ),
     ],
 )
 def test_choose_address_emails(emails, priority, expected):
-    breakpoint()
     value = choose_public_address(emails, priority)
     assert value == expected
