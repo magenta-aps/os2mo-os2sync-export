@@ -123,18 +123,15 @@ def choose_public_address(
         if c.visibility is None or c.visibility.user_key == "PUBLIC"
     ]
 
-    if priority == []:
-        tmp = first(candidates_filtered, default=None)
-        return tmp.value if tmp else None
-
     try:
-        tmp = min(
+        res = min(
             (c for c in candidates_filtered if c.address_type.uuid in priority),
             key=lambda p: priority.index(p.address_type.uuid),
         )
     except ValueError:
-        tmp = None
-    return tmp.value if tmp else None
+        res = first(candidates_filtered, default=None)  # type: ignore
+
+    return res.value if res else None
 
 
 def find_phone_numbers(

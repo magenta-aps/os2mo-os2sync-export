@@ -366,6 +366,19 @@ ADDRESS_TYPE_UUID = uuid4()
             "correct",
         ),
         (
+            # two emails, none have a correct priority, choose the first
+            [
+                ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(
+                    **{"value": "first", "address_type": {"uuid": uuid4()}}
+                ),
+                ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(
+                    **{"value": "second", "address_type": {"uuid": uuid4()}}
+                ),
+            ],
+            [ADDRESS_TYPE_UUID],
+            "first",
+        ),
+        (
             # two emails, choose correct by visibility
             [
                 ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(
