@@ -380,14 +380,16 @@ async def get_sts_user_raw(
 
 
 def group_accounts(
-    users: List[Dict], uuid_from_it_systems: List[str], user_key_it_system_name: str
+    users: List[Dict],
+    uuid_from_it_systems: List[str],
+    user_key_it_system_names: list[str],
 ) -> List:
     """Groups it accounts by their associated engagement"""
     # Find all unique engagement_uuids
     engagement_uuids = {u["engagement_uuid"] for u in users}
     # Find relevant it-systems containing user_keys
     user_keys = list(
-        filter(lambda x: x["itsystem"]["name"] == user_key_it_system_name, users)
+        filter(lambda x: x["itsystem"]["name"] in user_key_it_system_names, users)
     )
     # Find relevant it-systems containing uuids
     uuids = list(filter(lambda x: x["itsystem"]["name"] in uuid_from_it_systems, users))
@@ -395,14 +397,25 @@ def group_accounts(
     # Find uuid and user_key for each engagement.
     for eng_uuid in engagement_uuids:
         uuid = only(u["user_key"] for u in uuids if u["engagement_uuid"] == eng_uuid)
-        user_key = only(
-            u["user_key"] for u in user_keys if u["engagement_uuid"] == eng_uuid
-        )
+        try:
+            user_key = min(
+                [u for u in user_keys if u["engagement_uuid"] == eng_uuid],
+                key=lambda it: user_key_it_system_names.index(it["itsystem"]["name"]),
+            )["user_key"]
+        except ValueError:
+            user_key = None
         fk_org_accounts.append(
             {"engagement_uuid": eng_uuid, "uuid": uuid, "user_key": user_key}
         )
     if fk_org_accounts == []:
-        return [{"engagement_uuid": None, "uuid": None, "user_key": None}]
+        try:
+            user_key = min(
+                user_keys,
+                key=lambda it: user_key_it_system_names.index(it["itsystem"]["name"]),
+            )["user_key"]
+        except ValueError:
+            user_key = None
+        return [{"engagement_uuid": None, "uuid": None, "user_key": user_key}]
     return fk_org_accounts
 
 
@@ -416,7 +429,7 @@ async def get_sts_user(
         fk_org_accounts = group_accounts(
             users,
             settings.uuid_from_it_systems,
-            settings.user_key_it_system_name,
+            settings.user_key_it_system_names,
         )
     except ValueError:
         logger.warn(f"Unable to map uuid/user_keys from it-systems for {mo_uuid=}.")
