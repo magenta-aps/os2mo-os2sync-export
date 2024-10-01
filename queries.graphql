@@ -50,3 +50,50 @@ query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
     }
   }
 }
+
+query read_orgunit($uuid: UUID!) {
+  org_units(filter: { uuids: [$uuid] }) {
+    objects {
+      current {
+        uuid
+        name
+        parent {
+          uuid
+        }
+        ancestors {
+          uuid
+        }
+        unit_type {
+          uuid
+        }
+        org_unit_level {
+          uuid
+        }
+        org_unit_hierarchy_model {
+          name
+        }
+        addresses {
+          address_type {
+            scope
+            uuid
+            user_key
+          }
+          name
+        }
+        itusers(filter: { user_keys: "FK-org uuid" }) {
+          user_key
+        }
+        managers {
+          person {
+            uuid
+          }
+        }
+        kles {
+          kle_number {
+            uuid
+          }
+        }
+      }
+    }
+  }
+}
