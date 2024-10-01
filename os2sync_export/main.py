@@ -388,7 +388,9 @@ async def sync_orgunit(
     orgunit_data = one(res.objects).current
     if orgunit_data is None:
         raise ValueError("No orgunit found")
-    os2sync_orgunit = mo_orgunit_to_os2sync(orgunit_data)
+    os2sync_orgunit = mo_orgunit_to_os2sync(
+        settings=settings, orgunit_data=orgunit_data
+    )
     os2sync_client.update_org_unit(os2sync_orgunit.Uuid, org_unit=os2sync_orgunit)
     return os2sync_orgunit
 

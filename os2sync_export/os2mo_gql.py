@@ -221,7 +221,52 @@ async def sync_mo_user_to_fk_org(
         os2sync_client.delete_user(deleted_user_uuid)
 
 
-def mo_orgunit_to_os2sync(orgunit_data: ReadOrgunitOrgUnitsObjectsCurrent) -> OrgUnit:
+def filter_relevant_orgunit(
+    settings: Settings, orgunit_data: ReadOrgunitOrgUnitsObjectsCurrent
+) -> bool:
+    # Root unit is always relevant
+    if orgunit_data.uuid == settings.top_unit_uuid:
+        return True
+    # There can only be one root in fk-org
+    if orgunit_data.parent is None:
+        return False
+    ancestor_uuids = {a.uuid for a in orgunit_data.ancestors}
+    # Ensure the unit is in the correct part of the tree
+    if settings.top_unit_uuid not in ancestor_uuids:
+        return False
+    # Ensure the unit has the correct org_unit_hierarchy (if relevant)
+    if settings.filter_hierarchy_names:
+        if (
+            not orgunit_data.org_unit_hierarchy_model
+            or orgunit_data.org_unit_hierarchy_model.name
+            not in settings.filter_hierarchy_names
+        ):
+            return False
+    # Ensure the unit or any of it's ancestors are not filtered
+    if orgunit_data.uuid in settings.filter_orgunit_uuid or any(
+        uuid in ancestor_uuids for uuid in settings.filter_orgunit_uuid
+    ):
+        return False
+    # Ensure the unit level or type is not ignored
+    if (
+        orgunit_data.org_unit_level
+        and orgunit_data.org_unit_level.uuid in settings.ignored_unit_levels
+    ):
+        return False
+    if (
+        orgunit_data.unit_type
+        and orgunit_data.unit_type.uuid in settings.ignored_unit_types
+    ):
+        return False
+    # If all above checks are ok, the unit is relevant to sync to os2sync
+    return True
+
+
+def mo_orgunit_to_os2sync(
+    settings: Settings, orgunit_data: ReadOrgunitOrgUnitsObjectsCurrent
+) -> OrgUnit:
+    if not filter_relevant_orgunit(settings=settings, orgunit_data=orgunit_data):
+        raise ValueError()
     return OrgUnit(
         Uuid=orgunit_data.uuid,
         Name=orgunit_data.name,
