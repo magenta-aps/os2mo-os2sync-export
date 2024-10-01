@@ -16,6 +16,7 @@ from fastramqpi.main import FastRAMQPI  # type: ignore
 from fastramqpi.ramqp.depends import RateLimit
 from fastramqpi.ramqp.mo import MORouter
 from fastramqpi.ramqp.mo import PayloadUUID
+from more_itertools import one
 
 from os2sync_export.__main__ import cleanup_duplicate_engagements
 from os2sync_export.__main__ import main
@@ -32,8 +33,10 @@ from os2sync_export.os2mo import get_manager_org_unit_uuid
 from os2sync_export.os2mo import get_sts_orgunit
 from os2sync_export.os2mo import get_sts_user
 from os2sync_export.os2mo import is_relevant
+from os2sync_export.os2mo_gql import mo_orgunit_to_os2sync
 from os2sync_export.os2mo_gql import sync_mo_user_to_fk_org
 from os2sync_export.os2sync import OS2SyncClient
+from os2sync_export.os2sync_models import OrgUnit
 
 logger = structlog.stdlib.get_logger()
 
@@ -375,13 +378,37 @@ async def trigger_user(
     return "OK"
 
 
+async def sync_orgunit(
+    settings: Settings,
+    graphql_client: GraphQLClient,
+    os2sync_client: OS2SyncClient,
+    uuid: UUID,
+) -> OrgUnit:
+    res = await graphql_client.read_orgunit(uuid=uuid)
+    orgunit_data = one(res.objects).current
+    if orgunit_data is None:
+        raise ValueError("No orgunit found")
+    os2sync_orgunit = mo_orgunit_to_os2sync(orgunit_data)
+    os2sync_client.update_org_unit(os2sync_orgunit.Uuid, org_unit=os2sync_orgunit)
+    return os2sync_orgunit
+
+
 @fastapi_router.post("/trigger/orgunit/{uuid}", status_code=200)
 async def trigger_orgunit(
     uuid: UUID,
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
+    graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
 ) -> str:
+    if settings.new:
+        await sync_orgunit(
+            settings=settings,
+            graphql_client=graphql_client,
+            os2sync_client=os2sync_client,
+            uuid=uuid,
+        )
+        return "OK"
     try:
         sts_org_unit = get_sts_orgunit(uuid, settings=settings)
     except ValueError:
