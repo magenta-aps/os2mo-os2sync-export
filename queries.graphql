@@ -59,6 +59,9 @@ query read_orgunit($uuid: UUID!) {
         name
         parent {
           uuid
+          itusers(filter: { user_keys: "FK-org uuid" }) {
+            user_key
+          }
         }
         ancestors {
           uuid
