@@ -100,3 +100,70 @@ query read_orgunit($uuid: UUID!) {
     }
   }
 }
+
+query FindAddressUnitOrPerson($uuid: UUID! ) {
+  addresses(filter: { uuids: [$uuid], from_date: null, to_date: null}) {
+    objects {
+      validities{
+        org_unit {
+          uuid
+        }
+        person {
+          uuid
+        }
+      }
+    }
+  }
+}
+
+
+query FindItuserUnitOrPerson($uuid: UUID!) {
+  itusers(filter: { uuids: [$uuid], from_date: null, to_date: null}) {
+    objects {
+      validities {
+        org_unit {
+          uuid
+        }
+        person {
+          uuid
+        }
+      }
+    }
+  }
+}
+
+query FindKLEUnit($uuid: UUID!) {
+  itusers(filter: { uuids: [$uuid], from_date: null, to_date: null}) {
+    objects {
+      validities {
+        org_unit {
+          uuid
+        }
+      }
+    }
+  }
+}
+
+query FindManagerUnit($uuid: UUID!) {
+  managers(filter: { uuids: [$uuid], from_date: null, to_date: null}) {
+    objects {
+      validities {
+        org_unit {
+          uuid
+        }
+      }
+    }
+  }
+}
+
+query FindEngagementPerson($uuid: UUID!) {
+  engagements(filter: { uuids: [$uuid], from_date: null, to_date: null}) {
+    objects {
+      validities {
+        person {
+          uuid
+        }
+      }
+    }
+  }
+}
