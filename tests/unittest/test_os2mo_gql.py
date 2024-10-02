@@ -37,6 +37,7 @@ from os2sync_export.os2mo_gql import convert_and_filter
 from os2sync_export.os2mo_gql import convert_to_os2sync
 from os2sync_export.os2mo_gql import filter_relevant_orgunit
 from os2sync_export.os2mo_gql import find_phone_numbers
+from os2sync_export.os2mo_gql import mo_orgunit_to_os2sync
 from os2sync_export.os2mo_gql import sync_mo_user_to_fk_org
 
 BASE_ITUSER_RESPONSE = ReadUserITAccountsEmployeesObjectsCurrentItusers(
@@ -497,7 +498,7 @@ def test_filter_relevant_orgunit_ancestor(set_settings):
     settings = set_settings(top_unit_uuid=TOP_UUID)
     orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
         uuid=uuid4(),
-        parent={"uuid": uuid4()},
+        parent={"uuid": uuid4(), "itusers": []},
         name="Unit1",
         ancestors=[{"uuid": TOP_UUID}],
         addresses=[],
@@ -513,7 +514,7 @@ def test_filter_relevant_orgunit_wrong_ancestor(set_settings):
     settings = set_settings(top_unit_uuid=uuid4())
     orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
         uuid=uuid4(),
-        parent={"uuid": uuid4()},
+        parent={"uuid": uuid4(), "itusers": []},
         name="Unit1",
         ancestors=[{"uuid": uuid4()}],
         addresses=[],
@@ -532,7 +533,7 @@ def test_filter_relevant_orgunit_hierarchy(set_settings):
     )
     orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
         uuid=uuid4(),
-        parent={"uuid": uuid4()},
+        parent={"uuid": uuid4(), "itusers": []},
         org_unit_hierarchy_model={"name": "linjeorganisation"},
         name="Unit1",
         ancestors=[{"uuid": TOP_UUID}],
@@ -551,7 +552,7 @@ def test_filter_relevant_orgunit_wrong_hierarchy(set_settings):
     )
     orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
         uuid=uuid4(),
-        parent={"uuid": uuid4()},
+        parent={"uuid": uuid4(), "itusers": []},
         org_unit_hierarchy_model={"name": "En helt anden"},
         name="Unit1",
         ancestors=[{"uuid": TOP_UUID}],
@@ -568,7 +569,7 @@ def test_filter_relevant_orgunit_no_hierarchy_settings(set_settings):
     settings = set_settings(top_unit_uuid=TOP_UUID, filter_hierarchy_names=[])
     orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
         uuid=uuid4(),
-        parent={"uuid": uuid4()},
+        parent={"uuid": uuid4(), "itusers": []},
         org_unit_hierarchy_model={"name": "En helt anden"},
         name="Unit1",
         ancestors=[{"uuid": TOP_UUID}],
@@ -586,7 +587,7 @@ def test_filter_relevant_orgunit_filtered(set_settings):
     settings = set_settings(top_unit_uuid=TOP_UUID, filter_orgunit_uuid=[filtered_uuid])
     orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
         uuid=filtered_uuid,
-        parent={"uuid": uuid4()},
+        parent={"uuid": uuid4(), "itusers": []},
         org_unit_hierarchy_model={"name": "N/A"},
         name="Unit1",
         ancestors=[{"uuid": TOP_UUID}],
@@ -604,7 +605,7 @@ def test_filter_relevant_orgunit_filtered_ancestor(set_settings):
     settings = set_settings(top_unit_uuid=TOP_UUID, filter_orgunit_uuid=[filtered_uuid])
     orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
         uuid=uuid4(),
-        parent={"uuid": uuid4()},
+        parent={"uuid": uuid4(), "itusers": []},
         name="Unit1",
         ancestors=[{"uuid": TOP_UUID}, {"uuid": filtered_uuid}],
         addresses=[],
@@ -623,7 +624,7 @@ def test_filter_relevant_orgunit_filtered_level(set_settings):
     )
     orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
         uuid=uuid4(),
-        parent={"uuid": uuid4()},
+        parent={"uuid": uuid4(), "itusers": []},
         name="Unit1",
         ancestors=[{"uuid": TOP_UUID}],
         org_unit_level={"uuid": filtered_level_uuid},
@@ -643,7 +644,7 @@ def test_filter_relevant_orgunit_filtered_unit_type(set_settings):
     )
     orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
         uuid=uuid4(),
-        parent={"uuid": uuid4()},
+        parent={"uuid": uuid4(), "itusers": []},
         name="Unit1",
         ancestors=[{"uuid": TOP_UUID}],
         unit_type={"uuid": filtered_unit_type_uuid},
@@ -653,3 +654,21 @@ def test_filter_relevant_orgunit_filtered_unit_type(set_settings):
         kles=[],
     )
     assert not filter_relevant_orgunit(settings=settings, orgunit_data=orgunit)
+
+
+def test_mo_orgunit_to_os2sync_fk_org_uuids(mock_settings):
+    fk_org_uuid = uuid4()
+    parent_fk_org_uuid = uuid4()
+    orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
+        uuid=uuid4(),
+        parent={"uuid": uuid4(), "itusers": [{"user_key": str(parent_fk_org_uuid)}]},
+        name="Unit1",
+        ancestors=[{"uuid": mock_settings.top_unit_uuid}],
+        addresses=[],
+        itusers=[{"user_key": str(fk_org_uuid)}],
+        managers=[],
+        kles=[],
+    )
+    unit = mo_orgunit_to_os2sync(mock_settings, orgunit)
+    assert unit.Uuid == fk_org_uuid
+    assert unit.ParentOrgUnitUuid == parent_fk_org_uuid
