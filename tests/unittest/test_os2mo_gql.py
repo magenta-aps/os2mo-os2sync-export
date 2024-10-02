@@ -582,7 +582,7 @@ def test_filter_relevant_orgunit_no_hierarchy_settings(set_settings):
 
 
 def test_filter_relevant_orgunit_filtered(set_settings):
-    """Test that if the setting is unset the unit is synced regardless of hierarchy"""
+    """Test that the unit can be filtered in settings"""
     filtered_uuid = uuid4()
     settings = set_settings(top_unit_uuid=TOP_UUID, filter_orgunit_uuid=[filtered_uuid])
     orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
@@ -600,7 +600,7 @@ def test_filter_relevant_orgunit_filtered(set_settings):
 
 
 def test_filter_relevant_orgunit_filtered_ancestor(set_settings):
-    """Test that if the setting is unset the unit is synced regardless of hierarchy"""
+    """Test that the unit is not synced if one of its ancestors is filtered in settings"""
     filtered_uuid = uuid4()
     settings = set_settings(top_unit_uuid=TOP_UUID, filter_orgunit_uuid=[filtered_uuid])
     orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
@@ -617,7 +617,7 @@ def test_filter_relevant_orgunit_filtered_ancestor(set_settings):
 
 
 def test_filter_relevant_orgunit_filtered_level(set_settings):
-    """Test that if the setting is unset the unit is synced regardless of hierarchy"""
+    """Test that the unit is not synced if the org_unit_level is filtered in settings"""
     filtered_level_uuid = uuid4()
     settings = set_settings(
         top_unit_uuid=TOP_UUID, ignored_unit_levels=[filtered_level_uuid]
@@ -637,7 +637,7 @@ def test_filter_relevant_orgunit_filtered_level(set_settings):
 
 
 def test_filter_relevant_orgunit_filtered_unit_type(set_settings):
-    """Test that if the setting is unset the unit is synced regardless of hierarchy"""
+    """Test that the unit is not synced if the unit_type is filtered in settings"""
     filtered_unit_type_uuid = uuid4()
     settings = set_settings(
         top_unit_uuid=TOP_UUID, ignored_unit_types=[filtered_unit_type_uuid]
@@ -657,6 +657,7 @@ def test_filter_relevant_orgunit_filtered_unit_type(set_settings):
 
 
 def test_mo_orgunit_to_os2sync_fk_org_uuids(mock_settings):
+    """Test that the uuids can be overwritten by fk-org it-accounts"""
     fk_org_uuid = uuid4()
     parent_fk_org_uuid = uuid4()
     orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
