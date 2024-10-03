@@ -695,3 +695,110 @@ def test_mo_orgunit_to_os2sync_kle_numbers(enable_kle, set_settings):
         assert unit.Tasks == kle_numbers
     else:
         assert unit.Tasks == set()
+
+
+def test_mo_orgunit_to_os2sync_addresses(mock_settings):
+    """Test that every type of address is written correctly to the org_unit"""
+    email = "kontakt@digital-identity.dk"
+    EAN_number = "1234123412"
+    phonenumber = "30 34 05 76"
+    contact = "Mølleparken 41, 6640 Lunderskov"
+    location = "Mølleparken 42, 6640 Lunderskov"
+    post = "Mølleparken 43, 6640 Lunderskov"
+    p_number = "0985732134"
+    contact_open_hours = "8-16"
+    dtr_id = "1234"
+    addresses = [
+        {
+            "name": email,
+            "address_type": {
+                "scope": "EMAIL",
+                "uuid": uuid4(),
+                "user_key": "EmployeeEmail",
+            },
+        },
+        {
+            "name": EAN_number,
+            "address_type": {
+                "scope": "EAN",
+                "uuid": uuid4(),
+                "user_key": "EAN",
+            },
+        },
+        {
+            "name": phonenumber,
+            "address_type": {
+                "scope": "PHONE",
+                "uuid": uuid4(),
+                "user_key": "PHONE",
+            },
+        },
+        {
+            "name": contact,
+            "address_type": {
+                "scope": "DAR",
+                "uuid": uuid4(),
+                "user_key": "Contact",
+            },
+        },
+        {
+            "name": location,
+            "address_type": {
+                "scope": "DAR",
+                "uuid": uuid4(),
+                "user_key": "Location",
+            },
+        },
+        {
+            "name": post,
+            "address_type": {
+                "scope": "DAR",
+                "uuid": uuid4(),
+                "user_key": "PHONE",
+            },
+        },
+        {
+            "name": p_number,
+            "address_type": {
+                "scope": "PNUMBER",
+                "uuid": uuid4(),
+                "user_key": "PNR",
+            },
+        },
+        {
+            "name": contact_open_hours,
+            "address_type": {
+                "scope": "TEXT",
+                "uuid": uuid4(),
+                "user_key": "ContactOpenHours",
+            },
+        },
+        {
+            "name": dtr_id,
+            "address_type": {
+                "scope": "TEXT",
+                "uuid": uuid4(),
+                "user_key": "DtrId",
+            },
+        },
+    ]
+    orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
+        uuid=uuid4(),
+        parent={"uuid": uuid4(), "itusers": []},
+        name="Unit1",
+        ancestors=[{"uuid": mock_settings.top_unit_uuid}],
+        addresses=addresses,
+        itusers=[],
+        managers=[],
+        kles=[],
+    )
+    unit = mo_orgunit_to_os2sync(mock_settings, orgunit)
+    assert unit.Email == email
+    assert unit.Ean == EAN_number
+    assert unit.PhoneNumber == phonenumber
+    assert unit.Contact == contact
+    assert unit.Location == location
+    assert unit.Post == post
+    assert unit.PNR == p_number
+    assert unit.ContactOpenHours == contact_open_hours
+    assert unit.DtrId == dtr_id
