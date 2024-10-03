@@ -103,18 +103,34 @@ def test_os2sync_upsert_org_unit_keep_fk_fields(mock_os2sync_client):
 
 def test_os2sync_upsert_org_unit_changes_w_fixed_fields(mock_os2sync_client):
     """Test that values from fk-org is kept even if there are changes to an orgunit"""
-    org_unit = o.copy()
-    fk_org = o2.copy()
-    org_unit.Name = "Changed name"
-    expected = o.copy()
-    expected.Name = org_unit.Name
+    new_name = "changed name"
+    org_unit = OrgUnit(Name=new_name, Uuid=uuid, ParentOrgUnitUuid=None)
+    fk_org = OrgUnit(
+        Name="old name",
+        Uuid=uuid,
+        ParentOrgUnitUuid=None,
+        LOSShortName="Some losShortName",
+        PayoutUnitUuid=uuid4(),
+        ContactPlaces={uuid4()},
+        SOR="SOR ID",
+        Tasks={uuid4()},
+    )
+
+    expected = OrgUnit(
+        Name=new_name,
+        Uuid=uuid,
+        ParentOrgUnitUuid=None,
+        LOSShortName=fk_org.LOSShortName,
+        PayoutUnitUuid=fk_org.PayoutUnitUuid,
+        ContactPlaces=fk_org.ContactPlaces,
+        SOR=fk_org.SOR,
+        Tasks=fk_org.Tasks,
+    )
     mock_os2sync_client.os2sync_get_org_unit = MagicMock(return_value=fk_org)
     mock_os2sync_client.upsert_org_unit(org_unit)
 
-    org_unit_info = expected.json()
-
     mock_os2sync_client.session.post.assert_called_once_with(
-        f"{mock_os2sync_client.settings.os2sync_api_url}/orgUnit/", json=org_unit_info
+        f"{mock_os2sync_client.settings.os2sync_api_url}/orgUnit/", json=expected.json()
     )
 
 
