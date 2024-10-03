@@ -673,3 +673,25 @@ def test_mo_orgunit_to_os2sync_fk_org_uuids(mock_settings):
     unit = mo_orgunit_to_os2sync(mock_settings, orgunit)
     assert unit.Uuid == fk_org_uuid
     assert unit.ParentOrgUnitUuid == parent_fk_org_uuid
+
+
+@pytest.mark.parametrize("enable_kle", [True, False])
+def test_mo_orgunit_to_os2sync_kle_numbers(enable_kle, set_settings):
+    """Test that the klenumbers can be written to tasks"""
+    settings = set_settings(enable_kle=enable_kle)
+    kle_numbers = {uuid4() for i in range(10)}
+    orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
+        uuid=uuid4(),
+        parent={"uuid": uuid4(), "itusers": []},
+        name="Unit1",
+        ancestors=[{"uuid": settings.top_unit_uuid}],
+        addresses=[],
+        itusers=[],
+        managers=[],
+        kles=[{"kle_number": {"uuid": k}} for k in kle_numbers],
+    )
+    unit = mo_orgunit_to_os2sync(settings, orgunit)
+    if enable_kle:
+        assert unit.Tasks == kle_numbers
+    else:
+        assert unit.Tasks == set()

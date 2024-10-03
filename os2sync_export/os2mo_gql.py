@@ -281,8 +281,12 @@ def mo_orgunit_to_os2sync(
     parent_fk_org_uuid = (
         find_fk_org_uuid(orgunit_data.parent) if orgunit_data.parent else None
     )
+    kle_numbers = (
+        {k.kle_number.uuid for k in orgunit_data.kles} if settings.enable_kle else set()
+    )
     return OrgUnit(
         Uuid=unit_fk_org_uuid,
         Name=orgunit_data.name,
         ParentOrgUnitUuid=parent_fk_org_uuid,
+        Tasks=kle_numbers,
     )
