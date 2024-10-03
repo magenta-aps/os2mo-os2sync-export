@@ -22,6 +22,24 @@ query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
             extension_3
             org_unit {
               uuid
+              parent {
+                uuid
+                itusers(filter: { user_keys: "FK-org uuid" }) {
+                  user_key
+                }
+              }
+              ancestors {
+                uuid
+              }
+              unit_type {
+                uuid
+              }
+              org_unit_level {
+                uuid
+              }
+              org_unit_hierarchy_model {
+                name
+              }
             }
             job_function {
               name
