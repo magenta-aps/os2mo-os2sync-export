@@ -252,7 +252,7 @@ standard = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "htt
 
 [[package]]
 name = "fastramqpi"
-version = "10.0.4"
+version = "10.0.3"
 description = "Rammearkitektur integrations framework"
 category = "main"
 optional = false
@@ -836,15 +836,15 @@ twisted = ["twisted"]
 
 [[package]]
 name = "prometheus-fastapi-instrumentator"
-version = "6.1.0"
+version = "7.0.0"
 description = "Instrument your FastAPI with Prometheus metrics."
 category = "main"
 optional = false
-python-versions = ">=3.7.0,<4.0.0"
+python-versions = ">=3.8.1,<4.0.0"
 
 [package.dependencies]
-fastapi = ">=0.38.1,<1.0.0"
 prometheus-client = ">=0.8.0,<1.0.0"
+starlette = ">=0.30.0,<1.0.0"
 
 [[package]]
 name = "psycopg"
@@ -1391,7 +1391,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.11.0"
-content-hash = "cfe0a8485742e75f765f797eb074498556ae4fc11b232e5e9f973a0bdfefff38"
+content-hash = "fba2f5c68d06f9fe1ec7ce6daa9705814763835500c98624c1338123b77ea6b7"
 
 [metadata.files]
 aio-pika = [
@@ -1820,8 +1820,8 @@ fastapi = [
     {file = "fastapi-0.112.3.tar.gz", hash = "sha256:9b6b41ea59ba948a07142f09d6241bda975fdb86847413136f6e2a1675d3bf25"},
 ]
 fastramqpi = [
-    {file = "fastramqpi-10.0.4-py3-none-any.whl", hash = "sha256:e9afeb793a9026e94eaa6ec0eca3626816e4ae9bf63960210da47e8e0f52e5e7"},
-    {file = "fastramqpi-10.0.4.tar.gz", hash = "sha256:4d1b0dd0779b0a80a4041d48af5bfedeb54d5209b55cb07358726270c2222c97"},
+    {file = "fastramqpi-10.0.3-py3-none-any.whl", hash = "sha256:203ddc3800fce10b7bcad157071c6fa5fa0362d113ef7b6e1f15716890bf96ec"},
+    {file = "fastramqpi-10.0.3.tar.gz", hash = "sha256:ac3bfcd5aeb16d25f1dae216f528b3a03cf806c6a1c527926b6ffccc4420d669"},
 ]
 filelock = [
     {file = "filelock-3.16.0-py3-none-any.whl", hash = "sha256:f6ed4c963184f4c84dd5557ce8fece759a3724b37b80c6c4f20a2f63a4dc6609"},
@@ -2325,8 +2325,8 @@ prometheus-client = [
     {file = "prometheus_client-0.16.0.tar.gz", hash = "sha256:a03e35b359f14dd1630898543e2120addfdeacd1a6069c1367ae90fd93ad3f48"},
 ]
 prometheus-fastapi-instrumentator = [
-    {file = "prometheus_fastapi_instrumentator-6.1.0-py3-none-any.whl", hash = "sha256:2279ac1cf5b9566a4c3a07f78c9c5ee19648ed90976ab87d73d672abc1bfa017"},
-    {file = "prometheus_fastapi_instrumentator-6.1.0.tar.gz", hash = "sha256:1820d7a90389ce100f7d1285495ead388818ae0882e761c1f3e6e62a410bdf13"},
+    {file = "prometheus_fastapi_instrumentator-7.0.0-py3-none-any.whl", hash = "sha256:96030c43c776ee938a3dae58485ec24caed7e05bfc60fe067161e0d5b5757052"},
+    {file = "prometheus_fastapi_instrumentator-7.0.0.tar.gz", hash = "sha256:5ba67c9212719f244ad7942d75ded80693b26331ee5dfc1e7571e4794a9ccbed"},
 ]
 psycopg = [
     {file = "psycopg-3.2.1-py3-none-any.whl", hash = "sha256:ece385fb413a37db332f97c49208b36cf030ff02b199d7635ed2fbd378724175"},
