@@ -13,7 +13,7 @@ from pydantic import SecretStr
 from os2sync_export.config import AMQPConnectionSettings
 from os2sync_export.config import FastRAMQPISettings
 from os2sync_export.config import Settings
-from os2sync_export.os2sync import OS2SyncClient
+from os2sync_export.os2sync import WritableOS2SyncClient
 
 DEFAULT_AMQP_URL = "amqp://guest:guest@msg_broker:5672/os2mo"
 
@@ -76,9 +76,9 @@ def requests_session() -> Generator[MagicMock, None, None]:
 @pytest.fixture
 def mock_os2sync_client(
     mock_settings, requests_session
-) -> Generator[OS2SyncClient, None, None]:
+) -> Generator[WritableOS2SyncClient, None, None]:
     """Fixture for the os2sync_client."""
-    yield OS2SyncClient(settings=mock_settings, session=requests_session)
+    yield WritableOS2SyncClient(settings=mock_settings, session=requests_session)
 
 
 @pytest.fixture

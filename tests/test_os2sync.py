@@ -12,7 +12,8 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
 from requests import HTTPError
 
-from os2sync_export.os2sync import OS2SyncClient
+from os2sync_export.os2sync import ReadOnlyOS2SyncClient
+from os2sync_export.os2sync import WritableOS2SyncClient
 from os2sync_export.os2sync_models import OrgUnit
 from os2sync_export.os2sync_models import User
 
@@ -251,7 +252,7 @@ def test_get_hierarchy_retry(mock_settings, mock_os2sync_client):
 def test_update_users_delete_uuid_from_it_user(mock_settings):
     """Test that when calling update user the user is deleted with the correct uuid if there are no engagements"""
     uuid = uuid4()
-    client = OS2SyncClient(mock_settings, None)
+    client = WritableOS2SyncClient(mock_settings, None)
     users = [{"Uuid": uuid, "Positions": []}]
     client.delete_user = MagicMock()
 
@@ -261,7 +262,7 @@ def test_update_users_delete_uuid_from_it_user(mock_settings):
 
 
 def test_update_user(mock_settings):
-    client = OS2SyncClient(mock_settings, None)
+    client = WritableOS2SyncClient(mock_settings, None)
     client.session = MagicMock()
     user = User(
         **{
@@ -286,4 +287,91 @@ def test_user_no_positions():
                 "Person": {"Name": "Brian"},
                 "Positions": [],
             }
+        )
+
+
+@pytest.mark.parametrize("dry_run", (True, False))
+def test_dry_run_delete_orgunit(dry_run, mock_settings):
+    org_unit_uuid = uuid4()
+    session = MagicMock()
+    client = (
+        ReadOnlyOS2SyncClient(mock_settings, session)
+        if dry_run
+        else WritableOS2SyncClient(mock_settings, session)
+    )
+    client.delete_orgunit(uuid=org_unit_uuid)
+
+    if dry_run:
+        session.delete.assert_not_called()
+    else:
+        session.delete.assert_called_once_with(
+            f"{mock_settings.os2sync_api_url}/orgUnit/{org_unit_uuid}"
+        )
+
+
+@pytest.mark.parametrize("dry_run", (True, False))
+def test_dry_run_update_orgunit(dry_run, mock_settings):
+    org_unit_uuid = uuid4()
+    client = (
+        ReadOnlyOS2SyncClient(mock_settings, MagicMock())
+        if dry_run
+        else WritableOS2SyncClient(mock_settings, MagicMock())
+    )
+    # Fake an orgunit wasn't found in fk-org
+    client.os2sync_get_org_unit = MagicMock(side_effect=KeyError)
+    client.session.post = MagicMock()
+    orgunit = OrgUnit(Uuid=org_unit_uuid, Name="test")
+    client.update_org_unit(org_unit_uuid, orgunit)
+
+    if dry_run:
+        client.session.post.assert_not_called()
+    else:
+        client.session.post.assert_called_once_with(
+            f"{mock_settings.os2sync_api_url}/orgUnit/", json=jsonable_encoder(orgunit)
+        )
+
+
+@pytest.mark.parametrize("dry_run", (True, False))
+def test_dry_run_delete_user(dry_run, mock_settings):
+    user_uuid = uuid4()
+    session = MagicMock()
+
+    client = (
+        ReadOnlyOS2SyncClient(mock_settings, session)
+        if dry_run
+        else WritableOS2SyncClient(mock_settings, session)
+    )
+    client.delete_user(uuid=user_uuid)
+
+    if dry_run:
+        client.session.delete.assert_not_called()
+    else:
+        client.session.delete.assert_called_once_with(
+            f"{mock_settings.os2sync_api_url}/user/{user_uuid}"
+        )
+
+
+@pytest.mark.parametrize("dry_run", (True, False))
+def test_dry_run_update_user(dry_run, mock_settings):
+    user_uuid = uuid4()
+    client = (
+        ReadOnlyOS2SyncClient(mock_settings)
+        if dry_run
+        else WritableOS2SyncClient(mock_settings)
+    )
+    client.session.post = MagicMock()
+    user = User(
+        Uuid=user_uuid,
+        Name="test",
+        UserId="test",
+        Person={"Name": "Brian"},
+        Positions=[{"Name": "Developer", "OrgUnitUuid": uuid4()}],
+    )
+    client.update_user(user)
+
+    if dry_run:
+        client.session.post.assert_not_called()
+    else:
+        client.session.post.assert_called_once_with(
+            f"{mock_settings.os2sync_api_url}/user", json=jsonable_encoder(user)
         )

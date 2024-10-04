@@ -29,6 +29,12 @@ class OS2SyncClient:
         self.settings = settings or get_os2sync_settings()
         self.session = session or self._get_os2sync_session()
 
+    def os2sync_post(self, url, **params):
+        raise NotImplementedError("Use WritableOS2SyncClient")
+
+    def os2sync_delete(self, url, **params):
+        raise NotImplementedError("Use WritableOS2SyncClient")
+
     def _get_os2sync_session(self):
         session = requests.Session()
 
@@ -58,23 +64,6 @@ class OS2SyncClient:
         current.pop("Type")
         current.pop("Timestamp")
         return OrgUnit(**current)
-
-    def os2sync_delete(self, url, **params):
-        url = self.os2sync_url(url)
-        try:
-            r = self.session.delete(url, **params)
-            r.raise_for_status()
-            return r
-        except requests.HTTPError as e:
-            if e.response.status_code == 404:
-                logger.warning("delete %r %r :404", url, params)
-                return r
-
-    def os2sync_post(self, url, **params):
-        url = self.os2sync_url(url)
-        r = self.session.post(url, **params)
-        r.raise_for_status()
-        return r
 
     def delete_orgunit(self, uuid: UUID):
         if uuid == self.settings.top_unit_uuid:
@@ -165,3 +154,30 @@ class OS2SyncClient:
             self.upsert_org_unit(org_unit)
         else:
             self.delete_orgunit(uuid)
+
+
+class ReadOnlyOS2SyncClient(OS2SyncClient):
+    def os2sync_post(self, url, **params):
+        logger.info("Read-only attempted post", url=url, params=params)
+
+    def os2sync_delete(self, url, **params):
+        logger.info("Read-only attempted delete", url=url, params=params)
+
+
+class WritableOS2SyncClient(OS2SyncClient):
+    def os2sync_delete(self, url, **params):
+        url = self.os2sync_url(url)
+        try:
+            r = self.session.delete(url, **params)
+            r.raise_for_status()
+            return r
+        except requests.HTTPError as e:
+            if e.response.status_code == 404:
+                logger.warning("delete %r %r :404", url, params)
+                return r
+
+    def os2sync_post(self, url, **params):
+        url = self.os2sync_url(url)
+        r = self.session.post(url, **params)
+        r.raise_for_status()
+        return r
