@@ -20,7 +20,7 @@ variables:
   PYTEST_COV_FAIL_UNDER: 65
 
   PRECOMMIT_USE_POETRY: "true"
-  POETRY_VERSION: "1.3.1"
+  POETRY_VERSION: "1.8.3"
 
   PRODUCT: os2mo
   COMPONENT: os2syncexport

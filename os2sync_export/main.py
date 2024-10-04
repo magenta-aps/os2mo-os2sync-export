@@ -33,6 +33,8 @@ from os2sync_export.os2mo import get_manager_org_unit_uuid
 from os2sync_export.os2mo import get_sts_orgunit
 from os2sync_export.os2mo import get_sts_user
 from os2sync_export.os2mo import is_relevant
+from os2sync_export.os2mo_gql import find_object_person
+from os2sync_export.os2mo_gql import find_object_unit
 from os2sync_export.os2mo_gql import mo_orgunit_to_os2sync
 from os2sync_export.os2mo_gql import sync_mo_user_to_fk_org
 from os2sync_export.os2sync import OS2SyncClient
@@ -93,11 +95,18 @@ async def amqp_trigger_employee(
     uuid: PayloadUUID,
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
+    graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
     if settings.new:
-        raise NotImplementedError
+        await sync_mo_user_to_fk_org(
+            graphql_client=graphql_client,
+            settings=settings,
+            os2sync_client=os2sync_client,
+            uuid=uuid,
+        )
+        return
     try:
         sts_users = await get_sts_user(
             str(uuid),
@@ -119,11 +128,18 @@ async def amqp_trigger_org_unit(
     uuid: PayloadUUID,
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
+    graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
     if settings.new:
-        raise NotImplementedError
+        await sync_orgunit(
+            settings=settings,
+            graphql_client=graphql_client,
+            os2sync_client=os2sync_client,
+            uuid=uuid,
+        )
+        return
     sts_org_unit = None
     if await is_relevant(
         graphql_session,
@@ -151,11 +167,29 @@ async def amqp_trigger_address(
     uuid: PayloadUUID,
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
+    graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
     if settings.new:
-        raise NotImplementedError
+        res = await graphql_client.find_address_unit_or_person(uuid=uuid)
+        org_units = find_object_unit(res)
+        employees = find_object_person(res)
+        for e in employees:
+            await sync_mo_user_to_fk_org(
+                graphql_client=graphql_client,
+                settings=settings,
+                os2sync_client=os2sync_client,
+                uuid=e,
+            )
+        for o in org_units:
+            await sync_orgunit(
+                settings=settings,
+                graphql_client=graphql_client,
+                os2sync_client=os2sync_client,
+                uuid=o,
+            )
+        return
     try:
         ou_uuid, e_uuid = await get_address_org_unit_and_employee_uuids(
             graphql_session, uuid
@@ -195,11 +229,29 @@ async def amqp_trigger_it_user(
     uuid: PayloadUUID,
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
+    graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
     if settings.new:
-        raise NotImplementedError
+        res = await graphql_client.find_ituser_unit_or_person(uuid=uuid)
+        org_units = find_object_unit(res)
+        employees = find_object_person(res)
+        for o in org_units:
+            await sync_orgunit(
+                settings=settings,
+                graphql_client=graphql_client,
+                os2sync_client=os2sync_client,
+                uuid=o,
+            )
+        for e in employees:
+            await sync_mo_user_to_fk_org(
+                graphql_client=graphql_client,
+                settings=settings,
+                os2sync_client=os2sync_client,
+                uuid=e,
+            )
+        return
     try:
         ou_uuid, e_uuid = await get_ituser_org_unit_and_employee_uuids(
             graphql_session, uuid
@@ -265,11 +317,21 @@ async def amqp_trigger_manager(
     uuid: PayloadUUID,
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
+    graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
     if settings.new:
-        raise NotImplementedError
+        res = await graphql_client.find_manager_unit(uuid=uuid)
+        org_units = find_object_unit(res)
+        for o in org_units:
+            await sync_orgunit(
+                settings=settings,
+                graphql_client=graphql_client,
+                os2sync_client=os2sync_client,
+                uuid=o,
+            )
+        return
     try:
         ou_uuid = await get_manager_org_unit_uuid(graphql_session, uuid)
     except ValueError:
@@ -298,11 +360,21 @@ async def amqp_trigger_engagement(
     uuid: PayloadUUID,
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
+    graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
     if settings.new:
-        raise NotImplementedError
+        res = await graphql_client.find_engagement_person(uuid=uuid)
+        employees = find_object_person(res)
+        for e in employees:
+            await sync_mo_user_to_fk_org(
+                graphql_client=graphql_client,
+                settings=settings,
+                os2sync_client=os2sync_client,
+                uuid=e,
+            )
+        return
     try:
         e_uuid = await get_engagement_employee_uuid(graphql_session, uuid)
     except ValueError:
@@ -324,11 +396,21 @@ async def amqp_trigger_kle(
     uuid: PayloadUUID,
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
+    graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
     if settings.new:
-        raise NotImplementedError
+        res = await graphql_client.find_k_l_e_unit(uuid=uuid)
+        org_units = find_object_unit(res)
+        for o in org_units:
+            await sync_orgunit(
+                settings=settings,
+                graphql_client=graphql_client,
+                os2sync_client=os2sync_client,
+                uuid=o,
+            )
+        return
     try:
         ou_uuid = await get_kle_org_unit_uuid(graphql_session, uuid)
     except ValueError:
