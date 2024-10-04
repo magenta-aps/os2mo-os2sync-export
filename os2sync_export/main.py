@@ -10,6 +10,7 @@ from fastapi import APIRouter
 from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import FastAPI
+from fastapi import HTTPException
 from fastramqpi.depends import LegacyGraphQLSession
 from fastramqpi.depends import from_user_context
 from fastramqpi.main import FastRAMQPI  # type: ignore
@@ -39,6 +40,7 @@ from os2sync_export.os2mo_gql import mo_orgunit_to_os2sync
 from os2sync_export.os2mo_gql import sync_mo_user_to_fk_org
 from os2sync_export.os2sync import OS2SyncClient
 from os2sync_export.os2sync_models import OrgUnit
+from os2sync_export.os2sync_models import User
 
 logger = structlog.stdlib.get_logger()
 
@@ -433,31 +435,37 @@ async def amqp_trigger_kle(
     logger.warn(f"Unable to update ituser, could not find owners for ituser: {uuid}")
 
 
-@fastapi_router.post("/trigger/user/{uuid}")
+@fastapi_router.post(
+    "/trigger/user/{uuid}", response_model=tuple[list[User], set[UUID]]
+)
 async def trigger_user(
     uuid: UUID,
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
-) -> str:
+) -> tuple[list[User], set[UUID]]:
     if settings.new:
-        await sync_mo_user_to_fk_org(
+        return await sync_mo_user_to_fk_org(
             graphql_client=graphql_client,
             settings=settings,
             os2sync_client=os2sync_client,
             uuid=uuid,
         )
 
-    sts_users = await get_sts_user(
-        str(uuid),
-        graphql_session=graphql_session,
-        settings=settings,
-    )
+    try:
+        sts_users = await get_sts_user(
+            str(uuid),
+            graphql_session=graphql_session,
+            settings=settings,
+        )
+    except ValueError:
+        raise HTTPException(status_code=404, detail="User not found")
+
     os2sync_client.update_users(uuid, sts_users)
     logger.info(f"Synced user to fk-org: {uuid}")
 
-    return "OK"
+    return [User(**u) for u in sts_users], set()
 
 
 async def sync_orgunit(
@@ -477,30 +485,31 @@ async def sync_orgunit(
     return os2sync_orgunit
 
 
-@fastapi_router.post("/trigger/orgunit/{uuid}", status_code=200)
+@fastapi_router.post(
+    "/trigger/orgunit/{uuid}", status_code=200, response_model=OrgUnit | None
+)
 async def trigger_orgunit(
     uuid: UUID,
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
-) -> str:
+) -> OrgUnit | None:
     if settings.new:
-        await sync_orgunit(
+        return await sync_orgunit(
             settings=settings,
             graphql_client=graphql_client,
             os2sync_client=os2sync_client,
             uuid=uuid,
         )
-        return "OK"
     try:
         sts_org_unit = get_sts_orgunit(uuid, settings=settings)
     except ValueError:
-        logger.info("Org_unit not found")
-        return "Org_unit not found"
+        raise HTTPException(status_code=404, detail="OrgUnit not found")
+
     os2sync_client.update_org_unit(uuid, sts_org_unit)
     logger.info(f"Synced org_unit to fk-org: {uuid}")
-    return "OK"
+    return sts_org_unit
 
 
 def create_fastramqpi(**kwargs) -> FastRAMQPI:

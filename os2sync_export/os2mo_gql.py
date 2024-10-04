@@ -220,7 +220,11 @@ async def sync_mo_user_to_fk_org(
     settings: Settings,
     os2sync_client: OS2SyncClient,
     uuid: UUID,
-):
+) -> tuple[list[User], set[UUID]]:
+    """Handles sync of a persons users to fk-org.
+
+    Returns a list of users synced to fk-org and a set of uuids representing users deleted from fk-org.
+    """
     fk_org_users, it_users = await read_fk_users_from_person(
         graphql_client=graphql_client,
         uuid=uuid,
@@ -239,6 +243,7 @@ async def sync_mo_user_to_fk_org(
     for deleted_user_uuid in deletes_fk:
         await delete_mo_fk_org_users(graphql_client, deleted_user_uuid)
         os2sync_client.delete_user(deleted_user_uuid)
+    return updates_fk, deletes_fk
 
 
 def filter_relevant_orgunit(
