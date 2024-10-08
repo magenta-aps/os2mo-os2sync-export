@@ -16,6 +16,7 @@ from tenacity import stop_after_delay
 from tenacity import wait_fixed
 
 from os2sync_export import stub
+from os2sync_export.config import Settings
 from os2sync_export.config import get_os2sync_settings
 from os2sync_export.os2sync_models import OrgUnit
 from os2sync_export.os2sync_models import User
@@ -30,10 +31,10 @@ class OS2SyncClient:
         self.session = session or self._get_os2sync_session()
 
     def os2sync_post(self, url, **params):
-        raise NotImplementedError("Use WritableOS2SyncClient")
+        raise NotImplementedError
 
     def os2sync_delete(self, url, **params):
-        raise NotImplementedError("Use WritableOS2SyncClient")
+        raise NotImplementedError
 
     def _get_os2sync_session(self):
         session = requests.Session()
@@ -181,3 +182,13 @@ class WritableOS2SyncClient(OS2SyncClient):
         r = self.session.post(url, **params)
         r.raise_for_status()
         return r
+
+
+def get_os2sync_client(
+    settings: Settings, session: requests.Session | None, dry_run: bool
+) -> OS2SyncClient:
+    return (
+        ReadOnlyOS2SyncClient(settings, session)
+        if dry_run
+        else WritableOS2SyncClient(settings, session)
+    )

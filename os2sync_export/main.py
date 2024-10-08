@@ -39,7 +39,7 @@ from os2sync_export.os2mo_gql import find_object_unit
 from os2sync_export.os2mo_gql import mo_orgunit_to_os2sync
 from os2sync_export.os2mo_gql import sync_mo_user_to_fk_org
 from os2sync_export.os2sync import OS2SyncClient
-from os2sync_export.os2sync import ReadOnlyOS2SyncClient
+from os2sync_export.os2sync import get_os2sync_client
 from os2sync_export.os2sync_models import OrgUnit
 from os2sync_export.os2sync_models import User
 
@@ -446,8 +446,8 @@ async def trigger_user(
     graphql_client: GraphQLClient,
     dry_run: bool = False,
 ) -> tuple[list[User], set[UUID]]:
-    os2sync_client = (
-        ReadOnlyOS2SyncClient(settings) if dry_run else OS2SyncClient(settings)
+    os2sync_client = get_os2sync_client(
+        settings=settings, session=None, dry_run=dry_run
     )
     if settings.new:
         return await sync_mo_user_to_fk_org(
@@ -498,9 +498,10 @@ async def trigger_orgunit(
     graphql_client: GraphQLClient,
     dry_run: bool = False,
 ) -> OrgUnit | None:
-    os2sync_client = (
-        ReadOnlyOS2SyncClient(settings) if dry_run else OS2SyncClient(settings)
+    os2sync_client = get_os2sync_client(
+        settings=settings, session=None, dry_run=dry_run
     )
+
     if settings.new:
         return await sync_orgunit(
             settings=settings,
