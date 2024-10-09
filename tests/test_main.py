@@ -128,7 +128,7 @@ async def test_trigger_orgunit_update(
                 graphql_session=graphql_session,
                 graphql_client=None,
                 os2sync_client=os2sync_client,
-                _=None,
+                rate_limit=None,
             )
     if is_relevant:
         get_org_unit_mock.assert_called_once_with(orgunit_uuid, settings=mock_settings)
@@ -138,6 +138,44 @@ async def test_trigger_orgunit_update(
         os2sync_client.delete_orgunit.assert_called_once_with(orgunit_uuid)
     # Test that we call update_org_unit on events
     os2sync_client.update_org_unit(orgunit_uuid, fk_org_orggunit.json())
+
+
+@patch("os2sync_export.main.is_relevant", return_value=True)
+@patch("os2sync_export.main.amqp_trigger_employee")
+@patch(
+    "os2sync_export.main.get_sts_orgunit",
+    return_value=OrgUnit(Uuid=uuid4(), Name="test", ParentOrgUnitUuid=None),
+)
+async def test_trigger_orgunit_employees_update(
+    is_relevant_mock,
+    trigger_employee_mock,
+    find_employee_mock,
+    mock_settings,
+    os2sync_client,
+    graphql_session,
+):
+    """Test react to orgunit event and all employees"""
+    employee_uuids = {uuid4(), uuid4()}
+    with patch("os2sync_export.main.find_employees", return_value=employee_uuids):
+        await amqp_trigger_org_unit(
+            uuid=uuid4(),
+            settings=mock_settings,
+            graphql_session=graphql_session,
+            graphql_client=None,
+            os2sync_client=os2sync_client,
+            rate_limit=None,
+        )
+    assert trigger_employee_mock.call_args_list == [
+        call(
+            uuid=u,
+            settings=mock_settings,
+            graphql_session=graphql_session,
+            graphql_client=None,
+            os2sync_client=os2sync_client,
+            rate_limit=None,
+        )
+        for u in employee_uuids
+    ]
 
 
 async def test_is_relevant(set_settings):
