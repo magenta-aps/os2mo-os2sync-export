@@ -39,6 +39,7 @@ from os2sync_export.os2mo_gql import find_object_unit
 from os2sync_export.os2mo_gql import mo_orgunit_to_os2sync
 from os2sync_export.os2mo_gql import sync_mo_user_to_fk_org
 from os2sync_export.os2sync import OS2SyncClient
+from os2sync_export.os2sync import WritableOS2SyncClient
 from os2sync_export.os2sync import get_os2sync_client
 from os2sync_export.os2sync_models import OrgUnit
 from os2sync_export.os2sync_models import User
@@ -539,7 +540,7 @@ def create_fastramqpi(**kwargs) -> FastRAMQPI:
     amqpsystem.router.registry.update(amqp_router.registry)
     fastramqpi.add_context(
         settings=settings,
-        os2sync_client=OS2SyncClient(settings=settings),
+        os2sync_client=WritableOS2SyncClient(settings=settings),
     )
 
     app = fastramqpi.get_app()
