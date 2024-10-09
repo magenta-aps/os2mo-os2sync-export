@@ -100,7 +100,7 @@ async def amqp_trigger_employee(
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
-    _: RateLimit,
+    rate_limit: RateLimit,
 ) -> None:
     if settings.new:
         await sync_mo_user_to_fk_org(
@@ -133,7 +133,7 @@ async def amqp_trigger_org_unit(
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
-    _: RateLimit,
+    rate_limit: RateLimit,
 ) -> None:
     if settings.new:
         await sync_orgunit(
@@ -162,7 +162,14 @@ async def amqp_trigger_org_unit(
     logger.info(f"Synced org_unit to fk-org: {uuid=}, now checking engagements")
     employees = await find_employees(graphql_session, uuid)
     for e in employees:
-        await amqp_trigger_employee(e, settings, graphql_session, os2sync_client, _)
+        await amqp_trigger_employee(
+            uuid=e,
+            settings=settings,
+            graphql_session=graphql_session,
+            graphql_client=graphql_client,
+            os2sync_client=os2sync_client,
+            rate_limit=rate_limit,
+        )
 
 
 @amqp_router.register("address")
