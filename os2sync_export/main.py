@@ -457,15 +457,14 @@ async def trigger_user(
     os2sync_client = get_os2sync_client(
         settings=settings, session=None, dry_run=dry_run
     )
-    if settings.new:
-        return await sync_mo_user_to_fk_org(
-            graphql_client=graphql_client,
-            settings=settings,
-            os2sync_client=os2sync_client,
-            uuid=uuid,
-        )
-
     try:
+        if settings.new:
+            return await sync_mo_user_to_fk_org(
+                graphql_client=graphql_client,
+                settings=settings,
+                os2sync_client=os2sync_client,
+                uuid=uuid,
+            )
         sts_users = await get_sts_user(
             str(uuid),
             graphql_session=graphql_session,
@@ -510,14 +509,15 @@ async def trigger_orgunit(
         settings=settings, session=None, dry_run=dry_run
     )
 
-    if settings.new:
-        return await sync_orgunit(
-            settings=settings,
-            graphql_client=graphql_client,
-            os2sync_client=os2sync_client,
-            uuid=uuid,
-        )
     try:
+        if settings.new:
+            return await sync_orgunit(
+                settings=settings,
+                graphql_client=graphql_client,
+                os2sync_client=os2sync_client,
+                uuid=uuid,
+            )
+
         sts_org_unit = get_sts_orgunit(uuid, settings=settings)
     except ValueError:
         raise HTTPException(status_code=404, detail="OrgUnit not found")
