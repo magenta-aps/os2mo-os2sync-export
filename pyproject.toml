@@ -31,6 +31,8 @@ mypy = "^1.11.2"
 ruff = "^0.6.4"
 types-requests = "^2.32.0.20240905"
 
+[tool.poetry.group.dev.dependencies]
+ariadne-codegen = "^0.7"
 
 [tool.poetry.group.test.dependencies]
 hypothesis = "^6.75.3"
