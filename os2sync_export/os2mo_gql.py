@@ -306,6 +306,19 @@ def mo_orgunit_to_os2sync(
     kle_numbers = (
         {k.kle_number.uuid for k in orgunit_data.kles} if settings.enable_kle else set()
     )
+    # We can only sync one manager:
+    manager = first(orgunit_data.managers, default=None)
+    # A manager is always one person
+    manager_person = (
+        only(manager.person)
+        if manager is not None and manager.person is not None
+        else None
+    )
+    manager_uuid = (
+        UUID(first(manager_person.itusers).external_id)
+        if manager_person is not None
+        else None
+    )
 
     ## Reuse old logic for selecting addresses. Create an empty dictionary which is then mutated by addresses_to_orgunit to include the correct os2sync-field to address mapping.
     addresses: dict[str, str] = dict()
@@ -316,6 +329,7 @@ def mo_orgunit_to_os2sync(
         Name=orgunit_data.name,
         ParentOrgUnitUuid=parent_fk_org_uuid,
         Tasks=kle_numbers,
+        ManagerUuid=manager_uuid if settings.sync_managers else None,
         **addresses,  # type: ignore[arg-type]
     )
 

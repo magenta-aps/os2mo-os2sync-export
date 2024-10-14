@@ -666,7 +666,7 @@ async def get_sts_orgunit(
                     settings.uuid_from_it_systems,
                     settings.user_key_it_system_names,
                 )
-                manager_uuid = first(fk_org_accounts)["Uuid"]
+                manager_uuid = first(fk_org_accounts)["uuid"]
             sts_org_unit["ManagerUuid"] = manager_uuid
 
     if settings.enable_kle and has_kle():
