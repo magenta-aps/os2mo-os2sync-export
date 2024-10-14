@@ -95,7 +95,9 @@ async def test_trigger_it_orgunit_update(
     get_mock.assert_awaited_once()
 
     if is_relevant:
-        get_org_unit_mock.assert_called_once_with(orgunit_uuid, mock_settings)
+        get_org_unit_mock.assert_called_once_with(
+            orgunit_uuid, mock_settings, graphql_session=graphql_session
+        )
         if overwritten_uuid:
             os2sync_client.delete_orgunit.assert_called_once_with(orgunit_uuid)
         else:
@@ -131,7 +133,9 @@ async def test_trigger_orgunit_update(
                 rate_limit=None,
             )
     if is_relevant:
-        get_org_unit_mock.assert_called_once_with(orgunit_uuid, settings=mock_settings)
+        get_org_unit_mock.assert_called_once_with(
+            orgunit_uuid, settings=mock_settings, graphql_session=graphql_session
+        )
         os2sync_client.delete_orgunit.assert_not_called()
     else:
         get_org_unit_mock.assert_not_called()

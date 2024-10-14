@@ -17,8 +17,8 @@ class MockUnitWParent:
 
 @patch("os2sync_export.os2mo.os2mo_get", return_value=MockUnitWParent())
 @patch("os2sync_export.os2mo.is_ignored", return_value=False)
-def test_get_sts_orgunit_not_under_top_level(
+async def test_get_sts_orgunit_not_under_top_level(
     mock_os2mo_get, ignored_mock, mock_settings
 ):
-    res = get_sts_orgunit(uuid4(), settings=mock_settings)
+    res = await get_sts_orgunit(uuid4(), settings=mock_settings, graphql_session=None)
     assert res is None

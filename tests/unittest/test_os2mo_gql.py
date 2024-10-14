@@ -714,6 +714,30 @@ def test_mo_orgunit_to_os2sync_kle_numbers(enable_kle, set_settings):
         assert unit.Tasks == set()
 
 
+@pytest.mark.parametrize("sync_managers", [True, False])
+def test_mo_orgunit_to_os2sync_managers(sync_managers, set_settings):
+    """Test that the klenumbers can be written to tasks"""
+    settings = set_settings(sync_managers=sync_managers)
+    manager_fk_org_uuid = uuid4()
+    orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
+        uuid=uuid4(),
+        parent={"uuid": uuid4(), "itusers": []},
+        name="Unit1",
+        ancestors=[{"uuid": settings.top_unit_uuid}],
+        addresses=[],
+        itusers=[],
+        managers=[
+            {"person": [{"itusers": [{"external_id": str(manager_fk_org_uuid)}]}]}
+        ],
+        kles=[],
+    )
+    unit = mo_orgunit_to_os2sync(settings, orgunit)
+    if sync_managers:
+        assert unit.ManagerUuid == manager_fk_org_uuid
+    else:
+        assert unit.ManagerUuid is None
+
+
 def test_mo_orgunit_to_os2sync_addresses(mock_settings):
     """Test that every type of address is written correctly to the org_unit"""
     email = "kontakt@digital-identity.dk"

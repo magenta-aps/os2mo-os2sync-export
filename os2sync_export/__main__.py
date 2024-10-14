@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+import asyncio
 from operator import itemgetter
 from typing import Dict
 from typing import Set
@@ -33,7 +34,9 @@ def log_mox_config(settings):
         logger.warning("    %s=%r", k, v)
 
 
-def read_all_org_units(settings: Settings) -> Dict[UUID, OrgUnit]:
+async def read_all_org_units(
+    settings: Settings, graphql_session: AsyncClientSession
+) -> Dict[UUID, OrgUnit]:
     """Read all current org_units from OS2MO
 
     Returns a dict mapping uuids to os2sync payload for each org_unit
@@ -52,8 +55,13 @@ def read_all_org_units(settings: Settings) -> Dict[UUID, OrgUnit]:
     )
 
     # Create os2sync payload for all org_units:
-    org_units = (
-        os2mo.get_sts_orgunit(UUID(i), settings=settings) for i in os2mo_uuids_present
+    org_units = asyncio.gather(
+        *[
+            os2mo.get_sts_orgunit(
+                UUID(i), settings=settings, graphql_session=graphql_session
+            )
+            for i in os2mo_uuids_present
+        ]
     )
     # TODO: Check that only one org_unit has parent=None
 
@@ -128,7 +136,7 @@ async def main(settings: Settings, graphql_session, os2sync_client):
 
     os2sync_client = os2sync_client or OS2SyncClient(settings=settings)
     request_uuid = os2sync_client.trigger_hierarchy()
-    mo_org_units = read_all_org_units(settings)
+    mo_org_units = await read_all_org_units(settings, graphql_session)
 
     logger.info(f"Orgenheder som tjekkes i OS2Sync: {len(mo_org_units)}")
 
