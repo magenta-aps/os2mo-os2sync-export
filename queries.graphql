@@ -88,7 +88,9 @@ query read_orgunit($uuid: UUID!) {
         }
         managers {
           person {
-            uuid
+            itusers(filter: { itsystem: { user_keys: "FK-ORG-UUID" } }) {
+              external_id
+            }
           }
         }
         kles {
