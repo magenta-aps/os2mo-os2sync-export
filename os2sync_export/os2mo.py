@@ -616,7 +616,9 @@ def overwrite_unit_uuids(sts_org_unit: Dict, uuid_from_it_systems: List):
         )
 
 
-def get_sts_orgunit(uuid: UUID, settings: Settings) -> Optional[OrgUnit]:
+async def get_sts_orgunit(
+    uuid: UUID, settings: Settings, graphql_session: AsyncClientSession
+) -> Optional[OrgUnit]:
     base = parent = os2mo_get("{BASE}/ou/" + str(uuid) + "/").json()
 
     if is_ignored(base, settings):
@@ -655,6 +657,16 @@ def get_sts_orgunit(uuid: UUID, settings: Settings) -> Optional[OrgUnit]:
     if settings.sync_managers:
         manager_uuid = manager_to_orgunit(uuid)
         if manager_uuid:
+            if settings.uuid_from_it_systems:
+                users = await get_user_it_accounts(
+                    graphql_session=graphql_session, mo_uuid=manager_uuid
+                )
+                fk_org_accounts = group_accounts(
+                    users,
+                    settings.uuid_from_it_systems,
+                    settings.user_key_it_system_names,
+                )
+                manager_uuid = first(fk_org_accounts)["Uuid"]
             sts_org_unit["ManagerUuid"] = manager_uuid
 
     if settings.enable_kle and has_kle():

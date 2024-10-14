@@ -151,7 +151,9 @@ async def amqp_trigger_org_unit(
         settings,
     ):
         try:
-            sts_org_unit = get_sts_orgunit(uuid, settings=settings)
+            sts_org_unit = await get_sts_orgunit(
+                uuid, settings=settings, graphql_session=graphql_session
+            )
         except ValueError:
             logger.info(f"Event registered but no org_unit was found with {uuid=}")
             os2sync_client.delete_orgunit(uuid)
@@ -215,7 +217,9 @@ async def amqp_trigger_address(
         settings,
     ):
         try:
-            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+            sts_org_unit = await get_sts_orgunit(
+                ou_uuid, settings, graphql_session=graphql_session
+            )
         except ValueError:
             logger.info("Related org_unit not found")
             return
@@ -291,7 +295,9 @@ async def amqp_trigger_it_user(
 
     if ou_uuid and await is_relevant(graphql_session, ou_uuid, settings):
         try:
-            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+            sts_org_unit = await get_sts_orgunit(
+                ou_uuid, settings, graphql_session=graphql_session
+            )
         except ValueError:
             logger.info("Related org_unit not found")
             return
@@ -355,7 +361,9 @@ async def amqp_trigger_manager(
         settings,
     ):
         try:
-            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+            sts_org_unit = await get_sts_orgunit(
+                ou_uuid, settings, graphql_session=graphql_session
+            )
         except ValueError:
             logger.info("Related org_unit not found")
             return
@@ -433,7 +441,9 @@ async def amqp_trigger_kle(
         settings,
     ):
         try:
-            sts_org_unit = get_sts_orgunit(ou_uuid, settings)
+            sts_org_unit = await get_sts_orgunit(
+                ou_uuid, settings, graphql_session=graphql_session
+            )
         except ValueError:
             logger.info("Related org_unit not found")
             return
@@ -503,6 +513,7 @@ async def trigger_orgunit(
     uuid: UUID,
     settings: Settings_,
     graphql_client: GraphQLClient,
+    graphql_session: LegacyGraphQLSession,
     dry_run: bool = False,
 ) -> OrgUnit | None:
     os2sync_client = get_os2sync_client(
@@ -518,7 +529,9 @@ async def trigger_orgunit(
                 uuid=uuid,
             )
 
-        sts_org_unit = get_sts_orgunit(uuid, settings=settings)
+        sts_org_unit = await get_sts_orgunit(
+            uuid, settings=settings, graphql_session=graphql_session
+        )
     except ValueError:
         raise HTTPException(status_code=404, detail="OrgUnit not found")
 
