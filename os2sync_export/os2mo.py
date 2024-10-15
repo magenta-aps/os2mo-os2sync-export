@@ -15,13 +15,13 @@ from uuid import UUID
 
 import requests
 import structlog
+from fastramqpi.ra_utils.headers import TokenSettings
 from gql import gql
 from gql.client import AsyncClientSession
 from more_itertools import first
 from more_itertools import one
 from more_itertools import only
 from more_itertools import partition
-from ra_utils.headers import TokenSettings
 
 from os2sync_export.config import Settings
 from os2sync_export.config import get_os2sync_settings
