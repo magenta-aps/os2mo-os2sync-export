@@ -265,6 +265,10 @@ def filter_relevant_orgunit(
         uuid in ancestor_uuids for uuid in settings.filter_orgunit_uuid
     ):
         return False
+    # If the unit has an fk-org account it is considered relevant
+    # This enables syncing specific units outside the usually relevant hierarchies
+    if orgunit_data.itusers:
+        return True
     # Ensure the unit has the correct org_unit_hierarchy (if relevant)
     if settings.filter_hierarchy_names:
         if (

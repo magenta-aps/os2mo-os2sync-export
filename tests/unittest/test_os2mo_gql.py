@@ -581,6 +581,25 @@ def test_filter_relevant_orgunit_wrong_hierarchy(set_settings):
     assert not filter_relevant_orgunit(settings=settings, orgunit_data=orgunit)
 
 
+def test_filter_relevant_orgunit_wrong_hierarchy_but_has_ituser(set_settings):
+    """Test that units belonging to the another org unit hierarchy is not synced"""
+    settings = set_settings(
+        top_unit_uuid=TOP_UUID, filter_hierarchy_names=["linjeorganisation", "Ekstern"]
+    )
+    orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
+        uuid=uuid4(),
+        parent={"uuid": uuid4(), "itusers": []},
+        org_unit_hierarchy_model={"name": "En helt anden"},
+        name="Unit1",
+        ancestors=[{"uuid": TOP_UUID}],
+        addresses=[],
+        itusers=[{"user_key": str(uuid4())}],
+        managers=[],
+        kles=[],
+    )
+    assert filter_relevant_orgunit(settings=settings, orgunit_data=orgunit)
+
+
 def test_filter_relevant_orgunit_no_hierarchy_settings(set_settings):
     """Test that if the setting is unset the unit is synced regardless of hierarchy"""
     settings = set_settings(top_unit_uuid=TOP_UUID, filter_hierarchy_names=[])
