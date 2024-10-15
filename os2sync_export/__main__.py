@@ -8,11 +8,11 @@ from typing import Set
 from uuid import UUID
 
 import structlog
+from fastramqpi.ra_utils.asyncio_utils import gather_with_concurrency
+from fastramqpi.ra_utils.tqdm_wrapper import tqdm
 from gql.client import AsyncClientSession
 from more_itertools import all_unique
 from more_itertools import flatten
-from ra_utils.asyncio_utils import gather_with_concurrency
-from ra_utils.tqdm_wrapper import tqdm
 
 from os2sync_export import os2mo
 from os2sync_export.config import Settings
