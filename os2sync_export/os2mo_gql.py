@@ -259,6 +259,12 @@ def filter_relevant_orgunit(
     # Ensure the unit is in the correct part of the tree
     if settings.top_unit_uuid not in ancestor_uuids:
         return False
+
+    # Ensure the unit or any of it's ancestors are not filtered
+    if orgunit_data.uuid in settings.filter_orgunit_uuid or any(
+        uuid in ancestor_uuids for uuid in settings.filter_orgunit_uuid
+    ):
+        return False
     # Ensure the unit has the correct org_unit_hierarchy (if relevant)
     if settings.filter_hierarchy_names:
         if (
@@ -267,11 +273,6 @@ def filter_relevant_orgunit(
             not in settings.filter_hierarchy_names
         ):
             return False
-    # Ensure the unit or any of it's ancestors are not filtered
-    if orgunit_data.uuid in settings.filter_orgunit_uuid or any(
-        uuid in ancestor_uuids for uuid in settings.filter_orgunit_uuid
-    ):
-        return False
     # Ensure the unit level or type is not ignored
     if (
         orgunit_data.org_unit_level
