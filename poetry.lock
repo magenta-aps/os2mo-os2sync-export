@@ -745,37 +745,37 @@ standard = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "htt
 
 [[package]]
 name = "fastramqpi"
-version = "10.0.4"
+version = "10.0.5"
 description = "Rammearkitektur integrations framework"
 optional = false
 python-versions = "<4.0,>=3.11"
 files = [
-    {file = "fastramqpi-10.0.4-py3-none-any.whl", hash = "sha256:e9afeb793a9026e94eaa6ec0eca3626816e4ae9bf63960210da47e8e0f52e5e7"},
-    {file = "fastramqpi-10.0.4.tar.gz", hash = "sha256:4d1b0dd0779b0a80a4041d48af5bfedeb54d5209b55cb07358726270c2222c97"},
+    {file = "fastramqpi-10.0.5-py3-none-any.whl", hash = "sha256:b2ec8a95793c56b4025fafc24a1fe9cb4fcd864fd370771dda11e6917d75821e"},
+    {file = "fastramqpi-10.0.5.tar.gz", hash = "sha256:899c41e8119a9251415a13153d830f92c1be7b4c121c4c0ef159e5305ce1df0c"},
 ]
 
 [package.dependencies]
-aio-pika = ">=8.3,<10.0"
-anyio = ">=3.6.2,<4.0.0"
-Authlib = ">=1.2.0,<2.0.0"
-fastapi = ">=0.112.3,<1.0"
-frozendict = ">=2.3.4,<3.0.0"
-gql = ">=3.4.0,<4.0.0"
-httpx = ">=0.27.0,<0.28.0"
-Jinja2 = ">=3.1.2,<4.0.0"
-more-itertools = ">=9.1.0,<10.0.0"
-prometheus-client = ">=0.16,<0.21"
-prometheus-fastapi-instrumentator = ">=5.9.1,<8.0.0"
-psycopg = ">=3.1.19,<4.0.0"
-pydantic = ">=1.10.5,<2.0.0"
-pytest = ">=7.4.3,<8.0.0"
-requests = ">=2.28.1,<3.0.0"
-respx = ">=0.21.0,<0.22.0"
-sentry-sdk = ">=1.12.1,<2.0.0"
-sqlalchemy = ">=2.0.30,<3.0.0"
-structlog = ">=23.1,<25.0"
-tenacity = ">=8.2.3,<9.0.0"
-tqdm = ">=4.65.0,<5.0.0"
+aio-pika = ">=9,<10"
+anyio = ">=3,<4"
+Authlib = ">=1,<2"
+fastapi = ">=0.115,<0.116"
+frozendict = ">=2,<3"
+gql = ">=3,<4"
+httpx = ">=0.27,<0.28"
+Jinja2 = ">=3,<4"
+more-itertools = ">=9,<10"
+prometheus-client = ">=0.20,<0.21"
+prometheus-fastapi-instrumentator = ">=7,<8"
+psycopg = ">=3,<4"
+pydantic = ">=1,<2"
+pytest = ">=8,<9"
+requests = ">=2,<3"
+respx = ">=0.21,<0.22"
+sentry-sdk = ">=1,<2"
+sqlalchemy = ">=2,<3"
+structlog = ">=24,<25"
+tenacity = ">=8,<9"
+tqdm = ">=4,<5"
 
 [[package]]
 name = "filelock"
@@ -1531,13 +1531,13 @@ et-xmlfile = "*"
 
 [[package]]
 name = "os2mo-data-import"
-version = "6.2.1"
+version = "6.2.2"
 description = "A set of tools for OS2MO data import and export"
 optional = false
 python-versions = "<4.0,>=3.11"
 files = [
-    {file = "os2mo_data_import-6.2.1-py3-none-any.whl", hash = "sha256:f8b779964d39ad3ff84f73c96454318c83bf8d35b53970172159c81b295c388b"},
-    {file = "os2mo_data_import-6.2.1.tar.gz", hash = "sha256:c00ea2a650abab3b4b2aa4f321f40cc673ed92a8597f013277d0ea15f9428f2e"},
+    {file = "os2mo_data_import-6.2.2-py3-none-any.whl", hash = "sha256:ea58d095ac290426a8b22e9044b297b3e09a3b321c8cac0b3a4802bfb7892bf9"},
+    {file = "os2mo_data_import-6.2.2.tar.gz", hash = "sha256:c9acf0bc8ead14c370b73b524feeb8af9e4babdc886022e9b8722811275ed948"},
 ]
 
 [package.dependencies]
@@ -1546,12 +1546,12 @@ anytree = ">=2.8.0,<3.0.0"
 certifi = ">=2022.12.7,<2023.0.0"
 chardet = ">=5.1.0,<6.0.0"
 click = ">=8.1.3,<9.0.0"
+fastramqpi = ">=5.7"
 idna = ">=3.4,<4.0"
 jsonschema = ">=4.17.3,<5.0.0"
 more-itertools = ">=9.1.0,<10.0.0"
 openpyxl = ">=3.1.2,<4.0.0"
 pydantic = ">=1.10.7,<2.0.0"
-ra-utils = ">=1.13.0,<2.0.0"
 requests = ">=2.28.2,<3.0.0"
 tenacity = ">=8.2.2,<9.0.0"
 XlsxWriter = ">=3.0.9,<4.0.0"
@@ -1899,23 +1899,23 @@ files = [
 
 [[package]]
 name = "pytest"
-version = "7.4.4"
+version = "8.3.3"
 description = "pytest: simple powerful testing with Python"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "pytest-7.4.4-py3-none-any.whl", hash = "sha256:b090cdf5ed60bf4c45261be03239c2c1c22df034fbffe691abe93cd80cea01d8"},
-    {file = "pytest-7.4.4.tar.gz", hash = "sha256:2cf0005922c6ace4a3e2ec8b4080eb0d9753fdc93107415332f50ce9e7994280"},
+    {file = "pytest-8.3.3-py3-none-any.whl", hash = "sha256:a6853c7375b2663155079443d2e45de913a911a11d669df02a50814944db57b2"},
+    {file = "pytest-8.3.3.tar.gz", hash = "sha256:70b98107bd648308a7952b06e6ca9a50bc660be218d53c257cc1fc94fda10181"},
 ]
 
 [package.dependencies]
 colorama = {version = "*", markers = "sys_platform == \"win32\""}
 iniconfig = "*"
 packaging = "*"
-pluggy = ">=0.12,<2.0"
+pluggy = ">=1.5,<2"
 
 [package.extras]
-testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
+dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
 [[package]]
 name = "pytest-asyncio"
@@ -2042,31 +2042,6 @@ files = [
     {file = "PyYAML-6.0.2-cp39-cp39-win_amd64.whl", hash = "sha256:39693e1f8320ae4f43943590b49779ffb98acb81f788220ea932a6b6c51004d8"},
     {file = "pyyaml-6.0.2.tar.gz", hash = "sha256:d584d9ec91ad65861cc08d42e834324ef890a082e591037abe114850ff7bbc3e"},
 ]
-
-[[package]]
-name = "ra-utils"
-version = "1.14.0"
-description = "Utilities for OS2mo/LoRa"
-optional = false
-python-versions = ">=3.8,<4.0"
-files = [
-    {file = "ra_utils-1.14.0-py3-none-any.whl", hash = "sha256:d2103c56e0462ccb3aac284bc2cbcf4a80d59eaa85e0ce1b0ea9ea99e2987591"},
-    {file = "ra_utils-1.14.0.tar.gz", hash = "sha256:362f0ad9f6d965112bbcb51fc63c01a88fe84230f01e6af8eccb681f51e9fc29"},
-]
-
-[package.dependencies]
-more-itertools = "9.1.0"
-structlog = "23.1.0"
-tqdm = ">=4.64.1,<5.0.0"
-
-[package.extras]
-all = ["Jinja2 (>=3.1.2,<4.0.0)", "frozendict (>=2.3.4,<3.0.0)", "prometheus-client (>=0.16.0,<0.17.0)", "pydantic (>=1.10.2,<2.0.0)", "requests (>=2.28.1,<3.0.0)", "sentry-sdk (>=1.12.1,<2.0.0)"]
-frozendict = ["frozendict (>=2.3.4,<3.0.0)"]
-headers = ["pydantic (>=1.10.2,<2.0.0)", "requests (>=2.28.1,<3.0.0)"]
-jinja = ["Jinja2 (>=3.1.2,<4.0.0)"]
-prometheus-client = ["prometheus-client (>=0.16.0,<0.17.0)"]
-pydantic = ["pydantic (>=1.10.2,<2.0.0)"]
-sentry = ["pydantic (>=1.10.2,<2.0.0)", "sentry-sdk (>=1.12.1,<2.0.0)"]
 
 [[package]]
 name = "referencing"
@@ -2443,20 +2418,20 @@ full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7
 
 [[package]]
 name = "structlog"
-version = "23.1.0"
+version = "24.4.0"
 description = "Structured Logging for Python"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "structlog-23.1.0-py3-none-any.whl", hash = "sha256:79b9e68e48b54e373441e130fa447944e6f87a05b35de23138e475c05d0f7e0e"},
-    {file = "structlog-23.1.0.tar.gz", hash = "sha256:270d681dd7d163c11ba500bc914b2472d2b50a8ef00faa999ded5ff83a2f906b"},
+    {file = "structlog-24.4.0-py3-none-any.whl", hash = "sha256:597f61e80a91cc0749a9fd2a098ed76715a1c8a01f73e336b746504d1aad7610"},
+    {file = "structlog-24.4.0.tar.gz", hash = "sha256:b27bfecede327a6d2da5fbc96bd859f114ecc398a6389d664f62085ee7ae6fc4"},
 ]
 
 [package.extras]
-dev = ["structlog[docs,tests,typing]"]
-docs = ["furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-mermaid", "twisted"]
-tests = ["coverage[toml]", "freezegun (>=0.2.8)", "pretend", "pytest (>=6.0)", "pytest-asyncio (>=0.17)", "simplejson"]
-typing = ["mypy", "rich", "twisted"]
+dev = ["freezegun (>=0.2.8)", "mypy (>=1.4)", "pretend", "pytest (>=6.0)", "pytest-asyncio (>=0.17)", "rich", "simplejson", "twisted"]
+docs = ["cogapp", "furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-mermaid", "sphinxext-opengraph", "twisted"]
+tests = ["freezegun (>=0.2.8)", "pretend", "pytest (>=6.0)", "pytest-asyncio (>=0.17)", "simplejson"]
+typing = ["mypy (>=1.4)", "rich", "twisted"]
 
 [[package]]
 name = "tenacity"
@@ -2827,4 +2802,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11.0"
-content-hash = "a3ce3a97b5dc8d61fd3b4d739779a525ad20b52207e52740e855ba81247e5c07"
+content-hash = "6f2a0effc6a1972d9d93377f22f02c1b7533ad3e3891dd54504eddeca0e5040f"

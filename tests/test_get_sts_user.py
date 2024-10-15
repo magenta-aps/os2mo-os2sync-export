@@ -5,8 +5,8 @@ import unittest
 from unittest.mock import AsyncMock
 from unittest.mock import patch
 
+from fastramqpi.ra_utils.async_to_sync import async_to_sync
 from parameterized import parameterized  # type: ignore
-from ra_utils.async_to_sync import async_to_sync
 
 from os2sync_export import os2mo
 from os2sync_export.os2mo import get_sts_user_raw as os2mo_get_sts_user_raw
