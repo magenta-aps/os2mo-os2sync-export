@@ -407,14 +407,14 @@ ADDRESS_TYPE_UUID = uuid4()
                     **{
                         "value": "wrong",
                         "address_type": {"uuid": ADDRESS_TYPE_UUID},
-                        "visibility": {"user_key": "SECRET"},
+                        "visibility": {"scope": "SECRET"},
                     }
                 ),
                 ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(
                     **{
                         "value": "correct",
                         "address_type": {"uuid": ADDRESS_TYPE_UUID},
-                        "visibility": {"user_key": "PUBLIC"},
+                        "visibility": {"scope": "PUBLIC"},
                     }
                 ),
             ],
