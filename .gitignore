@@ -17,3 +17,6 @@ dist
 .vscode/*
 !.vscode/launch.json
 !.vscode/tasks.json
+
+# Dev environment
+secrets.env

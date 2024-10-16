@@ -20,6 +20,50 @@
                 "FASTRAMQPI__AUTH_SERVER":"http://localhost:5000/auth",
                 "FASTRAMQPI__AMQP__URL":"amqp://guest:guest@localhost:5672/",
             }
+        },
+        {
+            "name": "Silkeborg test",
+            // To run local code against Silkeborg data use k9s.
+            // Port-forward the ingress-nginx-controller to port 443 and set
+            // "127.0.0.1 testos2mo.silkeborg.dk" in your /etc/hosts file.
+            //
+            // Create the file secrets.env and put the client secret like:
+            //FASTRAMQPI__CLIENT_SECRET=<CLIENT SECRET HERE>
+            "envFile": "${workspaceFolder}/secrets.env",
+
+            "type": "python",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "request": "launch",
+            "module": "uvicorn",
+            "justMyCode": false,
+            "args": [
+                "os2sync_export.main:create_app",
+                "--host",
+                "0.0.0.0",
+                "--reload"
+            ],
+            "env": {
+                "FASTRAMQPI__MO_URL":"https://testos2mo.silkeborg.dk",
+                "FASTRAMQPI__AUTH_SERVER":"https://testos2mo.silkeborg.dk/auth",
+                // Use local dev msg_broker to avoid collecting events from the real queue
+                "FASTRAMQPI__AMQP__URL":"amqp://guest:guest@localhost:5672/",
+                "FASTRAMQPI__AUTH_REALM":     "mo",
+                "OS2SYNC_API_URL":            "stub",
+                // Silkeborgs settings:
+                "Municipality":               "29189641",
+                "FASTRAMQPI__CLIENT_ID":      "integration_os2sync_export",
+                "LOG_LEVEL":                  "INFO",
+                "top_unit_uuid":              "c1245637-9f9c-420d-8774-92caddf3d190",
+                "filter_hierarchy_names":     "[\"Linjeorganisation\", \"Selvejet institution\"]",
+                "uuid_from_it_systems":       "[\"FK-org uuid\",\"SD UUID\", \"Omada - AD GUID\"]",
+                "phone_scope_classes":        "[\"05a6f153-4fa9-29fb-b063-3ecb57db1313\", \"eac1f99b-d1aa-8875-4f76-310b2087b288\"]",
+                "landline_scope_classes":     "[\"d6edb35f-9d08-16ef-ed80-d8164b31d9cf\"]",
+                "user_key_it_system_names":   "[\"Omada - LOGIN\"]",
+                "filter_users_by_it_system":  "true",
+                "sync_cpr":                   "true",
+                "sync_managers":              "true",
+                "autowash":                   "true",
+            }
         }
     ]
 }
