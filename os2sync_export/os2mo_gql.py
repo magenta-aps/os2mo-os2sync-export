@@ -142,9 +142,7 @@ def choose_public_address(
         return None
     # Filter visibility
     candidates_filtered = [
-        c
-        for c in candidates
-        if c.visibility is None or c.visibility.user_key == "PUBLIC"
+        c for c in candidates if c.visibility is None or c.visibility.scope == "PUBLIC"
     ]
 
     try:

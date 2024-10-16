@@ -27,21 +27,21 @@ query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
               name
             }
           }
-          email: addresses {
-            address_type(filter: { scope: "EMAIL" }) {
+          email: addresses(filter: { address_type: { scope: "EMAIL" } }) {
+            address_type {
               uuid
             }
             visibility {
-              user_key
+              scope
             }
             value
           }
-          phone: addresses {
-            address_type(filter: { scope: "PHONE" }) {
+          phone: addresses(filter: { address_type: { scope: "PHONE" } }) {
+            address_type {
               uuid
             }
             visibility {
-              user_key
+              scope
             }
             value
           }
