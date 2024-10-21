@@ -666,7 +666,9 @@ async def get_sts_orgunit(
                     settings.uuid_from_it_systems,
                     settings.user_key_it_system_names,
                 )
-                manager_uuid = first(fk_org_accounts)["uuid"]
+                manager_uuid_from_it_accounts = first(fk_org_accounts)["uuid"]
+                # Use managers mo uuid in case there are no fk-org ituser
+                manager_uuid = manager_uuid_from_it_accounts or manager_uuid
             sts_org_unit["ManagerUuid"] = manager_uuid
 
     if settings.enable_kle and has_kle():
