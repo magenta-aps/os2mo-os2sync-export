@@ -131,7 +131,7 @@ class Position(BaseModel):
 
 class User(BaseModel):
     Uuid: UUID
-    ShortKey: str | None = None  # Not in use yet so always None:
+    ShortKey: str | None = None  # Not in use yet so always None
     UserId: str  # Username
 
     Person: Person
@@ -139,9 +139,9 @@ class User(BaseModel):
     PhoneNumber: str | None
     Landline: str | None
     Email: str | None
-    RacfID: str | None
-    Location: str | None
-    FMKID: str | None
+    Location: str | None = None  # Not in use yet so always None
+    RacfID: str | None = None  # Not in use yet so always None
+    FMKID: str | None = None  # Not in use yet so always None
 
     DateTime: datetime | None = None  # Registration time for os2sync - never set this
 

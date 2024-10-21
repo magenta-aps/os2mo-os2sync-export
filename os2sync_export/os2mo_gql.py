@@ -207,9 +207,6 @@ def convert_to_os2sync(
         PhoneNumber=mobile,
         Landline=landline,
         Email=email,
-        Location="TODO",
-        FMKID=None,
-        RacfID=None,
     )
 
 
