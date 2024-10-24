@@ -169,3 +169,37 @@ query FindEngagementPerson($uuid: UUID!) {
     }
   }
 }
+
+query FindFKItsystem {
+  itsystems(filter: {user_keys: "FK-ORG-UUID"}) {
+    objects {
+      uuid
+    }
+  }
+}
+
+mutation CreateITUser(
+  $external_id: String!
+  $itsystem: UUID!
+  $person: UUID!
+  $user_key: String!
+  $from: DateTime!
+) {
+  ituser_create(
+    input: {
+      validity: { from: $from }
+      user_key: $user_key
+      itsystem: $itsystem
+      external_id: $external_id
+      person: $person
+    }
+  ) {
+    uuid
+  }
+}
+
+mutation TerminateITUser($uuid: UUID!, $to: DateTime!) {
+  ituser_terminate(input: { uuid: $uuid, to: $to }) {
+    uuid
+  }
+}

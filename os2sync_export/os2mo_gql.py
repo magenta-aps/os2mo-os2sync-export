@@ -355,3 +355,8 @@ def find_object_person(
     validities = one(object_info.objects).validities  # type: ignore [attr-defined]
     person_uuids = {o.uuid for org in validities if org.person for o in org.person}
     return person_uuids
+
+
+async def find_fk_itsystem_uuid(graphql_client: GraphQLClient):
+    res = await graphql_client.find_f_k_itsystem()
+    return one(res.objects).uuid

@@ -50,7 +50,7 @@ async def read_all_org_units(
 
     logger.info(f"Aktive Orgenheder fundet i OS2MO {len(os2mo_uuids_present)}")
 
-    os2mo_uuids_present = tqdm(
+    os2mo_uuids_present = tqdm(  # type: ignore
         os2mo_uuids_present, desc="Reading org_units from OS2MO", unit="org_unit"
     )
 
@@ -107,7 +107,7 @@ async def read_all_users(
 
     logger.info(f"Medarbejdere fundet i OS2Mo: {len(os2mo_uuids_present)}")
 
-    os2mo_uuids_present = tqdm(
+    os2mo_uuids_present = tqdm(  # type: ignore
         os2mo_uuids_present, desc="Reading users from OS2MO", unit="user"
     )
 
