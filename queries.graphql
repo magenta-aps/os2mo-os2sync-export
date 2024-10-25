@@ -203,3 +203,28 @@ mutation TerminateITUser($uuid: UUID!, $to: DateTime!) {
     uuid
   }
 }
+
+### Used for finding an fk_org user in MO. It might have its uuid from an it-account and it might have it from the MO users UUID
+### If neither exists or there are no active engagements we can delete the user from fk-org.
+query LocateFKUser($user_keys: String!, $uuid: UUID!) {
+  itusers(filter: { user_keys: [$user_keys] }) {
+    objects {
+      current {
+        person {
+          engagements{
+            uuid
+          }
+        }
+      }
+    }
+  }
+  employees(filter: { uuids: [$uuid] }) {
+    objects {
+      current {
+        engagements {
+          uuid
+        }
+      }
+    }
+  }
+}
