@@ -5,7 +5,9 @@ query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
   employees(filter: { uuids: [$uuid] }) {
     objects {
       current {
-        fk_org_uuids: itusers(filter: { itsystem: { user_keys: "FK-ORG-UUID" } }) {
+        fk_org_uuids: itusers(
+          filter: { itsystem: { user_keys: "FK-ORG-UUID" } }
+        ) {
           user_key
           external_id
         }
