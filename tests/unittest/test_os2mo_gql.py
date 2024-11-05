@@ -268,6 +268,38 @@ def test_convert_to_os2sync_extension_job_function(
         assert os2sync_user.Positions[0].Name == "Udvikler"
 
 
+@pytest.mark.parametrize("work_address_names", ([], ["Henvendelsessted"]))
+def test_convert_to_os2sync_work_address(work_address_names, set_settings):
+    settings = set_settings(employee_engagement_address=work_address_names)
+    mo_it_user = BASE_ITUSER_RESPONSE.copy()
+    mo_it_user.engagement = [
+        ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement(
+            **{
+                "org_unit": [
+                    {
+                        "uuid": uuid4(),
+                        "itusers": [],
+                        "addresses": [
+                            {
+                                "address_type": {"name": "Henvendelsessted"},
+                                "value": "Her",
+                            }
+                        ],
+                    }
+                ],
+                "job_function": {"name": "Udvikler"},
+            }
+        )
+    ]
+    os2sync_user = convert_to_os2sync(
+        settings, mo_it_user, UUID(mo_it_user.external_id)
+    )
+    if work_address_names:
+        assert os2sync_user.Location == "Her"
+    else:
+        assert os2sync_user.Location is None
+
+
 def test_convert_to_os2sync_engagement_org_unit_uuid(mock_settings):
     fk_org_unit_uuid = uuid4()
     mo_it_user = BASE_ITUSER_RESPONSE.copy()

@@ -36,7 +36,10 @@ async def check_user_fk_org_it_accounts(
     # See if the uuid matches a user in MO. The it_user_keys field is set to "irrelevant" as we are only interested in fk-org it-user accounts
     try:
         res, _ = await read_fk_users_from_person(
-            graphql_client=graphql_client, uuid=fk_org_uuid, it_user_keys=["Irrelevant"]
+            graphql_client=graphql_client,
+            uuid=fk_org_uuid,
+            it_user_keys=["Irrelevant"],
+            read_work_address=False,
         )
         fk_account = only(res)
     except ValueError:

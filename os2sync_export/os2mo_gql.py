@@ -58,13 +58,16 @@ logger = structlog.stdlib.get_logger()
 
 
 async def read_fk_users_from_person(
-    graphql_client: GraphQLClient, uuid: UUID, it_user_keys: list[str]
+    graphql_client: GraphQLClient,
+    uuid: UUID,
+    it_user_keys: list[str],
+    read_work_address: bool,
 ) -> tuple[
     list[ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids],
     list[ReadUserITAccountsEmployeesObjectsCurrentItusers],
 ]:
     it_accounts = await graphql_client.read_user_i_t_accounts(
-        uuid=uuid, it_user_keys=it_user_keys
+        uuid=uuid, it_user_keys=it_user_keys, work_address=read_work_address
     )
     current_accounts = one(it_accounts.objects).current
     if current_accounts is None:
@@ -200,6 +203,16 @@ def convert_to_os2sync(
         )
         for i in it.engagement or []
     ]
+    location = None
+    if settings.employee_engagement_address and it.engagement:
+        # TODO: find for primary engagement - only relevant once there are more than one engagement
+        work_unit = one(first(it.engagement).org_unit)
+        address = [
+            a
+            for a in work_unit.addresses or []
+            if a.address_type.name in settings.employee_engagement_address
+        ]
+        location = first(address).value if address else None
 
     return User(
         Uuid=uuid,
@@ -209,6 +222,7 @@ def convert_to_os2sync(
         PhoneNumber=mobile,
         Landline=landline,
         Email=email,
+        Location=location,
     )
 
 
@@ -226,6 +240,7 @@ async def sync_mo_user_to_fk_org(
         graphql_client=graphql_client,
         uuid=uuid,
         it_user_keys=settings.it_system_user_keys,
+        read_work_address=True if settings.employee_engagement_address else False,
     )
     logger.info(
         "Found the following itusers",
