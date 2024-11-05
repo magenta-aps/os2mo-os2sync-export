@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
 
-query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
+query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!], $work_address: Boolean = false) {
   employees(filter: { uuids: [$uuid] }) {
     objects {
       current {
@@ -26,6 +26,15 @@ query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
               uuid
               itusers(filter: { user_keys: "FK-ORG-UUID" }) {
                 user_key
+              }
+              addresses @include(if: $work_address) {
+                address_type {
+                  name
+                }
+                visibility {
+                  scope
+                }
+                value
               }
             }
             job_function {
