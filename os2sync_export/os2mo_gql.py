@@ -194,7 +194,9 @@ def convert_to_os2sync(
             Name=i.extension_3
             if settings.use_extension_field_as_job_function and i.extension_3
             else i.job_function.name,
-            OrgUnitUuid=one(i.org_unit).uuid,
+            OrgUnitUuid=UUID(first(one(i.org_unit).itusers).user_key)
+            if one(i.org_unit).itusers
+            else one(i.org_unit).uuid,
         )
         for i in it.engagement or []
     ]
