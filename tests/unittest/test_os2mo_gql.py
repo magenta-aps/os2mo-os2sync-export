@@ -268,8 +268,15 @@ def test_convert_to_os2sync_extension_job_function(
         assert os2sync_user.Positions[0].Name == "Udvikler"
 
 
-@pytest.mark.parametrize("work_address_names", ([], ["Henvendelsessted"]))
-def test_convert_to_os2sync_work_address(work_address_names, set_settings):
+@pytest.mark.parametrize(
+    "work_address_names, expected",
+    (
+        ([], None),
+        (["Henvendelsessted"], "Henvendelse Her"),
+        (["Post", "Henvendelsessted"], "Post Her"),
+    ),
+)
+def test_convert_to_os2sync_work_address(work_address_names, expected, set_settings):
     settings = set_settings(employee_engagement_address=work_address_names)
     mo_it_user = BASE_ITUSER_RESPONSE.copy()
     mo_it_user.engagement = [
@@ -282,8 +289,12 @@ def test_convert_to_os2sync_work_address(work_address_names, set_settings):
                         "addresses": [
                             {
                                 "address_type": {"name": "Henvendelsessted"},
-                                "value": "Her",
-                            }
+                                "value": "Henvendelse Her",
+                            },
+                            {
+                                "address_type": {"name": "Post"},
+                                "value": "Post Her",
+                            },
                         ],
                     }
                 ],
@@ -294,10 +305,7 @@ def test_convert_to_os2sync_work_address(work_address_names, set_settings):
     os2sync_user = convert_to_os2sync(
         settings, mo_it_user, UUID(mo_it_user.external_id)
     )
-    if work_address_names:
-        assert os2sync_user.Location == "Her"
-    else:
-        assert os2sync_user.Location is None
+    assert os2sync_user.Location == expected
 
 
 def test_convert_to_os2sync_engagement_org_unit_uuid(mock_settings):
@@ -618,7 +626,7 @@ def test_filter_relevant_orgunit_hierarchy(set_settings):
 
 
 def test_filter_relevant_orgunit_wrong_hierarchy(set_settings):
-    """Test that units belonging to the another org unit hierarchy is not synced"""
+    """Test that units belonging to the anotHenvendelse Her org unit hierarchy is not synced"""
     settings = set_settings(
         top_unit_uuid=TOP_UUID, filter_hierarchy_names=["linjeorganisation", "Ekstern"]
     )
@@ -637,7 +645,7 @@ def test_filter_relevant_orgunit_wrong_hierarchy(set_settings):
 
 
 def test_filter_relevant_orgunit_wrong_hierarchy_but_has_ituser(set_settings):
-    """Test that units belonging to the another org unit hierarchy is not synced"""
+    """Test that units belonging to the anotHenvendelse Her org unit hierarchy is not synced"""
     settings = set_settings(
         top_unit_uuid=TOP_UUID, filter_hierarchy_names=["linjeorganisation", "Ekstern"]
     )
@@ -935,7 +943,7 @@ def test_find_org_unit_or_person(response_model):
         objects=[
             {
                 "validities": [
-                    # There can be several intervals in which an object is linked to an org_unit or a person
+                    # THenvendelse Here can be several intervals in which an object is linked to an org_unit or a person
                     {"org_unit": [{"uuid": unit_uuid}, {"uuid": unit_uuid}]},
                     # It is unlikely that both org_unit and person are used at the same time, but it doesn't affect the test
                     {
@@ -964,7 +972,7 @@ def test_find_org_unit_or_person(response_model):
     ),
 )
 def test_find_org_unit(response_model):
-    """Test that every org_unit linked to a manager or KLE is returned. Though it is probably rare a manager could switch from one orgunit to another."""
+    """Test that every org_unit linked to a manager or KLE is returned. Though it is probably rare a manager could switch from one orgunit to anotHenvendelse Her."""
     unit1_uuid = uuid4()
     unit2_uuid = uuid4()
     address_info = response_model(

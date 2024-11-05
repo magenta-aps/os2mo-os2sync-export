@@ -207,12 +207,21 @@ def convert_to_os2sync(
     if settings.employee_engagement_address and it.engagement:
         # TODO: find for primary engagement - only relevant once there are more than one engagement
         work_unit = one(first(it.engagement).org_unit)
-        address = [
+        addresses = [
             a
             for a in work_unit.addresses or []
             if a.address_type.name in settings.employee_engagement_address
         ]
-        location = first(address).value if address else None
+        location = (
+            min(
+                addresses,
+                key=lambda a: settings.employee_engagement_address.index(
+                    a.address_type.name
+                ),
+            ).value
+            if addresses
+            else None
+        )
 
     return User(
         Uuid=uuid,
