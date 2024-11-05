@@ -70,7 +70,10 @@ BASE_ITUSER_RESPONSE = ReadUserITAccountsEmployeesObjectsCurrentItusers(
     ],
     engagement=[
         ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement(
-            **{"job_function": {"name": "tester"}, "org_unit": [{"uuid": uuid4()}]}  # type: ignore
+            **{
+                "job_function": {"name": "tester"},
+                "org_unit": [{"uuid": uuid4(), "itusers": []}],
+            }  # type: ignore
         )
     ],
 )
@@ -134,7 +137,7 @@ async def test_sync_mo_user_to_fk_one_it_user(
                                 ],
                                 "engagement": [
                                     {
-                                        "org_unit": [{"uuid": uuid4()}],
+                                        "org_unit": [{"uuid": uuid4(), "itusers": []}],
                                         "job_function": {
                                             "name": "open source developer"
                                         },
@@ -251,7 +254,7 @@ def test_convert_to_os2sync_extension_job_function(
         ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement(
             **{
                 "extension_3": "Konge",
-                "org_unit": [{"uuid": uuid4()}],
+                "org_unit": [{"uuid": uuid4(), "itusers": []}],
                 "job_function": {"name": "Udvikler"},
             }
         )
@@ -263,6 +266,26 @@ def test_convert_to_os2sync_extension_job_function(
         assert os2sync_user.Positions[0].Name == "Konge"
     else:
         assert os2sync_user.Positions[0].Name == "Udvikler"
+
+
+def test_convert_to_os2sync_engagement_org_unit_uuid(mock_settings):
+    fk_org_unit_uuid = uuid4()
+    mo_it_user = BASE_ITUSER_RESPONSE.copy()
+    mo_it_user.engagement = [
+        ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement(
+            **{
+                "extension_3": "Konge",
+                "org_unit": [
+                    {"uuid": uuid4(), "itusers": [{"user_key": str(fk_org_unit_uuid)}]}
+                ],
+                "job_function": {"name": "Udvikler"},
+            }
+        )
+    ]
+    os2sync_user = convert_to_os2sync(
+        mock_settings, mo_it_user, UUID(mo_it_user.external_id)
+    )
+    assert os2sync_user.Positions[0].OrgUnitUuid == fk_org_unit_uuid
 
 
 def test_convert_and_filter_same_uuid(mock_settings):
