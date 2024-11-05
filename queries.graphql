@@ -22,6 +22,9 @@ query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
             extension_3
             org_unit {
               uuid
+              itusers(filter: { user_keys: "FK-ORG-UUID" }) {
+                user_key
+              }
             }
             job_function {
               name
