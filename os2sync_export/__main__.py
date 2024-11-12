@@ -50,12 +50,8 @@ async def read_all_org_units(
 
     logger.info(f"Aktive Orgenheder fundet i OS2MO {len(os2mo_uuids_present)}")
 
-    os2mo_uuids_present = tqdm(  # type: ignore
-        os2mo_uuids_present, desc="Reading org_units from OS2MO", unit="org_unit"
-    )
-
     # Create os2sync payload for all org_units:
-    org_units = asyncio.gather(
+    org_units = await asyncio.gather(
         *[
             os2mo.get_sts_orgunit(
                 UUID(i), settings=settings, graphql_session=graphql_session
@@ -106,10 +102,6 @@ async def read_all_users(
     os2mo_uuids_present = read_all_user_uuids(org_uuid)
 
     logger.info(f"Medarbejdere fundet i OS2Mo: {len(os2mo_uuids_present)}")
-
-    os2mo_uuids_present = tqdm(  # type: ignore
-        os2mo_uuids_present, desc="Reading users from OS2MO", unit="user"
-    )
 
     tasks = [
         os2mo.get_sts_user(uuid, graphql_session=graphql_session, settings=settings)
@@ -222,3 +214,25 @@ async def cleanup_duplicate_engagements(
         `docker exec -it os2sync_export bash -c "printf '{' '.join(str(u) for u in user_uuids)}' | xargs -d' ' -I % curl -X POST localhost:8000/trigger/user/%"`
         """
     )
+
+
+async def cleanup_duplicates(
+    settings: Settings,
+    graphql_session: AsyncClientSession,
+    os2sync_client: OS2SyncClient,
+):
+    orgunits = await read_all_org_units(
+        settings=settings, graphql_session=graphql_session
+    )
+
+    for uuid, unit in orgunits.items():
+        os2sync_client.passivate_orgunit(uuid)
+        os2sync_client.upsert_org_unit(unit)
+
+    mo_users = await read_all_users(
+        graphql_session=graphql_session,
+        settings=settings,
+    )
+    for uuid, users in mo_users.items():
+        os2sync_client.passivate_user(uuid)
+        os2sync_client.update_users(uuid, users)
