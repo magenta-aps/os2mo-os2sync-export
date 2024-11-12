@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+from datetime import datetime
+from functools import lru_cache
 from typing import Iterable
 from uuid import UUID
 
@@ -76,16 +78,32 @@ async def read_fk_users_from_person(
 
 async def ensure_mo_fk_org_user_exists(
     graphql_client: GraphQLClient,
+    mo_person_uuid: UUID,
     os2sync_user: User,
     fk_org_it_users: list[ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids],
 ):
     fk_org_account = only(
         filter(lambda f: f.external_id == os2sync_user.Uuid, fk_org_it_users)
     )
+    fk_org_itsystem_uuid = await find_fk_itsystem_uuid(graphql_client)
+
     if fk_org_account is None:
-        # New user, create it-user in MO. This should trigger a new sync of that user.
-        pass
-    pass
+        await graphql_client.create_i_t_user(
+            external_id=str(os2sync_user.Uuid),
+            itsystem=fk_org_itsystem_uuid,
+            person=mo_person_uuid,
+            user_key=os2sync_user.UserId,
+            from_=datetime.now(),
+        )
+    else:
+        # In case the username has changed for the user we need to update the it-account
+        if (
+            os2sync_user.UserId != fk_org_account.user_key
+            and fk_org_account.external_id
+        ):
+            pass
+            # await graphql_client.terminate_i_t_user(uuid=fk_org_account.uuid, to=datetime.now())
+            # await graphql_client.create_i_t_user(external_id=fk_org_account.external_id, itsystem=fk_org_itsystem_uuid, person=mo_person_uuid, user_key=os2sync_user.UserId, from_= datetime.now())
 
 
 async def delete_fk_org_user(
@@ -128,9 +146,12 @@ def convert_and_filter(
 
 
 async def delete_mo_fk_org_users(
-    graphql_client: GraphQLClient, external_id: UUID
+    graphql_client: GraphQLClient,
+    fk_org_users: list[ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids],
+    external_id: UUID,
 ) -> None:
-    pass
+    it_user = one(f for f in fk_org_users if UUID(f.external_id) == external_id)
+    await graphql_client.terminate_i_t_user(it_user.uuid, datetime.now())
 
 
 def choose_public_address(
@@ -235,10 +256,15 @@ async def sync_mo_user_to_fk_org(
     )
     updates_fk, deletes_fk = convert_and_filter(settings, fk_org_users, it_users)
     for os2sync_user in updates_fk:
-        await ensure_mo_fk_org_user_exists(graphql_client, os2sync_user, fk_org_users)
+        await ensure_mo_fk_org_user_exists(
+            graphql_client,
+            mo_person_uuid=uuid,
+            os2sync_user=os2sync_user,
+            fk_org_it_users=fk_org_users,
+        )
         os2sync_client.update_user(os2sync_user)
     for deleted_user_uuid in deletes_fk:
-        await delete_mo_fk_org_users(graphql_client, deleted_user_uuid)
+        await delete_mo_fk_org_users(graphql_client, fk_org_users, deleted_user_uuid)
         os2sync_client.delete_user(deleted_user_uuid)
     return updates_fk, deletes_fk
 
@@ -359,6 +385,7 @@ def find_object_person(
     return person_uuids
 
 
+@lru_cache()
 async def find_fk_itsystem_uuid(graphql_client: GraphQLClient):
     res = await graphql_client.find_f_k_itsystem()
     return one(res.objects).uuid
