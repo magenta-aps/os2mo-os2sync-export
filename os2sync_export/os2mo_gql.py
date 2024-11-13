@@ -96,14 +96,16 @@ async def ensure_mo_fk_org_user_exists(
             from_=datetime.now(),
         )
     else:
-        # In case the username has changed for the user we need to update the it-account
+        # In case the username has changed for the user we need to update the it-account - but only the username!
         if (
             os2sync_user.UserId != fk_org_account.user_key
             and fk_org_account.external_id
         ):
-            pass
-            # await graphql_client.terminate_i_t_user(uuid=fk_org_account.uuid, to=datetime.now())
-            # await graphql_client.create_i_t_user(external_id=fk_org_account.external_id, itsystem=fk_org_itsystem_uuid, person=mo_person_uuid, user_key=os2sync_user.UserId, from_= datetime.now())
+            await graphql_client.update_it_user_user_key(
+                uuid=fk_org_account.uuid,
+                from_=datetime.now(),
+                user_key=os2sync_user.UserId,
+            )
 
 
 async def delete_fk_org_user(
