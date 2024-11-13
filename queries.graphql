@@ -207,3 +207,15 @@ mutation TerminateITUser($uuid: UUID!, $to: DateTime!) {
     uuid
   }
 }
+
+mutation UpdateItUserUserKey(
+  $uuid: UUID
+  $from: DateTime
+  $user_key: String
+) {
+  ituser_update(
+    input: { validity: { from: $from }, uuid: $uuid, user_key: $user_key }
+  ) {
+    uuid
+  }
+}
