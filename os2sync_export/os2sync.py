@@ -36,6 +36,9 @@ class OS2SyncClient:
     def os2sync_delete(self, url, **params):
         raise NotImplementedError
 
+    def os2sync_passivate(self, url, **params):
+        raise NotImplementedError
+
     def _get_os2sync_session(self):
         session = requests.Session()
 
@@ -75,6 +78,16 @@ class OS2SyncClient:
 
     def delete_user(self, uuid: UUID):
         self.os2sync_delete("{BASE}/user/" + str(uuid))
+
+    def passivate_orgunit(self, uuid: UUID):
+        if uuid == self.settings.top_unit_uuid:
+            logger.error("Received event to passivate top_unit_uuid - ignoring.")
+            return
+        logger.info("passivate orgunit %s", uuid)
+        self.os2sync_passivate("{BASE}/orgUnit/passiver/" + str(uuid))
+
+    def passivate_user(self, uuid: UUID):
+        self.os2sync_passivate("{BASE}/user/passiver/" + str(uuid))
 
     def upsert_org_unit(self, org_unit: OrgUnit) -> None:
         try:
@@ -164,6 +177,9 @@ class ReadOnlyOS2SyncClient(OS2SyncClient):
     def os2sync_delete(self, url, **params):
         logger.info("Read-only attempted delete", url=url, params=params)
 
+    def os2sync_passivate(self, url, **params):
+        logger.info("Read-only attempted passivate", url=url, params=params)
+
 
 class WritableOS2SyncClient(OS2SyncClient):
     def os2sync_delete(self, url, **params):
@@ -178,6 +194,12 @@ class WritableOS2SyncClient(OS2SyncClient):
                 return r
 
     def os2sync_post(self, url, **params):
+        url = self.os2sync_url(url)
+        r = self.session.post(url, **params)
+        r.raise_for_status()
+        return r
+
+    def os2sync_passivate(self, url, **params):
         url = self.os2sync_url(url)
         r = self.session.post(url, **params)
         r.raise_for_status()
