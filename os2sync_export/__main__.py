@@ -221,18 +221,23 @@ async def cleanup_duplicates(
     graphql_session: AsyncClientSession,
     os2sync_client: OS2SyncClient,
 ):
+    logger.info("Starting cleanup of duplicates")
+    logger.info("Reading all orgunits")
     orgunits = await read_all_org_units(
         settings=settings, graphql_session=graphql_session
     )
-
+    logger.info("Passivating and synchronizing orgunits")
     for uuid, unit in orgunits.items():
         os2sync_client.passivate_orgunit(uuid)
         os2sync_client.upsert_org_unit(unit)
-
+    logger.info("Read all users from MO")
     mo_users = await read_all_users(
         graphql_session=graphql_session,
         settings=settings,
     )
+    logger.info("Passivating and synchronizing users")
     for uuid, user in mo_users.items():
         os2sync_client.passivate_user(uuid)
         os2sync_client.update_users(uuid, [user])
+
+    logger.info("Cleanup Done")
