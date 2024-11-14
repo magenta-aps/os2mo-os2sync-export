@@ -233,6 +233,6 @@ async def cleanup_duplicates(
         graphql_session=graphql_session,
         settings=settings,
     )
-    for uuid, users in mo_users.items():
+    for uuid, user in mo_users.items():
         os2sync_client.passivate_user(uuid)
-        os2sync_client.update_users(uuid, users)
+        os2sync_client.update_users(uuid, [user])
