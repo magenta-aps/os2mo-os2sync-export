@@ -526,6 +526,8 @@ def addresses_to_orgunit(orgunit, addresses, landline_scope_classes: List[UUID] 
             orgunit["ContactOpenHours"] = a["name"]
         elif address_type_is(a, user_key="DtrId"):
             orgunit["DtrId"] = a["name"]
+        elif a["address_type"]["scope"] == "WWW":
+            orgunit["Url"] = a["name"]
 
 
 def filter_kle(aspect: str, kle) -> List[str]:
