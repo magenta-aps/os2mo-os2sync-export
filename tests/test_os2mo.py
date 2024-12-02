@@ -691,6 +691,8 @@ def test_address_to_orgunit():
     location_value = "location_value"
     contact_value = "contact_value"
     post_value = str(uuid4())
+    landline_value = "landline value"
+    landline_uuid = str(uuid4())
     orgunit = {}
     addresses_to_orgunit(
         orgunit,
@@ -710,8 +712,18 @@ def test_address_to_orgunit():
                     "user_key": "Something-something-post-adresse",
                 },
             },
+            {
+                "name": landline_value,
+                "address_type": {
+                    "scope": "PHONE",
+                    "user_key": "Something-something-landline",
+                    "uuid": landline_uuid,
+                },
+            },
         ],
+        landline_scope_classes=[landline_uuid],
     )
     assert orgunit["Location"] == location_value
     assert orgunit["Contact"] == contact_value
     assert orgunit["Post"] == post_value
+    assert orgunit["Landline"] == landline_value

@@ -324,7 +324,11 @@ def mo_orgunit_to_os2sync(
 
     ## Reuse old logic for selecting addresses. Create an empty dictionary which is then mutated by addresses_to_orgunit to include the correct os2sync-field to address mapping.
     addresses: dict[str, str] = dict()
-    addresses_to_orgunit(addresses, addresses=jsonable_encoder(orgunit_data.addresses))
+    addresses_to_orgunit(
+        addresses,
+        addresses=jsonable_encoder(orgunit_data.addresses),
+        landline_scope_classes=settings.landline_scope_classes,
+    )
 
     return OrgUnit(
         Uuid=unit_fk_org_uuid,

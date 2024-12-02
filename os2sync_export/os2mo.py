@@ -502,14 +502,17 @@ def address_type_is(
     )
 
 
-def addresses_to_orgunit(orgunit, addresses):
+def addresses_to_orgunit(orgunit, addresses, landline_scope_classes: List[UUID] = []):
     for a in addresses:
         if a["address_type"]["scope"] == "EMAIL":
             orgunit["Email"] = a["name"]
         elif a["address_type"]["scope"] == "EAN":
             orgunit["Ean"] = a["name"]
         elif a["address_type"]["scope"] == "PHONE":
-            orgunit["PhoneNumber"] = a["name"]
+            if a["address_type"]["uuid"] in landline_scope_classes:
+                orgunit["Landline"] = a["name"]
+            else:
+                orgunit["PhoneNumber"] = a["name"]
         elif address_type_is(a, user_key="Contact", scope="DAR"):
             orgunit["Contact"] = a["name"]
         elif address_type_is(a, user_key="Location", scope="DAR"):
