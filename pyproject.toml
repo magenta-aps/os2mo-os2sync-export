@@ -24,7 +24,7 @@ fastapi = "0.115.0"
 websockets = "^13.1" # for ariadne
 click = "^8.1.7"
 tqdm = "^4.66.5"
-types-tqdm = "^4.66.0.20240417"
+types-tqdm = "^4.67.0.20241220"
 
 [tool.poetry.group.pre-commit.dependencies]
 pre-commit = "^3.8.0"
