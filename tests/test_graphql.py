@@ -90,7 +90,7 @@ async def test_get_sts_user(
 ):
     gql_mock = AsyncMock()
     gql_mock.execute.return_value = {
-        "employees": [{"objects": [{"itusers": query_response}]}]
+        "employees": {"objects": [{"current": {"itusers": query_response}}]}
     }
     settings = set_settings(
         uuid_from_it_systems=["FK-ORG UUID"],
@@ -156,7 +156,9 @@ async def test_get_sts_user_duplicate_username_no_uuid_itsystem(
 
     gql_mock = AsyncMock()
     gql_mock.execute.return_value = {
-        "employees": [{"objects": [{"itusers": query_response_frederikshavn}]}]
+        "employees": {
+            "objects": [{"current": {"itusers": query_response_frederikshavn}}]
+        }
     }
     settings = set_settings(
         uuid_from_it_systems=["FK-ORG UUID"],
@@ -179,7 +181,9 @@ async def test_get_sts_user_no_it_accounts(
 ):
     """Test that users without it-accounts creates one fk-org account"""
     gql_mock = AsyncMock()
-    gql_mock.execute.return_value = {"employees": [{"objects": [{"itusers": []}]}]}
+    gql_mock.execute.return_value = {
+        "employees": {"objects": [{"current": {"itusers": []}}]}
+    }
 
     await get_sts_user(
         mo_uuid=mo_uuid, graphql_session=gql_mock, settings=mock_settings

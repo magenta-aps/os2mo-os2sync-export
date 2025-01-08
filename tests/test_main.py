@@ -192,15 +192,17 @@ async def test_is_relevant(set_settings):
     graphql_session = AsyncMock()
     graphql_session.execute.side_effect = [
         {
-            "org_units": [
-                {
-                    "current": {
-                        "ancestors": [{"uuid": str(top_unit_uuid)}],
-                        "org_unit_hierarchy_model": {"name": line_org},
-                        "itusers": [],
+            "org_units": {
+                "objects": [
+                    {
+                        "current": {
+                            "ancestors": [{"uuid": str(top_unit_uuid)}],
+                            "org_unit_hierarchy_model": {"name": line_org},
+                            "itusers": [],
+                        }
                     }
-                }
-            ]
+                ]
+            }
         }
     ]
     assert await is_relevant(
@@ -212,7 +214,11 @@ async def test_is_not_below_top_unit(mock_settings):
     graphql_session = AsyncMock()
     unit_uuid = uuid4()
     graphql_session.execute.side_effect = [
-        {"org_units": [{"current": {"ancestors": [{"uuid": str(uuid4())}]}}]}
+        {
+            "org_units": {
+                "objects": [{"current": {"ancestors": [{"uuid": str(uuid4())}]}}]
+            }
+        }
     ]
     assert not await is_relevant(
         graphql_session=graphql_session, unit_uuid=unit_uuid, settings=mock_settings
@@ -229,15 +235,17 @@ async def test_is_relevant_wrong_hierarchy(set_settings):
     graphql_session = AsyncMock()
     graphql_session.execute.side_effect = [
         {
-            "org_units": [
-                {
-                    "current": {
-                        "ancestors": [{"uuid": str(top_unit_uuid)}],
-                        "org_unit_hierarchy_model": {"name": "hidden"},
-                        "itusers": [],
+            "org_units": {
+                "objects": [
+                    {
+                        "current": {
+                            "ancestors": [{"uuid": str(top_unit_uuid)}],
+                            "org_unit_hierarchy_model": {"name": "hidden"},
+                            "itusers": [],
+                        }
                     }
-                }
-            ]
+                ]
+            }
         }
     ]
     assert not await is_relevant(
@@ -258,15 +266,17 @@ async def test_is_relevant_has_it_account(set_settings):
     graphql_session = AsyncMock()
     graphql_session.execute.side_effect = [
         {
-            "org_units": [
-                {
-                    "current": {
-                        "ancestors": [{"uuid": str(top_unit_uuid)}],
-                        "org_unit_hierarchy_model": {"name": "hidden"},
-                        "itusers": [{"itsystem": {"name": it_system_name}}],
+            "org_units": {
+                "objects": [
+                    {
+                        "current": {
+                            "ancestors": [{"uuid": str(top_unit_uuid)}],
+                            "org_unit_hierarchy_model": {"name": "hidden"},
+                            "itusers": [{"itsystem": {"name": it_system_name}}],
+                        }
                     }
-                }
-            ]
+                ]
+            }
         }
     ]
     assert await is_relevant(
