@@ -21,9 +21,9 @@ requests = "^2.32.3"
 uvicorn = "^0.31.1"
 os2mo-data-import = "^6.2.2"
 fastapi = "0.115.0"
-websockets = "^13.1" # for ariadne
+websockets = "^14.1" # for ariadne
 click = "^8.1.7"
-tqdm = "^4.67.1"
+tqdm = "^4.66.5"
 types-tqdm = "^4.66.0.20240417"
 
 [tool.poetry.group.pre-commit.dependencies]
