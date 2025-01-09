@@ -697,25 +697,27 @@ async def get_user_it_accounts(
     """Find fk-org user(s) details for the person with given MO uuid"""
     q = gql(
         """
-    query GetITAccounts($uuids: [UUID!]) {
-        employees(uuids: $uuids) {
-            objects {
-              itusers {
-                uuid
-                user_key
-                engagement_uuid
-                itsystem {
-                  name
-                }
+    query GetITAccounts($uuid: UUID!) {
+      employees(filter: { uuids: [$uuid] }) {
+        objects {
+          current {
+            itusers {
+              uuid
+              user_key
+              engagement_uuid
+              itsystem {
+                name
               }
             }
           }
         }
+      }
+    }
     """
     )
-    res = await graphql_session.execute(q, variable_values={"uuids": mo_uuid})
-    objects = one(res["employees"])["objects"]
-    return one(objects)["itusers"]
+    res = await graphql_session.execute(q, variable_values={"uuid": mo_uuid})
+    objects = one(res["employees"]["objects"])
+    return objects["current"]["itusers"]
 
 
 def is_terminated(to_date: str):
@@ -734,25 +736,27 @@ async def check_terminated_accounts(
 ) -> tuple[set[UUID], set[UUID]]:
     q = gql(
         """
-        query GetITAccountEnddate($uuids: [UUID!]) {
-          itusers(uuids: $uuids, from_date: null, to_date: null) {
+        query GetITAccountEnddate($uuid: UUID!) {
+          itusers(filter: { uuids: [$uuid], to_date: null, from_date: null }) {
             objects {
-              employee_uuid
-              org_unit_uuid
-              user_key
-              itsystem{
-                name
-              }
-              validity {
-                to
+              validities {
+                employee_uuid
+                org_unit_uuid
+                user_key
+                itsystem {
+                  name
+                }
+                validity {
+                  to
+                }
               }
             }
           }
         }
         """
     )
-    res = await graphql_session.execute(q, variable_values={"uuids": str(uuid)})
-    res = one(res["itusers"])["objects"]
+    res = await graphql_session.execute(q, variable_values={"uuid": str(uuid)})
+    res = one(res["itusers"]["objects"])["validities"]
     relevant_it_users: Iterator = filter(
         lambda it: it["itsystem"]["name"] in uuid_from_it_systems, res
     )
@@ -805,13 +809,15 @@ async def get_address_org_unit_and_employee_uuids(
 
     q = gql(
         """
-    query GetAddress($uuids: [UUID!]) {
-        addresses(uuids: $uuids, from_date:null, to_date:null) {
-            objects {
-                employee_uuid
-                org_unit_uuid
-            }
+    query GetAddress($uuid: UUID!) {
+      addresses(filter: { uuids: [$uuid], from_date: null, to_date: null }) {
+        objects {
+          validities {
+            employee_uuid
+            org_unit_uuid
+          }
         }
+      }
     }
     """
     )
@@ -819,10 +825,10 @@ async def get_address_org_unit_and_employee_uuids(
     result = await graphql_session.execute(
         q,
         variable_values={
-            "uuids": mo_uuid_str,
+            "uuid": mo_uuid_str,
         },
     )
-    objects = one(result["addresses"])["objects"]
+    objects = one(result["addresses"]["objects"])["validities"]
     employee_uuid = extract_uuid(objects, "employee_uuid")
     org_unit_uuid = extract_uuid(objects, "org_unit_uuid")
     return org_unit_uuid, employee_uuid
@@ -835,13 +841,15 @@ async def get_ituser_org_unit_and_employee_uuids(
 
     q = gql(
         """
-    query GetItUser($uuids: [UUID!]) {
-        itusers(uuids: $uuids, from_date:null, to_date:null) {
-            objects {
-                employee_uuid
-                org_unit_uuid
-            }
+    query GetItUser($uuid: UUID!) {
+      itusers(filter: { uuids: [$uuid], from_date: null, to_date: null }) {
+        objects {
+          validities {
+            employee_uuid
+            org_unit_uuid
+          }
         }
+      }
     }
     """
     )
@@ -849,11 +857,11 @@ async def get_ituser_org_unit_and_employee_uuids(
     result = await graphql_session.execute(
         q,
         variable_values={
-            "uuids": mo_uuid_str,
+            "uuid": mo_uuid_str,
         },
     )
 
-    objects = one(result["itusers"])["objects"]
+    objects = one(result["itusers"]["objects"])["validities"]
     employee_uuid = extract_uuid(objects, "employee_uuid")
     org_unit_uuid = extract_uuid(objects, "org_unit_uuid")
     return org_unit_uuid, employee_uuid
@@ -864,12 +872,15 @@ async def get_manager_org_unit_uuid(graphql_session: AsyncClientSession, mo_uuid
 
     q = gql(
         """
-    query GetManager($uuids: [UUID!]) {
-        managers(uuids: $uuids, from_date:null, to_date:null) {
-            objects {
-                org_unit_uuid
-            }
+    query GetManager($uuid: UUID!) {
+      managers(filter: { uuids: [$uuid], from_date: null, to_date: null }) {
+        objects {
+          validities {
+            employee_uuid
+            org_unit_uuid
+          }
         }
+      }
     }
     """
     )
@@ -877,11 +888,11 @@ async def get_manager_org_unit_uuid(graphql_session: AsyncClientSession, mo_uuid
     result = await graphql_session.execute(
         q,
         variable_values={
-            "uuids": mo_uuid_str,
+            "uuid": mo_uuid_str,
         },
     )
 
-    objects = one(result["managers"])["objects"]
+    objects = one(result["managers"]["objects"])["validities"]
     org_unit_uuid = extract_uuid(objects, "org_unit_uuid")
     return org_unit_uuid
 
@@ -893,12 +904,15 @@ async def get_engagement_employee_uuid(
 
     q = gql(
         """
-    query GetEngagement($uuids: [UUID!]) {
-        engagements(uuids: $uuids, from_date:null, to_date:null) {
-            objects {
-                employee_uuid
-            }
+    query GetEngagement($uuid: UUID!) {
+      engagements(filter: { uuids: [$uuid], from_date: null, to_date: null }) {
+        objects {
+          validities {
+            employee_uuid
+            org_unit_uuid
+          }
         }
+      }
     }
     """
     )
@@ -906,11 +920,11 @@ async def get_engagement_employee_uuid(
     result = await graphql_session.execute(
         q,
         variable_values={
-            "uuids": mo_uuid_str,
+            "uuid": mo_uuid_str,
         },
     )
 
-    objects = one(result["engagements"])["objects"]
+    objects = one(result["engagements"]["objects"])["validities"]
     employee_uuid = extract_uuid(objects, "employee_uuid")
     return employee_uuid
 
@@ -920,12 +934,14 @@ async def get_kle_org_unit_uuid(graphql_session: AsyncClientSession, mo_uuid: UU
 
     q = gql(
         """
-    query GetKLEs($uuids: [UUID!]) {
-        kles(uuids: $uuids, from_date:null, to_date:null) {
-            objects {
-                org_unit_uuid
-            }
+    query GetKLEs($uuid: UUID!) {
+      kles(filter: { uuids: [$uuid], from_date: null, to_date: null }) {
+        objects {
+          validities {
+            org_unit_uuid
+          }
         }
+      }
     }
     """
     )
@@ -933,11 +949,11 @@ async def get_kle_org_unit_uuid(graphql_session: AsyncClientSession, mo_uuid: UU
     result = await graphql_session.execute(
         q,
         variable_values={
-            "uuids": mo_uuid_str,
+            "uuid": mo_uuid_str,
         },
     )
 
-    objects = one(result["kles"])["objects"]
+    objects = one(result["kles"]["objects"])["validities"]
     org_unit_uuid = extract_uuid(objects, "org_unit_uuid")
     return org_unit_uuid
 
@@ -959,32 +975,34 @@ async def is_relevant(
         return True
 
     query = """
-    query QueryAncestors($uuids: [UUID!]) {
-        org_units(uuids: $uuids) {
-            current {
-                ancestors {
-                    uuid
-                }
-                org_unit_hierarchy_model {
-                    name
-                }
-                itusers {
-                  itsystem {
-                    name
-                  }
-                }
+    query QueryAncestors($uuid: UUID!) {
+      org_units(filter: { uuids: [$uuid] }) {
+        objects {
+          current {
+            ancestors {
+              uuid
             }
+            org_unit_hierarchy_model {
+              name
+            }
+            itusers {
+              itsystem {
+                name
+              }
+            }
+          }
         }
+      }
     }
-     """
+    """
     res = await graphql_session.execute(
-        gql(query), variable_values={"uuids": str(unit_uuid)}
+        gql(query), variable_values={"uuid": str(unit_uuid)}
     )
-    if not res["org_units"]:
+    if not res["org_units"]["objects"]:
         logger.warn("No unit found")
         return False
 
-    org_unit = one(res["org_units"])["current"]
+    org_unit = one(res["org_units"]["objects"])["current"]
 
     if org_unit["ancestors"] is None:
         # We won't sync other root organisation units than the one specified in settings
@@ -1026,20 +1044,24 @@ async def find_employees(
     graphql_session: AsyncClientSession, org_unit_uuid: UUID
 ) -> set[UUID]:
     query = """
-    query QueryEmployees($uuids: [UUID!]) {
-      engagements(org_units: $uuids) {
-        current {
-          person {
-            uuid
+    query QueryEmployees($uuid: UUID!) {
+      engagements(filter: { org_unit: { uuids: [$uuid] } }) {
+        objects {
+          current {
+            person {
+              uuid
+            }
           }
         }
       }
     }
-     """
+    """
     res = await graphql_session.execute(
-        gql(query), variable_values={"uuids": str(org_unit_uuid)}
+        gql(query), variable_values={"uuid": str(org_unit_uuid)}
     )
-    return {UUID(one(e["current"]["person"])["uuid"]) for e in res["engagements"]}
+    return {
+        UUID(one(e["current"]["person"])["uuid"]) for e in res["engagements"]["objects"]
+    }
 
 
 async def fk_org_uuid_to_mo_uuid(
@@ -1047,14 +1069,16 @@ async def fk_org_uuid_to_mo_uuid(
 ):
     query = """
         query GetFKOrgUserMap($user_keys: [String!]) {
-          itusers(user_keys: $user_keys) {
-            current {
-              person {
-                uuid
-              }
-              user_key
-              itsystem {
-                name
+          itusers(filter: { user_keys: $user_keys }) {
+            objects {
+              current {
+                person {
+                  uuid
+                }
+                user_key
+                itsystem {
+                  name
+                }
               }
             }
           }
@@ -1063,7 +1087,7 @@ async def fk_org_uuid_to_mo_uuid(
     res = await graphql_session.execute(
         gql(query), variable_values={"user_keys": [str(u) for u in uuids]}
     )
-    res = res["itusers"]
+    res = res["itusers"]["objects"]
     itusers: Iterator = filter(
         lambda i: i["current"]["itsystem"]["name"] in it_system_names, res
     )

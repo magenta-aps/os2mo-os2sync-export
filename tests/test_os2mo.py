@@ -325,20 +325,22 @@ async def test_get_address_org_unit_and_employee_uuids():
 
     graphql_session_mock = AsyncMock()
     graphql_session_mock.execute.return_value = {
-        "addresses": [
-            {
-                "objects": [
-                    {
-                        "org_unit_uuid": str(ou_uuid_mock),
-                        "employee_uuid": str(e_uuid_mock),
-                    },
-                    {
-                        "org_unit_uuid": str(ou_uuid_mock),
-                        "employee_uuid": str(e_uuid_mock),
-                    },
-                ]
-            }
-        ]
+        "addresses": {
+            "objects": [
+                {
+                    "validities": [
+                        {
+                            "org_unit_uuid": str(ou_uuid_mock),
+                            "employee_uuid": str(e_uuid_mock),
+                        },
+                        {
+                            "org_unit_uuid": str(ou_uuid_mock),
+                            "employee_uuid": str(e_uuid_mock),
+                        },
+                    ]
+                }
+            ]
+        }
     }
 
     result_ou_uuid, result_e_uuid = await get_address_org_unit_and_employee_uuids(
@@ -348,7 +350,7 @@ async def test_get_address_org_unit_and_employee_uuids():
     graphql_session_mock.execute.assert_called_with(
         ANY,
         variable_values={
-            "uuids": str(addr_uuid_mock),
+            "uuid": str(addr_uuid_mock),
         },
     )
     assert UUID(result_ou_uuid) == ou_uuid_mock
@@ -363,20 +365,22 @@ async def test_get_ituser_org_unit_and_employee_uuids():
     graphql_session_mock = MagicMock()
     graphql_session_mock.execute = AsyncMock(
         return_value={
-            "itusers": [
-                {
-                    "objects": [
-                        {
-                            "org_unit_uuid": str(ou_uuid_mock),
-                            "employee_uuid": str(e_uuid_mock),
-                        },
-                        {
-                            "org_unit_uuid": str(ou_uuid_mock),
-                            "employee_uuid": str(e_uuid_mock),
-                        },
-                    ]
-                }
-            ]
+            "itusers": {
+                "objects": [
+                    {
+                        "validities": [
+                            {
+                                "org_unit_uuid": str(ou_uuid_mock),
+                                "employee_uuid": str(e_uuid_mock),
+                            },
+                            {
+                                "org_unit_uuid": str(ou_uuid_mock),
+                                "employee_uuid": str(e_uuid_mock),
+                            },
+                        ]
+                    }
+                ]
+            }
         }
     )
 
@@ -387,7 +391,7 @@ async def test_get_ituser_org_unit_and_employee_uuids():
     graphql_session_mock.execute.assert_called_with(
         ANY,
         variable_values={
-            "uuids": str(ituser_uuid_mock),
+            "uuid": str(ituser_uuid_mock),
         },
     )
     assert UUID(result_ou_uuid) == ou_uuid_mock
@@ -400,18 +404,20 @@ async def test_get_manager_org_unit_uuid():
 
     graphql_session_mock = AsyncMock()
     graphql_session_mock.execute.return_value = {
-        "managers": [
-            {
-                "objects": [
-                    {
-                        "org_unit_uuid": str(ou_uuid_mock),
-                    },
-                    {
-                        "org_unit_uuid": str(ou_uuid_mock),
-                    },
-                ]
-            }
-        ]
+        "managers": {
+            "objects": [
+                {
+                    "validities": [
+                        {
+                            "org_unit_uuid": str(ou_uuid_mock),
+                        },
+                        {
+                            "org_unit_uuid": str(ou_uuid_mock),
+                        },
+                    ]
+                }
+            ]
+        }
     }
 
     result_ou_uuid = await get_manager_org_unit_uuid(
@@ -421,7 +427,7 @@ async def test_get_manager_org_unit_uuid():
     graphql_session_mock.execute.assert_called_with(
         ANY,
         variable_values={
-            "uuids": str(manager_uuid_mock),
+            "uuid": str(manager_uuid_mock),
         },
     )
     assert UUID(result_ou_uuid) == ou_uuid_mock
@@ -430,7 +436,7 @@ async def test_get_manager_org_unit_uuid():
 async def test_get_manager_org_unit_uuid_not_found():
     manager_uuid_mock = uuid4()
     graphql_session_mock = AsyncMock()
-    graphql_session_mock.execute.return_value = {"managers": []}
+    graphql_session_mock.execute.return_value = {"managers": {"objects": []}}
 
     with pytest.raises(ValueError):
         _ = await get_manager_org_unit_uuid(graphql_session_mock, manager_uuid_mock)
@@ -450,18 +456,20 @@ async def test_get_engagement_employee_uuid():
     graphql_session_mock = MagicMock()
     graphql_session_mock.execute = AsyncMock(
         return_value={
-            "engagements": [
-                {
-                    "objects": [
-                        {
-                            "employee_uuid": str(e_uuid_mock),
-                        },
-                        {
-                            "employee_uuid": str(e_uuid_mock),
-                        },
-                    ]
-                }
-            ]
+            "engagements": {
+                "objects": [
+                    {
+                        "validities": [
+                            {
+                                "employee_uuid": str(e_uuid_mock),
+                            },
+                            {
+                                "employee_uuid": str(e_uuid_mock),
+                            },
+                        ]
+                    }
+                ]
+            }
         }
     )
 
@@ -472,7 +480,7 @@ async def test_get_engagement_employee_uuid():
     graphql_session_mock.execute.assert_called_with(
         ANY,
         variable_values={
-            "uuids": str(engagement_uuid_mock),
+            "uuid": str(engagement_uuid_mock),
         },
     )
     assert UUID(result_e_uuid) == e_uuid_mock
@@ -485,18 +493,20 @@ async def test_get_kle_org_unit_uuid():
     graphql_session_mock = MagicMock()
     graphql_session_mock.execute = AsyncMock(
         return_value={
-            "kles": [
-                {
-                    "objects": [
-                        {
-                            "org_unit_uuid": str(ou_uuid_mock),
-                        },
-                        {
-                            "org_unit_uuid": str(ou_uuid_mock),
-                        },
-                    ]
-                }
-            ]
+            "kles": {
+                "objects": [
+                    {
+                        "validities": [
+                            {
+                                "org_unit_uuid": str(ou_uuid_mock),
+                            },
+                            {
+                                "org_unit_uuid": str(ou_uuid_mock),
+                            },
+                        ]
+                    }
+                ]
+            }
         }
     )
 
@@ -505,7 +515,7 @@ async def test_get_kle_org_unit_uuid():
     graphql_session_mock.execute.assert_called_with(
         ANY,
         variable_values={
-            "uuids": str(kle_uuid_mock),
+            "uuid": str(kle_uuid_mock),
         },
     )
     assert UUID(result_ou_uuid) == ou_uuid_mock
@@ -531,30 +541,32 @@ async def test_check_terminated_it_user():
     graphql_session_mock = MagicMock()
     graphql_session_mock.execute = AsyncMock(
         return_value={
-            "itusers": [
-                {
-                    "objects": [
-                        {
-                            "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
-                            "user_key": "New Active fk-org uuid",
-                            "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
-                            "itsystem": {"name": "Omada - AD GUID"},
-                            "validity": {"to": None},
-                            "employee_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
-                            "org_unit_uuid": None,
-                        },
-                        {
-                            "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
-                            "user_key": str(fk_org_uuid),
-                            "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
-                            "itsystem": {"name": "Omada - AD GUID"},
-                            "validity": {"to": "2024-05-01T00:00:00+02:00"},
-                            "employee_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
-                            "org_unit_uuid": None,
-                        },
-                    ]
-                },
-            ]
+            "itusers": {
+                "objects": [
+                    {
+                        "validities": [
+                            {
+                                "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
+                                "user_key": "New Active fk-org uuid",
+                                "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
+                                "itsystem": {"name": "Omada - AD GUID"},
+                                "validity": {"to": None},
+                                "employee_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
+                                "org_unit_uuid": None,
+                            },
+                            {
+                                "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
+                                "user_key": str(fk_org_uuid),
+                                "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
+                                "itsystem": {"name": "Omada - AD GUID"},
+                                "validity": {"to": "2024-05-01T00:00:00+02:00"},
+                                "employee_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
+                                "org_unit_uuid": None,
+                            },
+                        ]
+                    },
+                ]
+            }
         }
     )
     uuid_from_it_systems = ["Omada - AD GUID"]
@@ -573,30 +585,32 @@ async def test_check_terminated_it_user_org_unit():
     graphql_session_mock = MagicMock()
     graphql_session_mock.execute = AsyncMock(
         return_value={
-            "itusers": [
-                {
-                    "objects": [
-                        {
-                            "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
-                            "user_key": "New Active fk-org uuid",
-                            "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
-                            "itsystem": {"name": "FK-org UUID"},
-                            "validity": {"to": None},
-                            "employee_uuid": None,
-                            "org_unit_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
-                        },
-                        {
-                            "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
-                            "user_key": str(fk_org_uuid),
-                            "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
-                            "itsystem": {"name": "FK-org UUID"},
-                            "validity": {"to": "2024-05-01T00:00:00+02:00"},
-                            "employee_uuid": None,
-                            "org_unit_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
-                        },
-                    ]
-                },
-            ]
+            "itusers": {
+                "objects": [
+                    {
+                        "validities": [
+                            {
+                                "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
+                                "user_key": "New Active fk-org uuid",
+                                "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
+                                "itsystem": {"name": "FK-org UUID"},
+                                "validity": {"to": None},
+                                "employee_uuid": None,
+                                "org_unit_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
+                            },
+                            {
+                                "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
+                                "user_key": str(fk_org_uuid),
+                                "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
+                                "itsystem": {"name": "FK-org UUID"},
+                                "validity": {"to": "2024-05-01T00:00:00+02:00"},
+                                "employee_uuid": None,
+                                "org_unit_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
+                            },
+                        ]
+                    },
+                ]
+            }
         }
     )
     uuid_from_it_systems = ["Omada - AD GUID", "FK-org UUID"]
@@ -618,30 +632,32 @@ async def test_check_terminated_it_user_still_active():
     graphql_session_mock = MagicMock()
     graphql_session_mock.execute = AsyncMock(
         return_value={
-            "itusers": [
-                {
-                    "objects": [
-                        {
-                            "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
-                            "user_key": str(fk_org_uuid),
-                            "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
-                            "itsystem": {"name": "Omada - AD GUID"},
-                            "validity": {"to": None},
-                            "employee_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
-                            "org_unit_uuid": None,
-                        },
-                        {
-                            "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
-                            "user_key": str(fk_org_uuid),
-                            "engagement_uuid": None,
-                            "itsystem": {"name": "Omada - AD GUID"},
-                            "validity": {"to": "2024-05-01T00:00:00+02:00"},
-                            "employee_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
-                            "org_unit_uuid": None,
-                        },
-                    ]
-                },
-            ]
+            "itusers": {
+                "objects": [
+                    {
+                        "validities": [
+                            {
+                                "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
+                                "user_key": str(fk_org_uuid),
+                                "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
+                                "itsystem": {"name": "Omada - AD GUID"},
+                                "validity": {"to": None},
+                                "employee_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
+                                "org_unit_uuid": None,
+                            },
+                            {
+                                "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
+                                "user_key": str(fk_org_uuid),
+                                "engagement_uuid": None,
+                                "itsystem": {"name": "Omada - AD GUID"},
+                                "validity": {"to": "2024-05-01T00:00:00+02:00"},
+                                "employee_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
+                                "org_unit_uuid": None,
+                            },
+                        ]
+                    },
+                ]
+            }
         }
     )
     uuid_from_it_systems = ["Omada - AD GUID"]
@@ -660,21 +676,23 @@ async def test_check_terminated_it_user_invalid_uuid_user_key():
     graphql_session_mock = MagicMock()
     graphql_session_mock.execute = AsyncMock(
         return_value={
-            "itusers": [
-                {
-                    "objects": [
-                        {
-                            "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
-                            "user_key": str(fk_org_uuid),
-                            "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
-                            "itsystem": {"name": "Omada - AD GUID"},
-                            "validity": {"to": "2024-05-01T00:00:00+02:00"},
-                            "employee_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
-                            "org_unit_uuid": None,
-                        },
-                    ]
-                },
-            ]
+            "itusers": {
+                "objects": [
+                    {
+                        "validities": [
+                            {
+                                "uuid": "b49d1206-6721-4e9f-a44a-4b8d3e726ce5",
+                                "user_key": str(fk_org_uuid),
+                                "engagement_uuid": "830cee7d-d7ec-4d09-9ed4-edb2fd741e9b",
+                                "itsystem": {"name": "Omada - AD GUID"},
+                                "validity": {"to": "2024-05-01T00:00:00+02:00"},
+                                "employee_uuid": "a719ee4c-811c-45e5-b077-7fb7117b9d4a",
+                                "org_unit_uuid": None,
+                            },
+                        ]
+                    },
+                ]
+            }
         }
     )
     uuid_from_it_systems = ["Omada - AD GUID"]
