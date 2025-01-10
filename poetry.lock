@@ -306,7 +306,7 @@ standard = ["email-validator (>=2.0.0)", "fastapi-cli[standard] (>=0.0.5)", "htt
 
 [[package]]
 name = "fastramqpi"
-version = "10.0.5"
+version = "10.0.6"
 description = "Rammearkitektur integrations framework"
 category = "main"
 optional = false
@@ -1262,7 +1262,7 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.11.0"
-content-hash = "a7d9384a22a3f6b366968587ac7ffc93b20a1d5fe91de7ef44eb4ee4228dca95"
+content-hash = "2d63d52b80e50b7d4848d468acd76a28ea935ca4afb70ccce087c2a8a2a3ee1f"
 
 [metadata.files]
 aio-pika = [
@@ -1728,8 +1728,8 @@ fastapi = [
     {file = "fastapi-0.115.0.tar.gz", hash = "sha256:f93b4ca3529a8ebc6fc3fcf710e5efa8de3df9b41570958abf1d97d843138004"},
 ]
 fastramqpi = [
-    {file = "fastramqpi-10.0.5-py3-none-any.whl", hash = "sha256:b2ec8a95793c56b4025fafc24a1fe9cb4fcd864fd370771dda11e6917d75821e"},
-    {file = "fastramqpi-10.0.5.tar.gz", hash = "sha256:899c41e8119a9251415a13153d830f92c1be7b4c121c4c0ef159e5305ce1df0c"},
+    {file = "fastramqpi-10.0.6-py3-none-any.whl", hash = "sha256:799f21202d176037423419ed650d380e0d98475395395f65e892a18bf1c95a80"},
+    {file = "fastramqpi-10.0.6.tar.gz", hash = "sha256:adf9769ed79b91f39bebedbcd660cd395ccc5e181c37af3a11b04c600214decd"},
 ]
 filelock = [
     {file = "filelock-3.16.1-py3-none-any.whl", hash = "sha256:2082e5703d51fbf98ea75855d9d5527e33d8ff23099bec374a134febee6946b0"},
