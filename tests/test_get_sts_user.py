@@ -63,6 +63,9 @@ class TestGetStsUser(unittest.TestCase, MoEmployeeMixin):
         self.assertDictEqual(
             sts_user,
             {
+                "Email": None,
+                "Landline": None,
+                "PhoneNumber": None,
                 "Uuid": self._uuid,
                 "UserId": self._user_key,
                 "Positions": dummy_positions,
@@ -129,6 +132,9 @@ class TestGetStsUser(unittest.TestCase, MoEmployeeMixin):
         self.assertDictEqual(
             sts_user,
             {
+                "Email": None,
+                "Landline": None,
+                "PhoneNumber": None,
                 "Uuid": self._uuid,
                 "UserId": expected_user_id,
                 "Positions": dummy_positions,
@@ -140,7 +146,7 @@ class TestGetStsUser(unittest.TestCase, MoEmployeeMixin):
         )
 
     @patch.object(os2mo, "engagements_to_user", mock_engagements_to_user)
-    @patch.object(os2mo, "addresses_to_user", return_value=[])
+    @patch.object(os2mo, "pick_address", return_value=None)
     @patch.object(os2mo, "org_unit_uuids", return_value={})
     async def _run(
         self,
