@@ -53,7 +53,6 @@ from os2sync_export.os2mo_gql import convert_to_os2sync
 from os2sync_export.os2mo_gql import filter_relevant_orgunit
 from os2sync_export.os2mo_gql import find_object_person
 from os2sync_export.os2mo_gql import find_object_unit
-from os2sync_export.os2mo_gql import find_phone_numbers
 from os2sync_export.os2mo_gql import mo_orgunit_to_os2sync
 from os2sync_export.os2mo_gql import sync_mo_user_to_fk_org
 
@@ -376,6 +375,7 @@ def test_convert_and_filter_no_engagement(mock_settings):
 
 
 ADDRESS_TYPE_UUID = uuid4()
+MOBILE_ADDRESS_TYPE_UUID = uuid4()
 
 
 @pytest.mark.parametrize(
@@ -388,14 +388,28 @@ ADDRESS_TYPE_UUID = uuid4()
             None,
         ),
         (
-            # One email, no priority, no visibility - choose it.
+            # One email, no priority, no visibility - don't choose it.
             [
                 ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(
                     **{"value": "email@example.com", "address_type": {"uuid": uuid4()}}
                 )
             ],
             [],
-            "email@example.com",
+            None,
+        ),
+        (
+            # The same function is used for phone-numbers.
+            # One phone number, no priority, no visibility - choose it.
+            [
+                ReadUserITAccountsEmployeesObjectsCurrentItusersPhone(
+                    **{
+                        "value": "mobile-number",
+                        "address_type": {"uuid": ADDRESS_TYPE_UUID},
+                    }
+                )
+            ],
+            [ADDRESS_TYPE_UUID],
+            "mobile-number",
         ),
         (
             # two emails, choose correct by priority
@@ -411,7 +425,7 @@ ADDRESS_TYPE_UUID = uuid4()
             "correct",
         ),
         (
-            # two emails, none have a correct priority, choose the first
+            # two emails, none have a correct priority, choose neither
             [
                 ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(
                     **{"value": "first", "address_type": {"uuid": uuid4()}}
@@ -421,7 +435,7 @@ ADDRESS_TYPE_UUID = uuid4()
                 ),
             ],
             [ADDRESS_TYPE_UUID],
-            "first",
+            None,
         ),
         (
             # two emails, choose correct by visibility
@@ -449,53 +463,6 @@ ADDRESS_TYPE_UUID = uuid4()
 def test_choose_address_emails(emails, priority, expected):
     value = choose_public_address(emails, priority)
     assert value == expected
-
-
-@pytest.mark.parametrize(
-    "phones,landline_classes,mobile_classes,expected_landline,expected_mobile",
-    [
-        (
-            # Only one phonenumber, no priority classes, choose it as mobile
-            [
-                ReadUserITAccountsEmployeesObjectsCurrentItusersPhone(
-                    **{"value": "mobile-number", "address_type": {"uuid": uuid4()}}
-                )
-            ],
-            [],
-            [],
-            None,
-            "mobile-number",
-        ),
-        (
-            # split mobile and landline correctly by classes
-            [
-                ReadUserITAccountsEmployeesObjectsCurrentItusersPhone(
-                    **{"value": "mobile-number", "address_type": {"uuid": uuid4()}}
-                ),
-                ReadUserITAccountsEmployeesObjectsCurrentItusersPhone(
-                    **{
-                        "value": "landline-number",
-                        "address_type": {"uuid": ADDRESS_TYPE_UUID},
-                    }
-                ),
-            ],
-            [ADDRESS_TYPE_UUID],
-            [],
-            "landline-number",
-            "mobile-number",
-        ),
-    ],
-)
-def test_choose_address_phone_numbers(
-    phones,
-    landline_classes,
-    mobile_classes,
-    expected_landline,
-    expected_mobile,
-):
-    landline, mobile = find_phone_numbers(phones, landline_classes, mobile_classes)
-    assert landline == expected_landline
-    assert mobile == expected_mobile
 
 
 ## Tests for filter relevant orgunit
