@@ -26,7 +26,6 @@ from more_itertools import partition
 from os2sync_export.config import Settings
 from os2sync_export.config import get_os2sync_settings
 from os2sync_export.os2sync_models import OrgUnit
-from os2sync_export.priority_by_class import choose_public_address
 from os2sync_export.templates import Person
 from os2sync_export.templates import User
 
@@ -151,42 +150,30 @@ def has_kle():
     return os2mo_config["show_kle"]
 
 
-def addresses_to_user(
-    user,
-    addresses,
-    phone_scope_classes: List[UUID] = [],
-    landline_scope_classes: List[UUID] = [],
-    email_scope_classes: List[UUID] = [],
-):
-    # `phone_scope_classes`, `landline_scope_classes` and `email_scope_classes` are all lists of UUIDs.
-    # We need to convert them to lists of strings in order to make them work correctly
-    # with `choose_public_address`.
-    phone_scope_classes = [str(cls) for cls in phone_scope_classes]  # type: ignore
-    landline_scope_classes = [str(cls) for cls in landline_scope_classes]  # type: ignore
-    email_scope_classes = [str(cls) for cls in email_scope_classes]  # type: ignore
-    # TODO: This looks like bucketing (more_itertools.bucket)
+def pick_address(addresses: list[dict], classes: list[UUID]) -> str | None:
+    """Finds the correct address.
 
-    emails, phones, landlines = [], [], []
-    for address in addresses:
-        if address["address_type"]["uuid"] in landline_scope_classes:
-            landlines.append(address)
-        elif address["address_type"]["scope"] == "EMAIL":
-            emails.append(address)
-        elif address["address_type"]["scope"] == "PHONE":
-            phones.append(address)
+    The correct address has:
+    * a visibility that is either "PUBLIC" or not set.
+    * an address-type that is defined in settings
 
-    landline = choose_public_address(landlines, landline_scope_classes)
-    if landline:
-        user["Landline"] = landline["name"]
-    # find phone using prioritized/empty list of address_type uuids
-    phone = choose_public_address(phones, phone_scope_classes)
-    if phone:
-        user["PhoneNumber"] = phone["name"]
+    If more than one address is found the one where the address-type appears first in settings is used.
+    """
+    relevant_adresses = [
+        a for a in addresses if UUID(a["address_type"]["uuid"]) in classes
+    ]
+    public_relevant_adresses = [
+        a
+        for a in relevant_adresses
+        if a.get("visibility") is None or a["visibility"]["scope"] == "PUBLIC"
+    ]
 
-    # find email using prioritized/empty list of address_type uuids
-    email = choose_public_address(emails, email_scope_classes)
-    if email:
-        user["Email"] = email["name"]
+    chosen_address = min(
+        public_relevant_adresses,
+        key=lambda a: classes.index(UUID(a["address_type"]["uuid"])),
+        default=None,
+    )
+    return chosen_address["name"] if chosen_address else None
 
 
 async def engagements_to_user(user, engagements, graphql_session, settings):
@@ -358,13 +345,13 @@ async def get_sts_user_raw(
     addresses = os2mo_get("{BASE}/e/" + uuid + "/details/address").json()
     if engagement_uuid is not None:
         addresses = filter(lambda a: a["engagement_uuid"] == engagement_uuid, addresses)
-    addresses_to_user(
-        sts_user,
-        addresses=addresses,
-        phone_scope_classes=settings.phone_scope_classes,
-        landline_scope_classes=settings.landline_scope_classes,
-        email_scope_classes=settings.email_scope_classes,
+
+    sts_user["Email"] = pick_address(addresses, settings.email_scope_classes)
+    sts_user["PhoneNumber"] = pick_address(
+        addresses,
+        settings.phone_scope_classes,
     )
+    sts_user["Landline"] = pick_address(addresses, settings.landline_scope_classes)
 
     # Optionally find the work address of employees primary engagement.
     work_address_names = settings.employee_engagement_address

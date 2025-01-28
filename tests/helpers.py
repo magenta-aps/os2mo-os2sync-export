@@ -19,6 +19,7 @@ dummy_settings = get_os2sync_settings(
     ),  # type: ignore
     municipality="1234",
     top_unit_uuid="269a0339-0c8b-472d-9514-aef952a2b4df",
+    email_scope_classes=["f376deb8-4743-4ca6-a047-3241de8fe9d2"],
 )
 
 NICKNAME_TEMPLATE = "{% if nickname -%}{{ nickname }}{%- else %}{{ name }}{%- endif %}"

@@ -369,7 +369,9 @@ def patched_session_get(url: str, params: Optional[Dict[Any, Any]] = None, **kwa
 async def test_mo_client_default(self, graphql_session):
     expected = {
         "Email": "solveigk@kolding.dk",
+        "Landline": None,
         "Person": {"Cpr": "0602602389", "Name": "Solveig Kuhlenhenke"},
+        "PhoneNumber": None,
         "Positions": dummy_positions,
         "UserId": "SolveigK_AD_logon",
         "Uuid": "23d2dfc7-6ceb-47cf-97ed-db6beadcb09b",
