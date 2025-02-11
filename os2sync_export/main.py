@@ -570,7 +570,7 @@ def create_fastramqpi(**kwargs) -> FastRAMQPI:
     fastramqpi = FastRAMQPI(
         application_name="os2sync-export",
         settings=settings.fastramqpi,
-        graphql_version=22,
+        graphql_version=23,
         graphql_client_cls=GraphQLClient_,
     )
 
