@@ -290,7 +290,9 @@ def mo_orgunit_to_os2sync(
         find_fk_org_uuid(orgunit_data.parent) if orgunit_data.parent else None
     )
     kle_numbers = (
-        {k.kle_number.uuid for k in orgunit_data.kles} if settings.enable_kle else set()
+        {n.uuid for k in orgunit_data.kles for n in k.kle_number}
+        if settings.enable_kle
+        else set()
     )
     # We can only sync one manager:
     manager = first(orgunit_data.managers, default=None)

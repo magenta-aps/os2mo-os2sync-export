@@ -714,13 +714,31 @@ def test_mo_orgunit_to_os2sync_kle_numbers(enable_kle, set_settings):
         addresses=[],
         itusers=[],
         managers=[],
-        kles=[{"kle_number": {"uuid": k}} for k in kle_numbers],
+        kles=[{"kle_number": [{"uuid": k}]} for k in kle_numbers],
     )
     unit = mo_orgunit_to_os2sync(settings, orgunit)
     if enable_kle:
         assert unit.Tasks == kle_numbers
     else:
         assert unit.Tasks == set()
+
+
+def test_mo_orgunit_to_os2sync_kle_number_is_missing(set_settings):
+    """Test that we can handle missing KLE numbers"""
+    settings = set_settings(enable_kle=True)
+
+    orgunit = ReadOrgunitOrgUnitsObjectsCurrent(
+        uuid=uuid4(),
+        parent={"uuid": uuid4(), "itusers": []},
+        name="Unit1",
+        ancestors=[{"uuid": settings.top_unit_uuid}],
+        addresses=[],
+        itusers=[],
+        managers=[],
+        kles=[{"kle_number": []}],
+    )
+    unit = mo_orgunit_to_os2sync(settings, orgunit)
+    assert unit.Tasks == set()
 
 
 @pytest.mark.parametrize("sync_managers", [True, False])

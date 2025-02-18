@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
 #
-# OS2mo GraphQL API schema definition (v22).
-# https://os2mo.eksempel.dk/graphql/v22/schema.graphql
+# OS2mo GraphQL API schema definition (v23).
+# https://os2mo.eksempel.dk/graphql/v23/schema.graphql
 
 "Address information for either an employee or organisational unit\n"
 type Address {
@@ -208,6 +208,9 @@ input AddressFilter {
 
   """ITUser filter limiting which entries are returned."""
   ituser: ITUserFilter = null
+
+  """Visibility filter limiting which entries are returned."""
+  visibility: ClassFilter = null
 }
 
 """Address registration filter."""
@@ -849,8 +852,60 @@ input ClassFilter {
   "IT-System filter limiting which entries are returned.\n"
   it_system: ITSystemFilter = null
 
+  "Owner filter limiting which entries are returned.\n"
+  owner: ClassOwnerFilter = null
+
   "Scope filter limiting which entries are returned.\n\n| `scope`      | Elements returned                            |\n|--------------|----------------------------------------------|\n| not provided | All                                          |\n| `null`       | All                                          |\n| `[]`         | None                                         |\n| `\"x\"`        | `[\"x\"]` or `[]` (`*`)                        |\n| `[\"x\", \"y\"]` | `[\"x\", \"y\"]`, `[\"x\"]`, `[\"y\"]` or `[]` (`*`) |\n\n`*`: Elements returned depends on which elements were found.\n"
   scope: [String!] = null
+}
+
+"""Class owner filter"""
+input ClassOwnerFilter {
+  "UUID filter limiting which entries are returned.\n\n| `uuids`      | Elements returned                            |\n|--------------|----------------------------------------------|\n| not provided | All                                          |\n| `null`       | All                                          |\n| `[]`         | None                                         |\n| `\"x\"`        | `[\"x\"]` or `[]` (`*`)                        |\n| `[\"x\", \"y\"]` | `[\"x\", \"y\"]`, `[\"x\"]`, `[\"y\"]` or `[]` (`*`) |\n\n`*`: Elements returned depends on which elements were found.\n"
+  uuids: [UUID!] = null
+
+  "User-key filter limiting which entries are returned.\n\n| `user_keys`      | Elements returned                            |\n|--------------|----------------------------------------------|\n| not provided | All                                          |\n| `null`       | All                                          |\n| `[]`         | None                                         |\n| `\"x\"`        | `[\"x\"]` or `[]` (`*`)                        |\n| `[\"x\", \"y\"]` | `[\"x\", \"y\"]`, `[\"x\"]`, `[\"y\"]` or `[]` (`*`) |\n\n`*`: Elements returned depends on which elements were found.\n"
+  user_keys: [String!] = null
+
+  """Limit the elements returned by their starting validity."""
+  from_date: DateTime
+
+  """Limit the elements returned by their ending validity."""
+  to_date: DateTime
+
+  "Registration filter limiting which entries are returned.\n"
+  registration: OrganisationUnitRegistrationFilter = null
+
+  "Free text search.\n\nDoes best effort lookup to find entities matching the query string.\nNo quarantees are given w.r.t. the entries returned.\n"
+  query: String
+
+  "Name filter finding exact matches by name.\n\n| `names`      | Elements returned                            |\n|--------------|----------------------------------------------|\n| not provided | All                                          |\n| `null`       | All                                          |\n| `[]`         | None                                         |\n| `\"x\"`        | `[\"x\"]` or `[]` (`*`)                        |\n| `[\"x\", \"y\"]` | `[\"x\", \"y\"]`, `[\"x\"]`, `[\"y\"]` or `[]` (`*`) |\n\n`*`: Elements returned depends on which elements were found.\n"
+  names: [String!]
+
+  "Select organisation units whose parent matches the given filter.\n\nSet to `None` to find root units.\n"
+  parent: OrganisationUnitFilter
+
+  "Parent UUID filter limiting which entries are returned.\n\n| `parents`      | Elements returned                            |\n|--------------|----------------------------------------------|\n| not provided | All                                          |\n| `null`       | All                                          |\n| `[]`         | None                                         |\n| `\"x\"`        | `[\"x\"]` or `[]` (`*`)                        |\n| `[\"x\", \"y\"]` | `[\"x\", \"y\"]`, `[\"x\"]`, `[\"y\"]` or `[]` (`*`) |\n\n`*`: Elements returned depends on which elements were found.\n"
+  parents: [UUID!] @deprecated(reason: "Replaced by the 'parent' filter")
+
+  "Hierarchy filter limiting which entries are returned.\n\nFilter organisation units by their organisational hierarchy labels.\n\nCan be used to extract a subset of the organisational structure.\n\nExamples of user-keys:\n* `\"Line-management\"`\n* `\"Self-owned institution\"`\n* `\"Outside organisation\"`\n* `\"Hidden\"`\n\nNote:\nThe organisation-gatekeeper integration is one option to keep hierarchy labels up-to-date.\n"
+  hierarchy: ClassFilter = null
+
+  "Filter organisation units by their organisational hierarchy labels.\n\nCan be used to extract a subset of the organisational structure.\n\nExamples of user-keys:\n* `\"Line-management\"`\n* `\"Self-owned institution\"`\n* `\"Outside organisation\"`\n* `\"Hidden\"`\n\nNote:\nThe organisation-gatekeeper integration is one option to keep hierarchy labels up-to-date.\n\n| `hierarchies`      | Elements returned                            |\n|--------------|----------------------------------------------|\n| not provided | All                                          |\n| `null`       | All                                          |\n| `[]`         | None                                         |\n| `\"x\"`        | `[\"x\"]` or `[]` (`*`)                        |\n| `[\"x\", \"y\"]` | `[\"x\", \"y\"]`, `[\"x\"]`, `[\"y\"]` or `[]` (`*`) |\n\n`*`: Elements returned depends on which elements were found.\n"
+  hierarchies: [UUID!] = null @deprecated(reason: "Replaced by the 'hierarchy' filter")
+  subtree: OrganisationUnitFilter @deprecated(reason: "Renamed to 'descendant'")
+
+  "Select organisation units which have a descendant matching the given filter.\n\nNote that every node is its own descendant as per [CLRS] 12.2-6.\n\nGiven the following tree:\n```\nA\n├── B\n│   ├── C\n│   │   └── D\n│   └── E\n└── F\n```\nthe `descendant` filter behaves according to the following table:\n\n| Filter | Returned    |\n|--------|-------------|\n|      A | A           |\n|      B | A B         |\n|      C | A B C       |\n|      D | A B C D     |\n|      E | A B E       |\n|      F | A F         |\n"
+  descendant: OrganisationUnitFilter
+
+  "Select organisation units which have an ancestor matching the given filter.\n\nNote that every node is its own ancestor as per [CLRS] 12.2-6.\n\nGiven the following tree:\n```\nA\n├── B\n│   ├── C\n│   │   └── D\n│   └── E\n└── F\n```\nthe `ancestor` filter behaves according to the following table:\n\n| Filter | Returned    |\n|--------|-------------|\n|      A | A B C D E F |\n|      B | B C D E     |\n|      C | C D         |\n|      D | D           |\n|      E | E           |\n|      F | F           |\n"
+  ancestor: OrganisationUnitFilter
+
+  "Filter organisation units to only include matches pointed to by engagements.\n\nCan be used to find organisation units for certain engagements.\n"
+  engagement: EngagementFilter = null
+
+  "Include classes with `owner=None`.\n"
+  include_none: Boolean! = false
 }
 
 """Class registration filter."""
@@ -1289,6 +1344,7 @@ input EmployeesBoundAddressFilter {
   engagement: EngagementFilter = null
   engagements: [UUID!] = null
   ituser: ITUserFilter = null
+  visibility: ClassFilter = null
 }
 
 input EmployeesBoundAssociationFilter {
@@ -1316,6 +1372,7 @@ input EmployeesBoundEngagementFilter {
   to_date: DateTime
   registration: EngagementRegistrationFilter = null
   job_function: ClassFilter = null
+  engagement_type: ClassFilter = null
 }
 
 input EmployeesBoundITUserFilter {
@@ -1330,6 +1387,7 @@ input EmployeesBoundITUserFilter {
   itsystem: ITSystemFilter = null
   itsystem_uuids: [UUID!] = null
   engagement: EngagementFilter = null
+  external_ids: [String!] = null
 }
 
 input EmployeesBoundLeaveFilter {
@@ -1440,7 +1498,7 @@ type Engagement {
   "Short unique key.\n\nUsually set to the `id` used in external systems.\n\nExamples:\n* `\"11009\"`\n* `\"02782\"`\n"
   user_key: String!
 
-  "Whether this engagement is the primary engagement.\n\nChecks this engagements against the users other engagements. The engagement with the highest scope in the associated primary class\nis marked as primary. Only one engagement can be primary.\n"
+  "Whether this engagement is the primary engagement.\n\nChecks if the `primary` field contains either a class with user-key: `\"primary\"` or `\"explicitly-primary\"`.\n"
   is_primary: Boolean!
 
   "The object type.\n\nAlways contains the string `engagement`.\n"
@@ -1592,6 +1650,9 @@ input EngagementFilter {
 
   "Job function filter limiting which entries are returned.\n"
   job_function: ClassFilter = null
+
+  "Engagement type filter limiting which entries are returned.\n"
+  engagement_type: ClassFilter = null
 }
 
 """Engagement registration filter."""
@@ -1896,6 +1957,7 @@ input FacetsBoundClassFilter {
   parents: [UUID!] = null
   parent_user_keys: [String!] = null
   it_system: ITSystemFilter = null
+  owner: ClassOwnerFilter = null
   scope: [String!] = null
 }
 
@@ -2335,6 +2397,9 @@ input ITUserFilter {
 
   "Engagement filter limiting which entries are returned.\n"
   engagement: EngagementFilter = null
+
+  "Only return IT users with this `external_id` filter limiting which entries are returned.\n\n| `external_id`      | Elements returned                            |\n|--------------|----------------------------------------------|\n| not provided | All                                          |\n| `null`       | All                                          |\n| `[]`         | None                                         |\n| `\"x\"`        | `[\"x\"]` or `[]` (`*`)                        |\n| `[\"x\", \"y\"]` | `[\"x\", \"y\"]`, `[\"x\"]`, `[\"y\"]` or `[]` (`*`) |\n\n`*`: Elements returned depends on which elements were found.\n"
+  external_ids: [String!] = null
 }
 
 """ITUser registration filter."""
@@ -2442,6 +2507,7 @@ input ItuserBoundAddressFilter {
   address_type_user_keys: [String!] = null
   engagement: EngagementFilter = null
   engagements: [UUID!] = null
+  visibility: ClassFilter = null
 }
 
 input ItuserBoundRoleBindingFilter {
@@ -2465,7 +2531,7 @@ type KLE {
 
     "Cursor defining the next elements to fetch.\n\n| `cursor`       | Next element is    |\n|----------------|--------------------|\n| not provided   | First              |\n| `null`         | First              |\n| `\"MA==\"` (`*`) | First after Cursor |\n\n`*`: Placeholder for the cursor returned by the previous iteration.\n"
     cursor: Cursor = null
-  ): Class!
+  ): [Class!]!
 
   "KLE Aspects.\n\nThe KLE aspect describes the kind of relationship the organisation unit has with the responsibility given by the KLE number.\n\nExamples of user-keys:\n* `\"Insight\"`\n* `\"Executive\"`\n* `\"Responsible\"`\n"
   kle_aspects(
@@ -3085,6 +3151,9 @@ type Mutation {
   """Creates an address."""
   address_create(input: AddressCreateInput!): AddressResponse!
 
+  """Creates a list of address."""
+  addresses_create(input: [AddressCreateInput!]!): [AddressResponse!]!
+
   """Updates an address."""
   address_update(input: AddressUpdateInput!): AddressResponse!
 
@@ -3182,8 +3251,14 @@ type Mutation {
   """Creates an engagement."""
   engagement_create(input: EngagementCreateInput!): EngagementResponse!
 
+  """Creates a list of engagements."""
+  engagements_create(input: [EngagementCreateInput!]!): [EngagementResponse!]!
+
   """Updates an engagement."""
   engagement_update(input: EngagementUpdateInput!): EngagementResponse!
+
+  "Updates a list of engagements.\n\nNote: If any of the updates in the transaction is a noop, the whole\ntransaction will fail with the error:\n`(psycopg.errors.InFailedSqlTransaction) current transaction is aborted,\ncommands ignored until end of transaction block`\n\nhttps://redmine.magenta.dk/issues/60573\n"
+  engagements_update(input: [EngagementUpdateInput!]!): [EngagementResponse!]!
 
   """Terminates an engagement."""
   engagement_terminate(input: EngagementTerminateInput!): EngagementResponse!
@@ -3266,6 +3341,9 @@ type Mutation {
   """Creates an IT-User."""
   ituser_create(input: ITUserCreateInput!): ITUserResponse!
 
+  """Creates a list of itusers."""
+  itusers_create(input: [ITUserCreateInput!]!): [ITUserResponse!]!
+
   """Updates an IT-User."""
   ituser_update(input: ITUserUpdateInput!): ITUserResponse!
 
@@ -3334,6 +3412,9 @@ type Mutation {
 
   """Creates a manager relation."""
   manager_create(input: ManagerCreateInput!): ManagerResponse!
+
+  """Creates a list of managers."""
+  managers_create(input: [ManagerCreateInput!]!): [ManagerResponse!]!
 
   """Updates a manager relation."""
   manager_update(input: ManagerUpdateInput!): ManagerResponse!
@@ -3420,6 +3501,9 @@ type Mutation {
   """Create a rolebinding."""
   rolebinding_create(input: RoleBindingCreateInput!): RoleBindingResponse!
 
+  """Creates a list of rolebindings."""
+  rolebindings_create(input: [RoleBindingCreateInput!]!): [RoleBindingResponse!]!
+
   """Update a rolebinding."""
   rolebinding_update(input: RoleBindingUpdateInput!): RoleBindingResponse!
 
@@ -3476,6 +3560,7 @@ input OrgUnitsboundaddressfilter {
   engagement: EngagementFilter = null
   engagements: [UUID!] = null
   ituser: ITUserFilter = null
+  visibility: ClassFilter = null
 }
 
 input OrgUnitsboundassociationfilter {
@@ -3503,6 +3588,7 @@ input OrgUnitsboundengagementfilter {
   to_date: DateTime
   registration: EngagementRegistrationFilter = null
   job_function: ClassFilter = null
+  engagement_type: ClassFilter = null
 }
 
 input OrgUnitsboundituserfilter {
@@ -3517,6 +3603,7 @@ input OrgUnitsboundituserfilter {
   itsystem: ITSystemFilter = null
   itsystem_uuids: [UUID!] = null
   engagement: EngagementFilter = null
+  external_ids: [String!] = null
 }
 
 input OrgUnitsboundklefilter {
@@ -3820,7 +3907,7 @@ input OrganisationUnitFilter {
   "Name filter finding exact matches by name.\n\n| `names`      | Elements returned                            |\n|--------------|----------------------------------------------|\n| not provided | All                                          |\n| `null`       | All                                          |\n| `[]`         | None                                         |\n| `\"x\"`        | `[\"x\"]` or `[]` (`*`)                        |\n| `[\"x\", \"y\"]` | `[\"x\", \"y\"]`, `[\"x\"]`, `[\"y\"]` or `[]` (`*`) |\n\n`*`: Elements returned depends on which elements were found.\n"
   names: [String!]
 
-  "Parent filter limiting which entries are returned.\n\nSet to `None` to find root units.\n"
+  "Select organisation units whose parent matches the given filter.\n\nSet to `None` to find root units.\n"
   parent: OrganisationUnitFilter
 
   "Parent UUID filter limiting which entries are returned.\n\n| `parents`      | Elements returned                            |\n|--------------|----------------------------------------------|\n| not provided | All                                          |\n| `null`       | All                                          |\n| `[]`         | None                                         |\n| `\"x\"`        | `[\"x\"]` or `[]` (`*`)                        |\n| `[\"x\", \"y\"]` | `[\"x\", \"y\"]`, `[\"x\"]`, `[\"y\"]` or `[]` (`*`) |\n\n`*`: Elements returned depends on which elements were found.\n"
@@ -3831,9 +3918,13 @@ input OrganisationUnitFilter {
 
   "Filter organisation units by their organisational hierarchy labels.\n\nCan be used to extract a subset of the organisational structure.\n\nExamples of user-keys:\n* `\"Line-management\"`\n* `\"Self-owned institution\"`\n* `\"Outside organisation\"`\n* `\"Hidden\"`\n\nNote:\nThe organisation-gatekeeper integration is one option to keep hierarchy labels up-to-date.\n\n| `hierarchies`      | Elements returned                            |\n|--------------|----------------------------------------------|\n| not provided | All                                          |\n| `null`       | All                                          |\n| `[]`         | None                                         |\n| `\"x\"`        | `[\"x\"]` or `[]` (`*`)                        |\n| `[\"x\", \"y\"]` | `[\"x\", \"y\"]`, `[\"x\"]`, `[\"y\"]` or `[]` (`*`) |\n\n`*`: Elements returned depends on which elements were found.\n"
   hierarchies: [UUID!] = null @deprecated(reason: "Replaced by the 'hierarchy' filter")
+  subtree: OrganisationUnitFilter @deprecated(reason: "Renamed to 'descendant'")
 
-  "Filter organisation units, returning all matches along with their ancestors.\n\nCan be used to find organisation units together with the context of their organisational placement.\n"
-  subtree: OrganisationUnitFilter
+  "Select organisation units which have a descendant matching the given filter.\n\nNote that every node is its own descendant as per [CLRS] 12.2-6.\n\nGiven the following tree:\n```\nA\n├── B\n│   ├── C\n│   │   └── D\n│   └── E\n└── F\n```\nthe `descendant` filter behaves according to the following table:\n\n| Filter | Returned    |\n|--------|-------------|\n|      A | A           |\n|      B | A B         |\n|      C | A B C       |\n|      D | A B C D     |\n|      E | A B E       |\n|      F | A F         |\n"
+  descendant: OrganisationUnitFilter
+
+  "Select organisation units which have an ancestor matching the given filter.\n\nNote that every node is its own ancestor as per [CLRS] 12.2-6.\n\nGiven the following tree:\n```\nA\n├── B\n│   ├── C\n│   │   └── D\n│   └── E\n└── F\n```\nthe `ancestor` filter behaves according to the following table:\n\n| Filter | Returned    |\n|--------|-------------|\n|      A | A B C D E F |\n|      B | B C D E     |\n|      C | C D         |\n|      D | D           |\n|      E | E           |\n|      F | F           |\n"
+  ancestor: OrganisationUnitFilter
 
   "Filter organisation units to only include matches pointed to by engagements.\n\nCan be used to find organisation units for certain engagements.\n"
   engagement: EngagementFilter = null
@@ -4124,6 +4215,7 @@ input ParentsBoundClassFilter {
   parent: ClassFilter = null
   parent_user_keys: [String!] = null
   it_system: ITSystemFilter = null
+  owner: ClassOwnerFilter = null
   scope: [String!] = null
 }
 
@@ -4149,6 +4241,8 @@ input ParentsBoundOrganisationUnitFilter {
   hierarchy: ClassFilter = null
   hierarchies: [UUID!] = null
   subtree: OrganisationUnitFilter
+  descendant: OrganisationUnitFilter
+  ancestor: OrganisationUnitFilter
   engagement: EngagementFilter = null
 }
 
@@ -4746,6 +4840,7 @@ input UuidsBoundClassFilter {
   parents: [UUID!] = null
   parent_user_keys: [String!] = null
   it_system: ITSystemFilter = null
+  owner: ClassOwnerFilter = null
   scope: [String!] = null
 }
 
@@ -4768,6 +4863,7 @@ input UuidsBoundEngagementFilter {
   to_date: DateTime
   registration: EngagementRegistrationFilter = null
   job_function: ClassFilter = null
+  engagement_type: ClassFilter = null
 }
 
 input UuidsBoundFacetFilter {
@@ -4799,6 +4895,7 @@ input UuidsBoundITUserFilter {
   itsystem: ITSystemFilter = null
   itsystem_uuids: [UUID!] = null
   engagement: EngagementFilter = null
+  external_ids: [String!] = null
 }
 
 input UuidsBoundLeaveFilter {
@@ -4824,6 +4921,8 @@ input UuidsBoundOrganisationUnitFilter {
   hierarchy: ClassFilter = null
   hierarchies: [UUID!] = null
   subtree: OrganisationUnitFilter
+  descendant: OrganisationUnitFilter
+  ancestor: OrganisationUnitFilter
   engagement: EngagementFilter = null
 }
 
