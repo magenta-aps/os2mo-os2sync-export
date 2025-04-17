@@ -1145,7 +1145,7 @@ telegram = ["requests"]
 name = "types-requests"
 version = "2.32.0.20240914"
 description = "Typing stubs for requests"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.8"
 
@@ -1154,11 +1154,14 @@ urllib3 = ">=2"
 
 [[package]]
 name = "types-tqdm"
-version = "4.66.0.20240417"
+version = "4.67.0.20250417"
 description = "Typing stubs for tqdm"
 category = "main"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
+
+[package.dependencies]
+types-requests = "*"
 
 [[package]]
 name = "typing-extensions"
@@ -1262,7 +1265,7 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.11.0"
-content-hash = "a7d9384a22a3f6b366968587ac7ffc93b20a1d5fe91de7ef44eb4ee4228dca95"
+content-hash = "280d8ee22ad889463df3c2d154c6c4ffad9c754c36d8eae31c87561684df5665"
 
 [metadata.files]
 aio-pika = [
@@ -2694,8 +2697,8 @@ types-requests = [
     {file = "types_requests-2.32.0.20240914-py3-none-any.whl", hash = "sha256:59c2f673eb55f32a99b2894faf6020e1a9f4a402ad0f192bfee0b64469054310"},
 ]
 types-tqdm = [
-    {file = "types-tqdm-4.66.0.20240417.tar.gz", hash = "sha256:16dce9ef522ea8d40e4f5b8d84dd8a1166eefc13ceee7a7e158bf0f1a1421a31"},
-    {file = "types_tqdm-4.66.0.20240417-py3-none-any.whl", hash = "sha256:248aef1f9986b7b8c2c12b3cb4399fc17dba0a29e7e3f3f9cd704babb879383d"},
+    {file = "types_tqdm-4.67.0.20250417-py3-none-any.whl", hash = "sha256:d43fc9a295be1f94083c744a09099c033c4dea293ff9a07bab9f34bfbffaaf80"},
+    {file = "types_tqdm-4.67.0.20250417.tar.gz", hash = "sha256:bfcc4099d8d48df54e53f3ea64708cbcc1d1c4039ca7619594189da8c03c7be2"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.12.2-py3-none-any.whl", hash = "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d"},
