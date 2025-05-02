@@ -57,6 +57,7 @@
                 "filter_hierarchy_names":     "[\"Linjeorganisation\", \"Selvejet institution\"]",
                 "uuid_from_it_systems":       "[\"FK-org uuid\",\"SD UUID\", \"Omada - AD GUID\"]",
                 "phone_scope_classes":        "[\"05a6f153-4fa9-29fb-b063-3ecb57db1313\", \"eac1f99b-d1aa-8875-4f76-310b2087b288\"]",
+                "email_scope_classes":        "[\"db077886-9392-1caa-d41e-5415bf4efde7\"]",
                 "landline_scope_classes":     "[\"d6edb35f-9d08-16ef-ed80-d8164b31d9cf\"]",
                 "user_key_it_system_names":   "[\"Omada - LOGIN\"]",
                 "filter_users_by_it_system":  "true",
