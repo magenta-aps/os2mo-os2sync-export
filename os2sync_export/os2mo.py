@@ -344,7 +344,9 @@ async def get_sts_user_raw(
 
     addresses = os2mo_get("{BASE}/e/" + uuid + "/details/address").json()
     if engagement_uuid is not None:
-        addresses = filter(lambda a: a["engagement_uuid"] == engagement_uuid, addresses)
+        addresses = list(
+            filter(lambda a: a["engagement_uuid"] == engagement_uuid, addresses)
+        )
 
     sts_user["Email"] = pick_address(addresses, settings.email_scope_classes)
     sts_user["PhoneNumber"] = pick_address(
