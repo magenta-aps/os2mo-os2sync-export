@@ -62,7 +62,7 @@ def graphql_session() -> Generator[AsyncMock, None, None]:
 
 
 @pytest.fixture
-def graphql_client() -> Generator[AsyncMock, None, None]:
+def mock_graphql_client() -> Generator[AsyncMock, None, None]:
     """Fixture for the codegen client."""
     yield AsyncMock()
 
