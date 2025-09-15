@@ -289,11 +289,11 @@ def test_convert_to_os2sync_engagement_org_unit_uuid(mock_settings):
 
 def test_convert_and_filter_same_uuid(mock_settings):
     """Tests that with an ituser and fk-org user with the same external id, that id is used for os2sync"""
-    user_key = "SamAccountName"
+
     it_user = BASE_ITUSER_RESPONSE.copy()
-    it_user.user_key = user_key
+
     fk_org_user = ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids(
-        external_id=it_user.external_id, user_key=user_key
+        external_id=it_user.external_id, user_key=it_user.external_id
     )
     os2sync_update, os2sync_delete = convert_and_filter(
         settings=mock_settings, it_users=[it_user], fk_org_users=[fk_org_user]
@@ -304,16 +304,15 @@ def test_convert_and_filter_same_uuid(mock_settings):
 
 def test_convert_and_filter_different_uuid(mock_settings):
     """Tests that with an ituser and fk-org user with different external ids, the id from fk-org system is used for os2sync"""
-    user_key = "SamAccountName"
+    fk_org_uuid = uuid4()
     it_user = BASE_ITUSER_RESPONSE.copy()
-    it_user.user_key = user_key
     fk_org_user = ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids(
-        external_id=str(uuid4()), user_key=user_key
+        external_id=str(fk_org_uuid), user_key=it_user.external_id
     )
     os2sync_update, os2sync_delete = convert_and_filter(
         settings=mock_settings, it_users=[it_user], fk_org_users=[fk_org_user]
     )
-    assert one(os2sync_update).Uuid == UUID(fk_org_user.external_id)
+    assert one(os2sync_update).Uuid == fk_org_uuid
     assert os2sync_delete == set()
 
 
@@ -358,12 +357,11 @@ def test_convert_and_filter_different_user_key(mock_settings):
 
 def test_convert_and_filter_no_engagement(mock_settings):
     """Tests that when an account has no engagements it is deleted"""
-    user_key = "SamAccountName"
+    fk_org_uuid = uuid4()
     it_user = BASE_ITUSER_RESPONSE.copy()
     fk_org_user = ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids(
-        external_id=str(uuid4()), user_key=user_key
+        external_id=str(fk_org_uuid), user_key=it_user.external_id
     )
-    it_user.user_key = user_key
     it_user.engagement = []
     os2sync_update, os2sync_delete = convert_and_filter(
         settings=mock_settings, it_users=[it_user], fk_org_users=[fk_org_user]
