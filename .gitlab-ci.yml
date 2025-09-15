@@ -11,6 +11,9 @@ stages:
 
 
 variables:
+
+  CI_DEBUG_SERVICES: "true"
+
   IMAGE_SHA: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA}
 
   RELEASE_REGISTRY: docker.io
@@ -25,6 +28,7 @@ variables:
   PRODUCT: os2mo
   COMPONENT: os2syncexport
 
+  OS2MO_INIT_CONFIG: "/builds/$CI_PROJECT_PATH/init.config.yml"
 
 
 # Conditions
@@ -51,11 +55,29 @@ include:
   - project: labs/salt-automation
     ref: master
     file:
-      - /gitlab-ci-templates/common/rules.v1.yml
-      - /gitlab-ci-templates/common/pre-commit.v1.yml
+      - /gitlab-ci-templates/common/config-updater-salt.v1.yml
       - /gitlab-ci-templates/common/conventional-commits.v1.yml
-      - /gitlab-ci-templates/python/pytest.v1.yml
       - /gitlab-ci-templates/common/docker-build.v1.yml
       - /gitlab-ci-templates/common/docker-release.v1.yml
-      - /gitlab-ci-templates/common/config-updater-salt.v1.yml
+      - /gitlab-ci-templates/common/pre-commit.v1.yml
+      - /gitlab-ci-templates/common/rules.v1.yml
+      - /gitlab-ci-templates/python/pytest.v1.yml
       - gitlab-ci-templates/common/config-updater-flux.v1.yml
+  - project: rammearkitektur/os2mo
+    file:
+      - gitlab-ci-templates/integration-test-meta.v1.yml
+
+
+Test:
+  variables:
+    PYTEST_ADDOPTS: "-m 'not integration_test'"
+
+Integration-test:
+  extends:
+    - .integration-test:mo
+  variables:
+    new: "true"
+    municipality: "Andeby Kommune"
+    top_unit_uuid: a347c13b-bc63-4fc3-83cb-d26c1f0b63fa
+  rules:
+    - <<: *if-merge-request

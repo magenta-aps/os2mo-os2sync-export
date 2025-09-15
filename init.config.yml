@@ -2,7 +2,13 @@
 # SPDX-License-Identifier: MPL-2.0
 ---
 root_organisation:
-  facets:
+  municipality_code: null
+
+facets:
+  org_unit_type:
+    Enhed:
+      title: "Enhed"
+      scope: "TEXT"
   org_unit_address_type:
     Contact:
       title: "Henvendelsessted"
@@ -10,6 +16,14 @@ root_organisation:
     Location:
       title: "Lokation"
       scope: "DAR"
+  engagement_type:
+    ansat:
+      title: "Ansat"
+      scope: "TEXT"
+  engagement_job_function:
+    tester:
+      title: "Tester"
+      scope: "TEXT"
 
 it_systems:
   "Active Directory": "Active Directory"
