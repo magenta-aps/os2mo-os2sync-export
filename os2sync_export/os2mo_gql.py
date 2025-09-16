@@ -102,12 +102,12 @@ def convert_and_filter(
     delete_fk_org_users = {
         UUID(fk_org_user.external_id)
         for fk_org_user in fk_org_users
-        if fk_org_user.user_key not in {a.user_key for a in it_users}
+        if fk_org_user.user_key not in {a.external_id for a in it_users}
     }
     # Map user-keys to uuids using uuids from FK-org it account if it exists, else use the it-users external id (eg objectGUID)
     fk_org_uuids = {
-        it.user_key: UUID(
-            only({f.external_id for f in fk_org_users if f.user_key == it.user_key})
+        it.external_id: UUID(
+            only({f.external_id for f in fk_org_users if f.user_key == it.external_id})
             or it.external_id
         )
         for it in it_users
@@ -117,11 +117,13 @@ def convert_and_filter(
         try:
             os2sync_updates.append(
                 convert_to_os2sync(
-                    settings=settings, it=it_user, uuid=fk_org_uuids[it_user.user_key]
+                    settings=settings,
+                    it=it_user,
+                    uuid=fk_org_uuids[it_user.external_id],
                 )
             )
         except ValidationError:
-            delete_fk_org_users.add(fk_org_uuids[it_user.user_key])
+            delete_fk_org_users.add(fk_org_uuids[it_user.external_id])
 
     return os2sync_updates, delete_fk_org_users
 
