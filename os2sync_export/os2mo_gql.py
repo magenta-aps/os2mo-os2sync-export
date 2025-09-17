@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+from datetime import datetime
 from typing import Iterable
 from uuid import UUID
 
@@ -73,20 +74,6 @@ async def read_fk_users_from_person(
     return fk_accounts, ad_accounts
 
 
-async def ensure_mo_fk_org_user_exists(
-    graphql_client: GraphQLClient,
-    os2sync_user: User,
-    fk_org_it_users: list[ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids],
-):
-    fk_org_account = only(
-        filter(lambda f: f.external_id == os2sync_user.Uuid, fk_org_it_users)
-    )
-    if fk_org_account is None:
-        # New user, create it-user in MO. This should trigger a new sync of that user.
-        pass
-    pass
-
-
 async def delete_fk_org_user(
     fk_org_it_user: ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids,
 ):
@@ -97,8 +84,10 @@ def convert_and_filter(
     settings: Settings,
     fk_org_users: list[ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids],
     it_users: list[ReadUserITAccountsEmployeesObjectsCurrentItusers],
-) -> tuple[list[User], set[UUID]]:
-    # TODO: add filtering for it_users
+) -> tuple[
+    list[User], list[ReadUserITAccountsEmployeesObjectsCurrentItusers], set[UUID]
+]:
+    # Find users to delete from fk-org
     delete_fk_org_users = {
         UUID(fk_org_user.external_id)
         for fk_org_user in fk_org_users
@@ -124,8 +113,14 @@ def convert_and_filter(
             )
         except ValidationError:
             delete_fk_org_users.add(fk_org_uuids[it_user.external_id])
+    # Find it-users to create in MO
+    new_fk_accounts = [
+        u
+        for u in it_users
+        if u.external_id not in set(f.user_key for f in fk_org_users)
+    ]
 
-    return os2sync_updates, delete_fk_org_users
+    return os2sync_updates, new_fk_accounts, delete_fk_org_users
 
 
 async def delete_mo_fk_org_users(
@@ -219,10 +214,39 @@ async def sync_mo_user_to_fk_org(
         fk_org_users=fk_org_users,
         ad_users=it_users,
     )
-    updates_fk, deletes_fk = convert_and_filter(settings, fk_org_users, it_users)
+    # Check if a user exists in fk-org with the MO-persons uuid. In that case we create the fk-org it-account.
+    fk_it = await graphql_client.find_f_k_itsystem()
+    fk_it_uuid = one(fk_it.objects).uuid
+    if len(it_users) == 1 and len(fk_org_users) == 0:
+        current = os2sync_client.os2sync_get_user(uuid=uuid)
+        if current:
+            await graphql_client.create_i_t_user(
+                external_id=str(uuid),
+                itsystem=fk_it_uuid,
+                person=uuid,
+                user_key=one(it_users).external_id,  # type: ignore
+                from_=datetime.now(),
+            )
+            fk_org_users, it_users = await read_fk_users_from_person(
+                graphql_client=graphql_client,
+                uuid=uuid,
+                it_user_keys=settings.it_system_user_keys,
+            )
+    # The code above could be be deleted after the initial runs.
+
+    updates_fk, new_fk, deletes_fk = convert_and_filter(
+        settings, fk_org_users, it_users
+    )
     for os2sync_user in updates_fk:
-        await ensure_mo_fk_org_user_exists(graphql_client, os2sync_user, fk_org_users)
         os2sync_client.update_user(os2sync_user)
+    for it in new_fk:
+        await graphql_client.create_i_t_user(
+            external_id=it.external_id,  # type: ignore
+            itsystem=fk_it_uuid,
+            person=uuid,
+            user_key=it.external_id,  # type: ignore
+            from_=datetime.now(),
+        )
     for deleted_user_uuid in deletes_fk:
         await delete_mo_fk_org_users(graphql_client, deleted_user_uuid)
         os2sync_client.delete_user(deleted_user_uuid)

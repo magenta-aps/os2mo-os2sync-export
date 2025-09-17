@@ -63,6 +63,10 @@ class OS2SyncClient:
         r.raise_for_status()
         return r.json()
 
+    def os2sync_get_user(self, uuid: UUID) -> User:
+        current = self.os2sync_get(f"{{BASE}}/user/{str(uuid)}")
+        return User(**current)
+
     def os2sync_get_org_unit(self, uuid: UUID) -> OrgUnit:
         current = self.os2sync_get(f"{{BASE}}/orgUnit/{str(uuid)}")
         current.pop("Type")
