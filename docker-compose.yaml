@@ -26,6 +26,21 @@ services:
       - 127.0.0.1:8000:8000/tcp
     volumes:
       - ./os2sync_export:/app/os2sync_export
+      - ./tests:/app/tests
+    depends_on:
+      - db
+      - init
+
+  db:
+    # Requirement for running integration tests
+    # Not used in the actual integration
+    image: postgres:16
+    environment:
+      POSTGRES_USER: "fastramqpi"
+      POSTGRES_PASSWORD: "fastramqpi"
+      POSTGRES_DB: "fastramqpi"
+    networks:
+      - default
 
 networks:
   default:

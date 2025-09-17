@@ -206,3 +206,49 @@ mutation TerminateITUser($uuid: UUID!, $to: DateTime!) {
     uuid
   }
 }
+
+query _testing__get_class($filter: ClassFilter) {
+  classes(filter: $filter) {
+    objects {
+      uuid
+    }
+  }
+}
+
+query _testing__get_itsystem($filter: ITSystemFilter) {
+  itsystems(filter: $filter) {
+    objects {
+      uuid
+    }
+  }
+}
+
+mutation _testing__employee_create($input: EmployeeCreateInput!) {
+  employee_create(input: $input) {
+    uuid
+  }
+}
+
+mutation _testing__engagement_create($input: EngagementCreateInput!) {
+  engagement_create(input: $input) {
+    uuid
+  }
+}
+
+mutation _testing__address_create($input: AddressCreateInput!) {
+  address_create(input: $input) {
+    uuid
+  }
+}
+
+mutation _testing__org_unit_create($input: OrganisationUnitCreateInput!) {
+  org_unit_create(input: $input) {
+    uuid
+  }
+}
+
+mutation _testing__ituser_create($input: ITUserCreateInput!) {
+  ituser_create(input: $input) {
+    uuid
+  }
+}

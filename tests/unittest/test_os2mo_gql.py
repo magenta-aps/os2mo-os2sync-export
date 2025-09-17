@@ -80,13 +80,13 @@ BASE_ITUSER_RESPONSE = ReadUserITAccountsEmployeesObjectsCurrentItusers(
 
 @patch("os2sync_export.os2mo_gql.ensure_mo_fk_org_user_exists")
 async def test_sync_mo_user_to_fk_no_users(
-    update_mock, graphql_client, mock_settings, os2sync_client
+    update_mock, mock_graphql_client, mock_settings, os2sync_client
 ):
-    graphql_client.read_user_i_t_accounts.return_value = ReadUserITAccountsEmployees(
-        **{"objects": [{"current": None}]}
+    mock_graphql_client.read_user_i_t_accounts.return_value = (
+        ReadUserITAccountsEmployees(**{"objects": [{"current": None}]})
     )
     await sync_mo_user_to_fk_org(
-        graphql_client=graphql_client,
+        graphql_client=mock_graphql_client,
         uuid=uuid4(),
         settings=mock_settings,
         os2sync_client=os2sync_client,
@@ -95,7 +95,7 @@ async def test_sync_mo_user_to_fk_no_users(
 
 
 async def test_sync_mo_user_to_fk_one_it_user(
-    graphql_client, mock_settings, os2sync_client
+    mock_graphql_client, mock_settings, os2sync_client
 ):
     it_users = ReadUserITAccountsEmployees(
         **{
@@ -150,9 +150,9 @@ async def test_sync_mo_user_to_fk_one_it_user(
             ]
         }
     )
-    graphql_client.read_user_i_t_accounts.return_value = it_users
+    mock_graphql_client.read_user_i_t_accounts.return_value = it_users
     await sync_mo_user_to_fk_org(
-        graphql_client=graphql_client,
+        graphql_client=mock_graphql_client,
         uuid=uuid4(),
         settings=mock_settings,
         os2sync_client=os2sync_client,
@@ -165,7 +165,7 @@ async def test_sync_mo_user_to_fk_one_it_user(
 
 
 async def test_sync_mo_user_to_fk_delete_user(
-    graphql_client, mock_settings, os2sync_client
+    mock_graphql_client, mock_settings, os2sync_client
 ):
     it_users = ReadUserITAccountsEmployees(
         **{
@@ -184,9 +184,9 @@ async def test_sync_mo_user_to_fk_delete_user(
             ]
         }
     )
-    graphql_client.read_user_i_t_accounts.return_value = it_users
+    mock_graphql_client.read_user_i_t_accounts.return_value = it_users
     await sync_mo_user_to_fk_org(
-        graphql_client=graphql_client,
+        graphql_client=mock_graphql_client,
         uuid=uuid4(),
         settings=mock_settings,
         os2sync_client=os2sync_client,
