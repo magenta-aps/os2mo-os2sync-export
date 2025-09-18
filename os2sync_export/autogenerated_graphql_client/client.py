@@ -65,11 +65,11 @@ class GraphQLClient(AsyncBaseClient):
                 objects {
                   current {
                     fk_org_uuids: itusers(filter: {itsystem: {user_keys: "FK-ORG-UUID"}}) {
+                      uuid
                       user_key
                       external_id
                     }
                     itusers: itusers(filter: {itsystem: {user_keys: $it_user_keys}}) {
-                      uuid
                       user_key
                       external_id
                       person {
