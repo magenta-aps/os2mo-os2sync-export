@@ -24,12 +24,12 @@ class ReadUserITAccountsEmployeesObjectsCurrent(BaseModel):
 
 
 class ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids(BaseModel):
+    uuid: UUID
     user_key: str
     external_id: Optional[str]
 
 
 class ReadUserITAccountsEmployeesObjectsCurrentItusers(BaseModel):
-    uuid: UUID
     user_key: str
     external_id: Optional[str]
     person: Optional[List["ReadUserITAccountsEmployeesObjectsCurrentItusersPerson"]]
