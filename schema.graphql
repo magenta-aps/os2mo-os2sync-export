@@ -1,8 +1,95 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
 #
-# OS2mo GraphQL API schema definition (v23).
-# https://os2mo.eksempel.dk/graphql/v23/schema.graphql
+# OS2mo GraphQL API schema definition (v25).
+# https://os2mo.eksempel.dk/graphql/v25/schema.graphql
+
+"Access log entry.\n\nMostly useful for auditing purposes seeing when data-reads were done and by whom.\n"
+type AccessLog {
+  "UUID of the access log entry itself.\n"
+  id: UUID!
+
+  "When the read occured.\n\nExamples:\n* `\"1970-01-01T00:00:00.000000+00:00\"`\n* `\"2019-12-18T12:55:15.348614+00:00\"`\n"
+  time: DateTime!
+
+  "UUID of the actor (integration or user) who changed the data.\n\nNote:\nCurrently mostly returns `\"42c432e8-9c4a-11e6-9f62-873cf34a735f\"`.\nWill eventually contain for the UUID of the integration or user who mutated data, based on the JWT token.\n"
+  actor: UUID!
+
+  "Model of the modified entity.\n"
+  model: AccessLogModel!
+
+  "UUIDs of entities that were read.\n"
+  uuids: [UUID!]!
+}
+
+"""Access log log filter."""
+input AccessLogFilter {
+  "ID filter limiting which entries are returned.\n\n| `ids`      | Elements returned                            |\n|--------------|----------------------------------------------|\n| not provided | All                                          |\n| `null`       | All                                          |\n| `[]`         | None                                         |\n| `\"x\"`        | `[\"x\"]` or `[]` (`*`)                        |\n| `[\"x\", \"y\"]` | `[\"x\", \"y\"]`, `[\"x\"]`, `[\"y\"]` or `[]` (`*`) |\n\n`*`: Elements returned depends on which elements were found.\n"
+  ids: [UUID!] = null
+
+  "UUID filter limiting which entries are returned.\n\n| `uuids`      | Elements returned                            |\n|--------------|----------------------------------------------|\n| not provided | All                                          |\n| `null`       | All                                          |\n| `[]`         | None                                         |\n| `\"x\"`        | `[\"x\"]` or `[]` (`*`)                        |\n| `[\"x\", \"y\"]` | `[\"x\", \"y\"]`, `[\"x\"]`, `[\"y\"]` or `[]` (`*`) |\n\n`*`: Elements returned depends on which elements were found.\n"
+  uuids: [UUID!] = null
+
+  "Filter access log events by their reading actor.\n\nCan be used to select all data read by a particular user or integration.\n\n| `actors`      | Elements returned                            |\n|--------------|----------------------------------------------|\n| not provided | All                                          |\n| `null`       | All                                          |\n| `[]`         | None                                         |\n| `\"x\"`        | `[\"x\"]` or `[]` (`*`)                        |\n| `[\"x\", \"y\"]` | `[\"x\", \"y\"]`, `[\"x\"]`, `[\"y\"]` or `[]` (`*`) |\n\n`*`: Elements returned depends on which elements were found.\n"
+  actors: [UUID!] = null
+
+  "Filter access log events by their model type.\n\nCan be used to select all reads for a data type.\n\nCan be one of:\n* `\"AccessLog\"`\n* `\"Bruger\"`\n* `\"Facet\"`\n* `\"ItSystem\"`\n* `\"Klasse\"`\n* `\"Organisation\"`\n* `\"OrganisationEnhed\"`\n* `\"OrganisationFunktion\"`\n\n| `models`      | Elements returned                            |\n|--------------|----------------------------------------------|\n| not provided | All                                          |\n| `null`       | All                                          |\n| `[]`         | None                                         |\n| `\"x\"`        | `[\"x\"]` or `[]` (`*`)                        |\n| `[\"x\", \"y\"]` | `[\"x\", \"y\"]`, `[\"x\"]`, `[\"y\"]` or `[]` (`*`) |\n\n`*`: Elements returned depends on which elements were found.\n"
+  models: [AccessLogModel!] = null
+
+  """Limit the elements returned by their starting validity."""
+  start: DateTime = null
+
+  """Limit the elements returned by their ending validity."""
+  end: DateTime = null
+}
+
+enum AccessLogModel {
+  ACCESS_LOG
+  PERSON
+  FACET
+  IT_SYSTEM
+  CLASS
+  ORGANISATION @deprecated(reason: "The root organisation concept will be removed in a future version of OS2mo.")
+  ORGANISATION_UNIT
+  ORGANISATION_FUNCTION
+}
+
+"""Result page in cursor-based pagination."""
+type AccessLogPaged {
+  "List of results.\n\nThe number of elements is defined by the `limit` argument.\n"
+  objects: [AccessLog!]!
+
+  "Container for page information.\n\nContains the cursors necessary to fetch other pages.\nContains information on when to stop iteration.\n"
+  page_info: PageInfo!
+}
+
+"Interface type for all actors, implementing all shared behavior.\n"
+interface Actor {
+  """UUID of the actor"""
+  uuid: UUID!
+
+  """Get event namespaces owned by this actor."""
+  event_namespaces(
+    filter: OwnersBoundNamespaceFilter
+
+    "\nLimit the maximum number of elements to fetch.\n\n| `limit`      | \\# elements fetched |\n|--------------|---------------------|\n| not provided | All                 |\n| `null`       | All                 |\n| `0`          | `0` (`*`)           |\n| `x`          | Between `0` and `x` |\n\n`*`: This behavior is equivalent to SQL's `LIMIT 0` behavior.\n\nNote:\n\nSometimes the caller may receieve a shorter list (or even an empty list) of results compared to the expected per the limit argument.\n\nThis may seem confusing, but it is the expected behavior given the way that limiting is implemented in the bitemporal database layer, combined with how filtering and object change consolidation is handled.\n\nNot to worry; all the expected elements will eventually be returned, as long as the iteration is continued until the `next_cursor` is `null`.\n"
+    limit: int = null
+
+    "Cursor defining the next elements to fetch.\n\n| `cursor`       | Next element is    |\n|----------------|--------------------|\n| not provided   | First              |\n| `null`         | First              |\n| `\"MA==\"` (`*`) | First after Cursor |\n\n`*`: Placeholder for the cursor returned by the previous iteration.\n"
+    cursor: Cursor = null
+  ): [Namespace!]!
+
+  """Get event listeners owned by this actor."""
+  event_listeners(
+    filter: OwnersBoundListenerFilter
+
+    "\nLimit the maximum number of elements to fetch.\n\n| `limit`      | \\# elements fetched |\n|--------------|---------------------|\n| not provided | All                 |\n| `null`       | All                 |\n| `0`          | `0` (`*`)           |\n| `x`          | Between `0` and `x` |\n\n`*`: This behavior is equivalent to SQL's `LIMIT 0` behavior.\n\nNote:\n\nSometimes the caller may receieve a shorter list (or even an empty list) of results compared to the expected per the limit argument.\n\nThis may seem confusing, but it is the expected behavior given the way that limiting is implemented in the bitemporal database layer, combined with how filtering and object change consolidation is handled.\n\nNot to worry; all the expected elements will eventually be returned, as long as the iteration is continued until the `next_cursor` is `null`.\n"
+    limit: int = null
+
+    "Cursor defining the next elements to fetch.\n\n| `cursor`       | Next element is    |\n|----------------|--------------------|\n| not provided   | First              |\n| `null`         | First              |\n| `\"MA==\"` (`*`) | First after Cursor |\n\n`*`: Placeholder for the cursor returned by the previous iteration.\n"
+    cursor: Cursor = null
+  ): [Listener!]!
+}
 
 "Access log entry.\n\nMostly useful for auditing purposes seeing when data-reads were done and by whom.\n"
 type AccessLog {
@@ -4263,6 +4350,20 @@ type OrganisationUnit {
     cursor: Cursor = null
   ): [Engagement!]!
 
+  "Managerial roles for the organisation unit.\n\nMay be empty in which case managers are usually inherited from parents.\nSee the `inherit`-flag for details.\n"
+  managers(
+    filter: OrgUnitsboundmanagerfilter
+
+    "\nLimit the maximum number of elements to fetch.\n\n| `limit`      | \\# elements fetched |\n|--------------|---------------------|\n| not provided | All                 |\n| `null`       | All                 |\n| `0`          | `0` (`*`)           |\n| `x`          | Between `0` and `x` |\n\n`*`: This behavior is equivalent to SQL's `LIMIT 0` behavior.\n\nNote:\n\nSometimes the caller may receieve a shorter list (or even an empty list) of results compared to the expected per the limit argument.\n\nThis may seem confusing, but it is the expected behavior given the way that limiting is implemented in the bitemporal database layer, combined with how filtering and object change consolidation is handled.\n\nNot to worry; all the expected elements will eventually be returned, as long as the iteration is continued until the `next_cursor` is `null`.\n"
+    limit: int = null
+
+    "Cursor defining the next elements to fetch.\n\n| `cursor`       | Next element is    |\n|----------------|--------------------|\n| not provided   | First              |\n| `null`         | First              |\n| `\"MA==\"` (`*`) | First after Cursor |\n\n`*`: Placeholder for the cursor returned by the previous iteration.\n"
+    cursor: Cursor = null
+
+    "Whether to inherit managerial roles or not.\n\nIf managerial roles exist directly on this organisation unit, the flag does nothing and these managerial roles are returned.\nHowever if no managerial roles exist directly, and this flag is:\n* False: An empty list is returned.\n* True: The result from calling `managers` with `inherit=True` on the parent of this organistion unit is returned.\n\nCalling with `inherit=True` can help ensure that a manager is always found.\n"
+    inherit: Boolean! = false
+  ): [Manager!]!
+
   "Addresses for the organisation unit.\n\nCommonly contain addresses such as, their:\n* Location\n* Contact phone number\n* Contact email\n"
   addresses(
     filter: OrgUnitsboundaddressfilter
@@ -4343,14 +4444,6 @@ type OrganisationUnit {
 
   "Human readable name of the organisation unit.\n\nThis is the value that should be shown to users in UIs.\n\nExamples:\n* `\"Lunderskov skole\"`\n* `\"IT-Support\"`\n* `\"Teknik og Miljø\"`\n"
   name: String!
-
-  "Managerial roles for the organisation unit.\n\nMay be empty in which case managers are usually inherited from parents.\nSee the `inherit`-flag for details.\n"
-  managers(
-    filter: ManagerFilter = null
-
-    "Whether to inherit managerial roles or not.\n\nIf managerial roles exist directly on this organisation unit, the flag does nothing and these managerial roles are returned.\nHowever if no managerial roles exist directly, and this flag is:\n* Not set: An empty list is returned.\n* Is set: The result from calling `managers` with `inherit=True` on the parent of this organistion unit is returned.\n\nCalling with `inherit=True` can help ensure that a manager is always found.\n"
-    inherit: Boolean! = false
-  ): [Manager!]!
 
   "Owner roles for the organisation unit.\n\nMay be empty in which case owners are usually inherited from parents.\nSee the `inherit`-flag for details.\n"
   owners(
