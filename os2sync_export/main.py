@@ -499,6 +499,7 @@ async def trigger_user(
                 settings=settings,
                 os2sync_client=os2sync_client,
                 uuid=uuid,
+                dry_run=dry_run,
             )
         sts_users = await get_sts_user(
             str(uuid),
