@@ -6,6 +6,7 @@ from datetime import datetime
 from datetime import timedelta
 from typing import Iterable
 from uuid import UUID
+from uuid import uuid4
 
 import structlog
 from fastapi.encoders import jsonable_encoder
@@ -204,6 +205,7 @@ async def sync_mo_user_to_fk_org(
     settings: Settings,
     os2sync_client: OS2SyncClient,
     uuid: UUID,
+    dry_run: bool = False,
 ) -> tuple[list[User], set[UUID]]:
     """Handles sync of a persons users to fk-org.
 
@@ -226,18 +228,27 @@ async def sync_mo_user_to_fk_org(
     if len(it_users) == 1 and len(fk_org_users) == 0:
         current = os2sync_client.os2sync_get_user(uuid=uuid)
         if current:
-            await graphql_client.create_i_t_user(
-                external_id=str(uuid),
-                itsystem=fk_it_uuid,
-                person=uuid,
-                user_key=one(it_users).external_id,  # type: ignore
-                from_=datetime.now(),
-            )
-            fk_org_users, it_users = await read_fk_users_from_person(
-                graphql_client=graphql_client,
-                uuid=uuid,
-                it_user_keys=settings.it_system_user_keys,
-            )
+            if dry_run:
+                fk_org_users = [
+                    ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids(
+                        uuid=uuid4(),
+                        user_key=one(it_users).external_id,  # type: ignore
+                        external_id=str(uuid),
+                    )
+                ]
+            else:
+                await graphql_client.create_i_t_user(
+                    external_id=str(uuid),
+                    itsystem=fk_it_uuid,
+                    person=uuid,
+                    user_key=one(it_users).external_id,  # type: ignore
+                    from_=datetime.now(),
+                )
+                fk_org_users, it_users = await read_fk_users_from_person(
+                    graphql_client=graphql_client,
+                    uuid=uuid,
+                    it_user_keys=settings.it_system_user_keys,
+                )
     # The code above could be be deleted after the initial runs.
 
     updates_fk, new_mo_itusers, deletes_fk, delete_mo_itusers = convert_and_filter(
@@ -246,22 +257,24 @@ async def sync_mo_user_to_fk_org(
     for os2sync_user in updates_fk:
         os2sync_client.update_user(os2sync_user)
     for it in new_mo_itusers:
-        await graphql_client.create_i_t_user(
-            external_id=it.external_id,  # type: ignore
-            itsystem=fk_it_uuid,
-            person=uuid,
-            user_key=it.external_id,  # type: ignore
-            from_=datetime.now(),
-        )
+        if not dry_run:
+            await graphql_client.create_i_t_user(
+                external_id=it.external_id,  # type: ignore
+                itsystem=fk_it_uuid,
+                person=uuid,
+                user_key=it.external_id,  # type: ignore
+                from_=datetime.now(),
+            )
     for deleted_user_uuid in deletes_fk:
         os2sync_client.delete_user(deleted_user_uuid)
     for deleted_it_uuid in delete_mo_itusers:
-        await graphql_client.terminate_i_t_user(
-            # TODO: ensure it is correct behavior to terminate from yesterday. It is done to ensure
-            # FK-org accounts are terminated right away.
-            uuid=deleted_it_uuid,
-            to=date.today() - timedelta(days=1),  # type: ignore
-        )  # type: ignore
+        if not dry_run:
+            await graphql_client.terminate_i_t_user(
+                # TODO: ensure it is correct behavior to terminate from yesterday. It is done to ensure
+                # FK-org accounts are terminated right away.
+                uuid=deleted_it_uuid,
+                to=date.today() - timedelta(days=1),  # type: ignore
+            )  # type: ignore
     return updates_fk, deletes_fk
 
 
