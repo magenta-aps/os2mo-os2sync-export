@@ -488,12 +488,13 @@ async def trigger_user(
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     dry_run: bool = False,
+    new: bool = False,
 ) -> tuple[list[User], set[UUID]]:
     os2sync_client = get_os2sync_client(
         settings=settings, session=None, dry_run=dry_run
     )
     try:
-        if settings.new:
+        if settings.new or new:
             return await sync_mo_user_to_fk_org(
                 graphql_client=graphql_client,
                 settings=settings,
@@ -541,13 +542,14 @@ async def trigger_orgunit(
     graphql_client: GraphQLClient,
     graphql_session: LegacyGraphQLSession,
     dry_run: bool = False,
+    new: bool = False,
 ) -> OrgUnit | None:
     os2sync_client = get_os2sync_client(
         settings=settings, session=None, dry_run=dry_run
     )
 
     try:
-        if settings.new:
+        if settings.new or new:
             return await sync_orgunit(
                 settings=settings,
                 graphql_client=graphql_client,
