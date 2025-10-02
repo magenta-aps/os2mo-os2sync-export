@@ -375,7 +375,12 @@ def group_accounts(
 ) -> List:
     """Groups it accounts by their associated engagement"""
     # Find all unique engagement_uuids
-    engagement_uuids = {u["engagement_uuid"] for u in users}
+    engagement_uuids = {
+        u["engagement_uuid"]
+        for u in users
+        if u["itsystem"]["name"] in uuid_from_it_systems
+        or u["itsystem"]["name"] in user_key_it_system_names
+    }
     # Find relevant it-systems containing user_keys
     user_keys = list(
         filter(lambda x: x["itsystem"]["name"] in user_key_it_system_names, users)

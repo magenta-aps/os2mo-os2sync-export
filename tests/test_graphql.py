@@ -53,15 +53,29 @@ query_response = [
         "engagement_uuid": engagement_uuid2,
         "itsystem": {"name": "FK-ORG USERNAME"},
     },
+    {
+        "uuid": str(uuid4()),
+        "user_key": "Irrelevant",
+        "engagement_uuid": None,
+        "itsystem": {"name": "An irrelevant it-system"},
+    },
+    {
+        "uuid": str(uuid4()),
+        "user_key": "Irrelevant_2",
+        "engagement_uuid": engagement_uuid1,
+        "itsystem": {"name": "Another irrelevant it-system"},
+    },
 ]
 
 
 def test_group_by_engagement_noop():
+    # Test that with no relevant it-accounts only one "group" is found.
     groups = group_accounts(query_response, [], [])
-    assert len(groups) == 3
+    assert len(groups) == 1
     for g in groups:
         assert g.get("uuid") is None
         assert g.get("user_key") is None
+        assert g.get("engagement_uuid") is None
 
 
 def test_group_by_engagement():
