@@ -252,3 +252,9 @@ mutation _testing__ituser_create($input: ITUserCreateInput!) {
     uuid
   }
 }
+
+mutation _testing__itsystem_terminate($input: ITSystemTerminateInput!) {
+  itsystem_terminate(input: $input) {
+    uuid
+  }
+}
