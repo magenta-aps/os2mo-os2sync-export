@@ -67,7 +67,9 @@ class GraphQLClient(AsyncBaseClient):
               employees(filter: {uuids: [$uuid]}) {
                 objects {
                   current {
-                    fk_org_uuids: itusers(filter: {itsystem: {user_keys: "FK-ORG-UUID"}}) {
+                    fk_org_uuids: itusers(
+                      filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}
+                    ) {
                       uuid
                       user_key
                       external_id
@@ -84,7 +86,7 @@ class GraphQLClient(AsyncBaseClient):
                         extension_3
                         org_unit {
                           uuid
-                          itusers(filter: {user_keys: "FK-ORG-UUID"}) {
+                          itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
                             user_key
                           }
                         }
@@ -133,7 +135,7 @@ class GraphQLClient(AsyncBaseClient):
                     name
                     parent {
                       uuid
-                      itusers(filter: {user_keys: "FK-ORG-UUID"}) {
+                      itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
                         user_key
                       }
                     }
@@ -157,12 +159,12 @@ class GraphQLClient(AsyncBaseClient):
                       }
                       name
                     }
-                    itusers(filter: {user_keys: "FK-ORG-UUID"}) {
+                    itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
                       user_key
                     }
                     managers {
                       person {
-                        itusers(filter: {itsystem: {user_keys: "FK-ORG-UUID"}}) {
+                        itusers(filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}) {
                           external_id
                         }
                       }
@@ -304,7 +306,7 @@ class GraphQLClient(AsyncBaseClient):
         query = gql(
             """
             query FindFKItsystem {
-              itsystems(filter: {user_keys: "FK-ORG-UUID"}) {
+              itsystems(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
                 objects {
                   uuid
                 }

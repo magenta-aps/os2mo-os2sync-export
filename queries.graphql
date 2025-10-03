@@ -5,7 +5,7 @@ query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
   employees(filter: { uuids: [$uuid] }) {
     objects {
       current {
-        fk_org_uuids: itusers(filter: { itsystem: { user_keys: "FK-ORG-UUID" } }) {
+        fk_org_uuids: itusers(filter: { itsystem: { user_keys: ["FK-ORG-UUID", "FK-ORG UUID"] } }) {
           uuid
           user_key
           external_id
@@ -22,7 +22,7 @@ query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
             extension_3
             org_unit {
               uuid
-              itusers(filter: { user_keys: "FK-ORG-UUID" }) {
+              itusers(filter: { user_keys: ["FK-ORG-UUID", "FK-ORG UUID"] }) {
                 user_key
               }
             }
@@ -62,7 +62,7 @@ query read_orgunit($uuid: UUID!) {
         name
         parent {
           uuid
-          itusers(filter: { user_keys: "FK-ORG-UUID" }) {
+          itusers(filter: { user_keys: ["FK-ORG-UUID", "FK-ORG UUID"] }) {
             user_key
           }
         }
@@ -86,12 +86,12 @@ query read_orgunit($uuid: UUID!) {
           }
           name
         }
-        itusers(filter: { user_keys: "FK-ORG-UUID" }) {
+        itusers(filter: { user_keys: ["FK-ORG-UUID", "FK-ORG UUID"] }) {
           user_key
         }
         managers {
           person {
-            itusers(filter: { itsystem: { user_keys: "FK-ORG-UUID" } }) {
+            itusers(filter: { itsystem: { user_keys: ["FK-ORG-UUID", "FK-ORG UUID"] } }) {
               external_id
             }
           }
@@ -174,7 +174,7 @@ query FindEngagementPerson($uuid: UUID!) {
 }
 
 query FindFKItsystem {
-  itsystems(filter: {user_keys: "FK-ORG-UUID"}) {
+  itsystems(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
     objects {
       uuid
     }
