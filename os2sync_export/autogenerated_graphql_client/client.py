@@ -26,6 +26,7 @@ from .input_types import ClassFilter
 from .input_types import EmployeeCreateInput
 from .input_types import EngagementCreateInput
 from .input_types import ITSystemFilter
+from .input_types import ITSystemTerminateInput
 from .input_types import ITUserCreateInput
 from .input_types import OrganisationUnitCreateInput
 from .read_orgunit import ReadOrgunit
@@ -44,6 +45,8 @@ from .testing__get_class import TestingGetClass
 from .testing__get_class import TestingGetClassClasses
 from .testing__get_itsystem import TestingGetItsystem
 from .testing__get_itsystem import TestingGetItsystemItsystems
+from .testing__itsystem_terminate import TestingItsystemTerminate
+from .testing__itsystem_terminate import TestingItsystemTerminateItsystemTerminate
 from .testing__ituser_create import TestingItuserCreate
 from .testing__ituser_create import TestingItuserCreateItuserCreate
 from .testing__org_unit_create import TestingOrgUnitCreate
@@ -483,3 +486,20 @@ class GraphQLClient(AsyncBaseClient):
         response = await self.execute(query=query, variables=variables)
         data = self.get_data(response)
         return TestingItuserCreate.parse_obj(data).ituser_create
+
+    async def testing__itsystem_terminate(
+        self, input: ITSystemTerminateInput
+    ) -> TestingItsystemTerminateItsystemTerminate:
+        query = gql(
+            """
+            mutation _testing__itsystem_terminate($input: ITSystemTerminateInput!) {
+              itsystem_terminate(input: $input) {
+                uuid
+              }
+            }
+            """
+        )
+        variables: dict[str, object] = {"input": input}
+        response = await self.execute(query=query, variables=variables)
+        data = self.get_data(response)
+        return TestingItsystemTerminate.parse_obj(data).itsystem_terminate

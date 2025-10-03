@@ -257,6 +257,8 @@ from .testing__get_class import TestingGetClassClassesObjects
 from .testing__get_itsystem import TestingGetItsystem
 from .testing__get_itsystem import TestingGetItsystemItsystems
 from .testing__get_itsystem import TestingGetItsystemItsystemsObjects
+from .testing__itsystem_terminate import TestingItsystemTerminate
+from .testing__itsystem_terminate import TestingItsystemTerminateItsystemTerminate
 from .testing__ituser_create import TestingItuserCreate
 from .testing__ituser_create import TestingItuserCreateItuserCreate
 from .testing__org_unit_create import TestingOrgUnitCreate
@@ -479,6 +481,8 @@ __all__ = [
     "TestingGetItsystem",
     "TestingGetItsystemItsystems",
     "TestingGetItsystemItsystemsObjects",
+    "TestingItsystemTerminate",
+    "TestingItsystemTerminateItsystemTerminate",
     "TestingItuserCreate",
     "TestingItuserCreateItuserCreate",
     "TestingOrgUnitCreate",
