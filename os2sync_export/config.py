@@ -75,6 +75,8 @@ class Settings(BaseSettings):  # type: ignore
     # Sync it-accounts from itsystems with these user_keys:
     # Only relevant when new=True
     it_system_user_keys: list[str] = ["Active Directory"]
+    # Only used to disable events when running integration tests
+    events: bool = True
 
     class Config:
         frozen = False
