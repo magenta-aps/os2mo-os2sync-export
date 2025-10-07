@@ -576,9 +576,10 @@ def create_fastramqpi(**kwargs) -> FastRAMQPI:
         graphql_version=25,
         graphql_client_cls=GraphQLClient_,
     )
+    if settings.events:
+        amqpsystem = fastramqpi.get_amqpsystem()
+        amqpsystem.router.registry.update(amqp_router.registry)
 
-    amqpsystem = fastramqpi.get_amqpsystem()
-    amqpsystem.router.registry.update(amqp_router.registry)
     fastramqpi.add_context(
         settings=settings,
         os2sync_client=WritableOS2SyncClient(settings=settings),

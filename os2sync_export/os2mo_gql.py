@@ -231,7 +231,12 @@ async def sync_mo_user_to_fk_org(
         raise ITSystemError
 
     if len(it_users) == 1 and len(fk_org_users) == 0:
-        current = os2sync_client.os2sync_get_user(uuid=uuid)
+        try:
+            current = os2sync_client.os2sync_get_user(uuid=uuid)
+        except KeyError:
+            logger.info("User not found in fk-org")
+            current = None
+
         if current:
             if dry_run:
                 fk_org_users = [
