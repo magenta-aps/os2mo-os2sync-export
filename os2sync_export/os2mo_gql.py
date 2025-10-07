@@ -365,7 +365,7 @@ def mo_orgunit_to_os2sync(
     )
     manager_uuid = (
         UUID(first(manager_person.itusers).external_id)
-        if manager_person is not None
+        if manager_person is not None and manager_person.itusers
         else None
     )
 
