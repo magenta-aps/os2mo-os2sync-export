@@ -55,6 +55,7 @@ class Settings(BaseSettings):  # type: ignore
     use_contact_for_tasks: bool = False
     employee_engagement_address: list[str] = []
     uuid_from_it_systems: list[str] = []
+    group_by_engagement_uuid: bool = False
 
     truncate_length: int = 200
 
