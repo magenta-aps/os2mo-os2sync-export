@@ -343,7 +343,7 @@ async def get_sts_user_raw(
         overwrite_position_uuids(sts_user, settings.uuid_from_it_systems)
 
     addresses = os2mo_get("{BASE}/e/" + uuid + "/details/address").json()
-    if engagement_uuid is not None:
+    if engagement_uuid is not None and settings.group_by_engagement_uuid:
         addresses = list(
             filter(lambda a: a["engagement_uuid"] == engagement_uuid, addresses)
         )
