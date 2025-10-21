@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+from contextlib import suppress
 from typing import Annotated
 from typing import Dict
 from uuid import UUID
@@ -275,8 +276,11 @@ async def amqp_trigger_it_user(
 ) -> None:
     if settings.new:
         res = await graphql_client.find_ituser_unit_or_person(uuid=uuid)
-        org_units = find_object_unit(res)
-        employees = find_object_person(res)
+
+        org_units = set()
+        with suppress(ValueError):
+            org_units = find_object_unit(res)
+
         for o in org_units:
             await sync_orgunit(
                 settings=settings,
@@ -284,6 +288,10 @@ async def amqp_trigger_it_user(
                 os2sync_client=os2sync_client,
                 uuid=o,
             )
+
+        employees = set()
+        with suppress(ValueError):
+            employees = find_object_person(res)
         for e in employees:
             await sync_mo_user_to_fk_org(
                 graphql_client=graphql_client,
