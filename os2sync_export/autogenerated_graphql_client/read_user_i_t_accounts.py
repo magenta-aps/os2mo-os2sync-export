@@ -37,7 +37,8 @@ class ReadUserITAccountsEmployeesObjectsCurrentItusers(BaseModel):
         List["ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement"]
     ]
     email: List["ReadUserITAccountsEmployeesObjectsCurrentItusersEmail"]
-    phone: List["ReadUserITAccountsEmployeesObjectsCurrentItusersPhone"]
+    mobile: List["ReadUserITAccountsEmployeesObjectsCurrentItusersMobile"]
+    landline: List["ReadUserITAccountsEmployeesObjectsCurrentItusersLandline"]
 
 
 class ReadUserITAccountsEmployeesObjectsCurrentItusersPerson(BaseModel):
@@ -87,19 +88,35 @@ class ReadUserITAccountsEmployeesObjectsCurrentItusersEmailVisibility(BaseModel)
     scope: Optional[str]
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersPhone(BaseModel):
-    address_type: "ReadUserITAccountsEmployeesObjectsCurrentItusersPhoneAddressType"
+class ReadUserITAccountsEmployeesObjectsCurrentItusersMobile(BaseModel):
+    address_type: "ReadUserITAccountsEmployeesObjectsCurrentItusersMobileAddressType"
     visibility: Optional[
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersPhoneVisibility"
+        "ReadUserITAccountsEmployeesObjectsCurrentItusersMobileVisibility"
     ]
     value: str
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersPhoneAddressType(BaseModel):
+class ReadUserITAccountsEmployeesObjectsCurrentItusersMobileAddressType(BaseModel):
     uuid: UUID
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersPhoneVisibility(BaseModel):
+class ReadUserITAccountsEmployeesObjectsCurrentItusersMobileVisibility(BaseModel):
+    scope: Optional[str]
+
+
+class ReadUserITAccountsEmployeesObjectsCurrentItusersLandline(BaseModel):
+    address_type: "ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineAddressType"
+    visibility: Optional[
+        "ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineVisibility"
+    ]
+    value: str
+
+
+class ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineAddressType(BaseModel):
+    uuid: UUID
+
+
+class ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineVisibility(BaseModel):
     scope: Optional[str]
 
 
@@ -117,6 +134,9 @@ ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction.update_for
 ReadUserITAccountsEmployeesObjectsCurrentItusersEmail.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEmailAddressType.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEmailVisibility.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersPhone.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersPhoneAddressType.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersPhoneVisibility.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersMobile.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersMobileAddressType.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersMobileVisibility.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersLandline.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineAddressType.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineVisibility.update_forward_refs()

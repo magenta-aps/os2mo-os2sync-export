@@ -59,11 +59,16 @@ def gql(q: str) -> str:
 
 class GraphQLClient(AsyncBaseClient):
     async def read_user_i_t_accounts(
-        self, uuid: UUID, it_user_keys: Union[Optional[List[str]], UnsetType] = UNSET
+        self,
+        uuid: UUID,
+        it_user_keys: Union[Optional[List[str]], UnsetType] = UNSET,
+        email: Union[Optional[List[UUID]], UnsetType] = UNSET,
+        mobile: Union[Optional[List[UUID]], UnsetType] = UNSET,
+        landline: Union[Optional[List[UUID]], UnsetType] = UNSET,
     ) -> ReadUserITAccountsEmployees:
         query = gql(
             """
-            query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
+            query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!], $email: [UUID!] = [], $mobile: [UUID!] = [], $landline: [UUID!] = []) {
               employees(filter: {uuids: [$uuid]}) {
                 objects {
                   current {
@@ -94,7 +99,7 @@ class GraphQLClient(AsyncBaseClient):
                           name
                         }
                       }
-                      email: addresses(filter: {address_type: {scope: "EMAIL"}}) {
+                      email: addresses(filter: {address_type: {uuids: $email}}) {
                         address_type {
                           uuid
                         }
@@ -103,7 +108,16 @@ class GraphQLClient(AsyncBaseClient):
                         }
                         value
                       }
-                      phone: addresses(filter: {address_type: {scope: "PHONE"}}) {
+                      mobile: addresses(filter: {address_type: {uuids: $mobile}}) {
+                        address_type {
+                          uuid
+                        }
+                        visibility {
+                          scope
+                        }
+                        value
+                      }
+                      landline: addresses(filter: {address_type: {uuids: $landline}}) {
                         address_type {
                           uuid
                         }
@@ -119,7 +133,13 @@ class GraphQLClient(AsyncBaseClient):
             }
             """
         )
-        variables: dict[str, object] = {"uuid": uuid, "it_user_keys": it_user_keys}
+        variables: dict[str, object] = {
+            "uuid": uuid,
+            "it_user_keys": it_user_keys,
+            "email": email,
+            "mobile": mobile,
+            "landline": landline,
+        }
         response = await self.execute(query=query, variables=variables)
         data = self.get_data(response)
         return ReadUserITAccounts.parse_obj(data).employees
