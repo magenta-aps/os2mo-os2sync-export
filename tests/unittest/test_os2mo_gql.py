@@ -72,7 +72,8 @@ BASE_ITUSER_RESPONSE = ReadUserITAccountsEmployeesObjectsCurrentItusers(
     user_key="test",
     external_id=str(uuid4()),
     email=[],
-    phone=[],
+    mobile=[],
+    landline=[],
     person=[
         ReadUserITAccountsEmployeesObjectsCurrentItusersPerson(
             name="Brian", nickname="", cpr_number=None
@@ -121,7 +122,7 @@ async def test_sync_mo_user_to_fk_one_it_user(
                                 "uuid": uuid4(),
                                 "user_key": "BSG",
                                 "external_id": str(uuid4()),
-                                "phone": [
+                                "mobile": [
                                     {
                                         "address_type": {
                                             "uuid": uuid4(),
@@ -129,6 +130,16 @@ async def test_sync_mo_user_to_fk_one_it_user(
                                         },
                                         "visibility": {"user_key": "PUBLIC"},
                                         "value": "11223344",
+                                    }
+                                ],
+                                "landline": [
+                                    {
+                                        "address_type": {
+                                            "uuid": uuid4(),
+                                            "scope": "PHONE",
+                                        },
+                                        "visibility": {"user_key": "PUBLIC"},
+                                        "value": "55667788",
                                     }
                                 ],
                                 "email": [
