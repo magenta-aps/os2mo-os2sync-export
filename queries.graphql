@@ -1,11 +1,19 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
 
-query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
+query ReadUserITAccounts(
+  $uuid: UUID!
+  $it_user_keys: [String!]
+  $email: [UUID!] = []
+  $mobile: [UUID!] = []
+  $landline: [UUID!] = []
+) {
   employees(filter: { uuids: [$uuid] }) {
     objects {
       current {
-        fk_org_uuids: itusers(filter: { itsystem: { user_keys: ["FK-ORG-UUID", "FK-ORG UUID"] } }) {
+        fk_org_uuids: itusers(
+          filter: { itsystem: { user_keys: ["FK-ORG-UUID", "FK-ORG UUID"] } }
+        ) {
           uuid
           user_key
           external_id
@@ -30,7 +38,7 @@ query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
               name
             }
           }
-          email: addresses(filter: { address_type: { scope: "EMAIL" } }) {
+          email: addresses(filter: { address_type: { uuids: $email } }) {
             address_type {
               uuid
             }
@@ -39,7 +47,16 @@ query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!]) {
             }
             value
           }
-          phone: addresses(filter: { address_type: { scope: "PHONE" } }) {
+          mobile: addresses(filter: { address_type: { uuids: $mobile } }) {
+            address_type {
+              uuid
+            }
+            visibility {
+              scope
+            }
+            value
+          }
+          landline: addresses(filter: { address_type: { uuids: $landline } }) {
             address_type {
               uuid
             }

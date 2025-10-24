@@ -232,16 +232,25 @@ from .read_user_i_t_accounts import (
     ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnitItusers,
 )
 from .read_user_i_t_accounts import (
+    ReadUserITAccountsEmployeesObjectsCurrentItusersLandline,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineAddressType,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineVisibility,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsEmployeesObjectsCurrentItusersMobile,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsEmployeesObjectsCurrentItusersMobileAddressType,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsEmployeesObjectsCurrentItusersMobileVisibility,
+)
+from .read_user_i_t_accounts import (
     ReadUserITAccountsEmployeesObjectsCurrentItusersPerson,
-)
-from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersPhone,
-)
-from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersPhoneAddressType,
-)
-from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersPhoneVisibility,
 )
 from .terminate_i_t_user import TerminateITUser
 from .terminate_i_t_user import TerminateITUserItuserTerminate
@@ -455,10 +464,13 @@ __all__ = [
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnitItusers",
+    "ReadUserITAccountsEmployeesObjectsCurrentItusersLandline",
+    "ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineAddressType",
+    "ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineVisibility",
+    "ReadUserITAccountsEmployeesObjectsCurrentItusersMobile",
+    "ReadUserITAccountsEmployeesObjectsCurrentItusersMobileAddressType",
+    "ReadUserITAccountsEmployeesObjectsCurrentItusersMobileVisibility",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersPerson",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersPhone",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersPhoneAddressType",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersPhoneVisibility",
     "RegistrationFilter",
     "RelatedUnitFilter",
     "RelatedUnitsUpdateInput",
