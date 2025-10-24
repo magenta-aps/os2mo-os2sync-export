@@ -24,6 +24,10 @@ facets:
     tester:
       title: "Tester"
       scope: "TEXT"
+  employee_address_type:
+    email:
+      title: "Email"
+      scope: "EMAIL"
 
 it_systems:
   "Active Directory": "Active Directory"
