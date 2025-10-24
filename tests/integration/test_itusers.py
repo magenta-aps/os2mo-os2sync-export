@@ -63,7 +63,7 @@ async def test_account_with_addresses(
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
-
+    # find address types:
     email_address_types = await graphql_client.testing__get_class(
         ClassFilter(
             facet=FacetFilter(user_keys=["employee_address_type"]),  # type: ignore
@@ -71,9 +71,31 @@ async def test_account_with_addresses(
         )
     )
     email_address_type_uuid = first(email_address_types.objects).uuid
+    mobile_address_types = await graphql_client.testing__get_class(
+        ClassFilter(
+            facet=FacetFilter(user_keys=["employee_address_type"]),  # type: ignore
+            scope=["PHONE"],
+            user_keys=["mobile"],
+        )
+    )
+    mobile_address_type_uuid = first(mobile_address_types.objects).uuid
+    landline_address_types = await graphql_client.testing__get_class(
+        ClassFilter(
+            facet=FacetFilter(user_keys=["employee_address_type"]),  # type: ignore
+            scope=["PHONE"],
+            user_keys=["landline"],
+        )
+    )
+    landline_address_type_uuid = first(landline_address_types.objects).uuid
+
+    settings = set_settings(
+        email_scope_classes=[email_address_type_uuid],
+        phone_scope_classes=[mobile_address_type_uuid],
+        landline_scope_classes=[landline_address_type_uuid],
+    )
+    # Create two email-addresses - one connected to each it-account
     await graphql_client.testing__address_create(
         input=AddressCreateInput(
-            uuid=uuid4(),
             employee=create_person.uuid,
             value="bsg@example.com",
             address_type=email_address_type_uuid,
@@ -83,7 +105,6 @@ async def test_account_with_addresses(
     )
     await graphql_client.testing__address_create(
         input=AddressCreateInput(
-            uuid=uuid4(),
             employee=create_person.uuid,
             value="bsg2@example.com",
             address_type=email_address_type_uuid,
@@ -91,7 +112,26 @@ async def test_account_with_addresses(
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
-    settings = set_settings(email_scope_classes=[email_address_type_uuid])
+    # Create a phone number for one it-account
+    await graphql_client.testing__address_create(
+        input=AddressCreateInput(
+            employee=create_person.uuid,
+            value="11223344",
+            address_type=mobile_address_type_uuid,
+            ituser=ad_user_1.uuid,
+            validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
+        )
+    )
+    # Create a landlines for the other it_account
+    await graphql_client.testing__address_create(
+        input=AddressCreateInput(
+            employee=create_person.uuid,
+            value="12345678",
+            address_type=landline_address_type_uuid,
+            ituser=ad_user_2.uuid,
+            validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
+        )
+    )
     # Act
     await sync_mo_user_to_fk_org(
         uuid=person_uuid,
@@ -118,7 +158,7 @@ async def test_account_with_addresses(
                         StopDate=None,
                     )
                 ],
-                PhoneNumber=None,
+                PhoneNumber="11223344",
                 Landline=None,
                 Email="bsg@example.com",
                 Location=None,
@@ -142,7 +182,7 @@ async def test_account_with_addresses(
                     )
                 ],
                 PhoneNumber=None,
-                Landline=None,
+                Landline="12345678",
                 Email="bsg2@example.com",
                 Location=None,
                 RacfID=None,

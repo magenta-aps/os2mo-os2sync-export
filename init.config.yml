@@ -28,6 +28,12 @@ facets:
     email:
       title: "Email"
       scope: "EMAIL"
+    mobile:
+      title: "Mobil"
+      scope: "PHONE"
+    landline:
+      title: "Telefon"
+      scope: "PHONE"
 
 it_systems:
   "Active Directory": "Active Directory"
