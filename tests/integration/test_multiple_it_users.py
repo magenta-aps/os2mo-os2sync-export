@@ -148,7 +148,7 @@ async def test_two_ad_one_fk(
                 Uuid=fkorg_uuid,
                 ShortKey=None,
                 UserId="AD-username 1",
-                Person=Person(Name="Brian Graversen", Cpr=None),
+                Person=Person(Name="Brian Graversen", Cpr=None, Uuid=person_uuid),
                 Positions=[
                     Position(
                         Name="Tester",
@@ -171,7 +171,7 @@ async def test_two_ad_one_fk(
                 Uuid=adguid2,
                 ShortKey=None,
                 UserId="AD-username 2",
-                Person=Person(Name="Brian Graversen", Cpr=None),
+                Person=Person(Name="Brian Graversen", Cpr=None, Uuid=person_uuid),
                 Positions=[
                     Position(
                         Name="Tester",
@@ -271,7 +271,7 @@ async def test_one_ad_zero_fk(
                 Uuid=person_uuid,
                 ShortKey=None,
                 UserId="AD-username 1",
-                Person=Person(Name="Brian Graversen", Cpr=None),
+                Person=Person(Name="Brian Graversen", Cpr=None, Uuid=person_uuid),
                 Positions=[
                     Position(
                         Name="Tester",
@@ -348,7 +348,7 @@ async def test_one_ad_zero_fk_user_not_found(
                 Uuid=adguid,
                 ShortKey=None,
                 UserId="AD-username 1",
-                Person=Person(Name="Brian Graversen", Cpr=None),
+                Person=Person(Name="Brian Graversen", Cpr=None, Uuid=person_uuid),
                 Positions=[
                     Position(
                         Name="Tester",
@@ -432,7 +432,7 @@ async def test_one_ad_zero_fk_user_not_active(
                 Uuid=person_uuid,
                 ShortKey=None,
                 UserId="AD-username 1",
-                Person=Person(Name="Brian Graversen", Cpr=None),
+                Person=Person(Name="Brian Graversen", Cpr=None, Uuid=person_uuid),
                 Positions=[
                     Position(
                         Name="Tester",
@@ -478,7 +478,7 @@ async def test_one_ad_zero_fk_dry_run(
     os2sync_mock.os2sync_get_user.return_value = User(
         Uuid=person_uuid,
         UserId="BSG",
-        Person=Person(Name="Brian"),
+        Person=Person(Name="Brian", Uuid=uuid4()),
         Positions=[Position(Name="tester", OrgUnitUuid=uuid4())],
         PhoneNumber=None,
         Landline=None,
@@ -517,7 +517,7 @@ async def test_one_ad_zero_fk_dry_run(
                 Uuid=person_uuid,
                 ShortKey=None,
                 UserId="AD-username 1",
-                Person=Person(Name="Brian Graversen", Cpr=None),
+                Person=Person(Name="Brian Graversen", Cpr=None, Uuid=person_uuid),
                 Positions=[
                     Position(
                         Name="Tester",
@@ -592,7 +592,7 @@ async def test_two_ad_zero_fk(
                 Uuid=adguid1,
                 ShortKey=None,
                 UserId="AD-username 1",
-                Person=Person(Name="Brian Graversen", Cpr=None),
+                Person=Person(Name="Brian Graversen", Cpr=None, Uuid=person_uuid),
                 Positions=[
                     Position(
                         Name="Tester",
@@ -615,7 +615,7 @@ async def test_two_ad_zero_fk(
                 Uuid=adguid2,
                 ShortKey=None,
                 UserId="AD-username 2",
-                Person=Person(Name="Brian Graversen", Cpr=None),
+                Person=Person(Name="Brian Graversen", Cpr=None, Uuid=person_uuid),
                 Positions=[
                     Position(
                         Name="Tester",
