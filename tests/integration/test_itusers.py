@@ -149,7 +149,7 @@ async def test_account_with_addresses(
                 Uuid=adguid1,
                 ShortKey=None,
                 UserId="AD-username 1",
-                Person=Person(Name="Brian Graversen", Cpr=None),
+                Person=Person(Name="Brian Graversen", Cpr=None, Uuid=person_uuid),
                 Positions=[
                     Position(
                         Name="Tester",
@@ -172,7 +172,7 @@ async def test_account_with_addresses(
                 Uuid=adguid2,
                 ShortKey=None,
                 UserId="AD-username 2",
-                Person=Person(Name="Brian Graversen", Cpr=None),
+                Person=Person(Name="Brian Graversen", Cpr=None, Uuid=person_uuid),
                 Positions=[
                     Position(
                         Name="Tester",
