@@ -64,6 +64,7 @@ from os2sync_export.os2mo_gql import convert_to_os2sync
 from os2sync_export.os2mo_gql import filter_relevant_orgunit
 from os2sync_export.os2mo_gql import find_object_person
 from os2sync_export.os2mo_gql import find_object_unit
+from os2sync_export.os2mo_gql import hash_uuid
 from os2sync_export.os2mo_gql import mo_orgunit_to_os2sync
 from os2sync_export.os2mo_gql import sync_mo_user_to_fk_org
 
@@ -244,7 +245,7 @@ def test_convert_to_os2sync(mock_settings):
         mock_settings, mo_it_user, UUID(mo_it_user.external_id), person_uuid=person_uuid
     )
     assert os2sync_user.Person.Name == "Brian"
-    assert os2sync_user.Person.Uuid == person_uuid
+    assert os2sync_user.Person.Uuid == hash_uuid(person_uuid)
 
 
 def test_convert_to_os2sync_nickname(mock_settings):
