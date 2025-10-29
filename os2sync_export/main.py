@@ -416,9 +416,14 @@ async def amqp_trigger_engagement(
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    logger.debug("Event registered for engagement", engagement=uuid)
     if settings.new:
         res = await graphql_client.find_engagement_person(uuid=uuid)
-        employees = find_object_person(res)
+        try:
+            employees = find_object_person(res)
+        except ValueError:
+            logger.debug(f"Event registered but no engagement found {uuid=}")
+            return
         for e in employees:
             await sync_mo_user_to_fk_org(
                 graphql_client=graphql_client,
