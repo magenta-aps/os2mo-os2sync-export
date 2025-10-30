@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+import hashlib
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
@@ -176,6 +177,11 @@ def choose_public_address(
     return res.value if res else None
 
 
+def hash_uuid(uuid: UUID) -> UUID:
+    """Generates a uuid from another"""
+    return UUID(hashlib.md5(str(uuid).encode()).hexdigest())
+
+
 def convert_to_os2sync(
     settings: Settings,
     it: ReadUserITAccountsEmployeesObjectsCurrentItusers,
@@ -188,8 +194,11 @@ def convert_to_os2sync(
         )
     mo_person = one(it.person)
     cpr = mo_person.cpr_number if settings.sync_cpr else None
+    # Because many persons in MO have the same uuids as their IT users we convert the person uuid to another.
+    # This ensures unique keys between objects in fk-org
+    fk_org_person_uuid = hash_uuid(person_uuid)
     person = Person(
-        Name=mo_person.nickname or mo_person.name, Cpr=cpr, Uuid=person_uuid
+        Name=mo_person.nickname or mo_person.name, Cpr=cpr, Uuid=fk_org_person_uuid
     )
 
     landline = choose_public_address(it.landline, settings.landline_scope_classes)
