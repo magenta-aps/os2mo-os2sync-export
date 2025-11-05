@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
-import hashlib
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
@@ -101,7 +100,6 @@ def convert_and_filter(
     settings: Settings,
     fk_org_users: list[ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids],
     it_users: list[ReadUserITAccountsEmployeesObjectsCurrentItusers],
-    person_uuid: UUID,
 ) -> tuple[
     list[User],
     list[ReadUserITAccountsEmployeesObjectsCurrentItusers],
@@ -136,7 +134,6 @@ def convert_and_filter(
                     settings=settings,
                     it=it_user,
                     uuid=fk_org_uuids[it_user.external_id],
-                    person_uuid=person_uuid,
                 )
             )
         except ValidationError:
@@ -177,16 +174,10 @@ def choose_public_address(
     return res.value if res else None
 
 
-def hash_uuid(uuid: UUID) -> UUID:
-    """Generates a uuid from another"""
-    return UUID(hashlib.md5(str(uuid).encode()).hexdigest())
-
-
 def convert_to_os2sync(
     settings: Settings,
     it: ReadUserITAccountsEmployeesObjectsCurrentItusers,
     uuid: UUID,
-    person_uuid: UUID,
 ) -> User:
     if it.person is None:
         raise ValueError(
@@ -194,12 +185,7 @@ def convert_to_os2sync(
         )
     mo_person = one(it.person)
     cpr = mo_person.cpr_number if settings.sync_cpr else None
-    # Because many persons in MO have the same uuids as their IT users we convert the person uuid to another.
-    # This ensures unique keys between objects in fk-org
-    fk_org_person_uuid = hash_uuid(person_uuid)
-    person = Person(
-        Name=mo_person.nickname or mo_person.name, Cpr=cpr, Uuid=fk_org_person_uuid
-    )
+    person = Person(Name=mo_person.nickname or mo_person.name, Cpr=cpr)
 
     landline = choose_public_address(it.landline, settings.landline_scope_classes)
     mobile = choose_public_address(it.mobile, settings.phone_scope_classes)
@@ -291,7 +277,7 @@ async def sync_mo_user_to_fk_org(
                 )
     # The code above could be be deleted after the initial runs.
     updates_fk, new_mo_itusers, deletes_fk, delete_mo_itusers = convert_and_filter(
-        settings, fk_org_users, it_users, person_uuid=uuid
+        settings, fk_org_users, it_users
     )
     for os2sync_user in updates_fk:
         os2sync_client.update_user(os2sync_user)

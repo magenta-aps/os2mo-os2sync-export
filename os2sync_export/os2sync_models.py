@@ -117,7 +117,6 @@ class OrgUnit(BaseModel):
 
 
 class Person(BaseModel):
-    Uuid: UUID
     Name: str
     Cpr: str | None = None
 

@@ -64,7 +64,6 @@ from os2sync_export.os2mo_gql import convert_to_os2sync
 from os2sync_export.os2mo_gql import filter_relevant_orgunit
 from os2sync_export.os2mo_gql import find_object_person
 from os2sync_export.os2mo_gql import find_object_unit
-from os2sync_export.os2mo_gql import hash_uuid
 from os2sync_export.os2mo_gql import mo_orgunit_to_os2sync
 from os2sync_export.os2mo_gql import sync_mo_user_to_fk_org
 
@@ -180,19 +179,16 @@ async def test_sync_mo_user_to_fk_one_it_user(
     mock_graphql_client.find_f_k_itsystem.return_value = FindFKItsystemItsystems(
         **{"objects": [{"uuid": uuid4()}]}
     )
-    person_uuid = uuid4()
     await sync_mo_user_to_fk_org(
         graphql_client=mock_graphql_client,
-        uuid=person_uuid,
+        uuid=uuid4(),
         settings=mock_settings,
         os2sync_client=os2sync_client,
     )
     os2sync_client.delete_user.assert_not_called()
     ituser = it_users.objects[0].current.itusers[0]
     os2sync_client.update_user.assert_called_once_with(
-        convert_to_os2sync(
-            mock_settings, ituser, UUID(ituser.external_id), person_uuid=person_uuid
-        )
+        convert_to_os2sync(mock_settings, ituser, UUID(ituser.external_id))
     )
 
 
@@ -234,7 +230,6 @@ async def test_sync_mo_user_to_fk_delete_user(
 
 
 def test_convert_to_os2sync(mock_settings):
-    person_uuid = uuid4()
     mo_it_user = BASE_ITUSER_RESPONSE.copy()
     mo_it_user.person = [
         ReadUserITAccountsEmployeesObjectsCurrentItusersPerson(
@@ -242,10 +237,9 @@ def test_convert_to_os2sync(mock_settings):
         )
     ]
     os2sync_user = convert_to_os2sync(
-        mock_settings, mo_it_user, UUID(mo_it_user.external_id), person_uuid=person_uuid
+        mock_settings, mo_it_user, UUID(mo_it_user.external_id)
     )
     assert os2sync_user.Person.Name == "Brian"
-    assert os2sync_user.Person.Uuid == hash_uuid(person_uuid)
 
 
 def test_convert_to_os2sync_nickname(mock_settings):
@@ -256,7 +250,7 @@ def test_convert_to_os2sync_nickname(mock_settings):
         )
     ]
     os2sync_user = convert_to_os2sync(
-        mock_settings, mo_it_user, UUID(mo_it_user.external_id), person_uuid=uuid4()
+        mock_settings, mo_it_user, UUID(mo_it_user.external_id)
     )
     assert os2sync_user.Person.Name == "STORMEN"
 
@@ -271,7 +265,7 @@ def test_convert_to_os2sync_cpr(sync_cpr, set_settings):
         )
     ]
     os2sync_user = convert_to_os2sync(
-        settings, mo_it_user, UUID(mo_it_user.external_id), person_uuid=uuid4()
+        settings, mo_it_user, UUID(mo_it_user.external_id)
     )
     if sync_cpr:
         assert os2sync_user.Person.Cpr == "1234567890"
@@ -297,7 +291,7 @@ def test_convert_to_os2sync_extension_job_function(
         )
     ]
     os2sync_user = convert_to_os2sync(
-        settings, mo_it_user, UUID(mo_it_user.external_id), person_uuid=uuid4()
+        settings, mo_it_user, UUID(mo_it_user.external_id)
     )
     if use_extension_field_as_job_function:
         assert os2sync_user.Positions[0].Name == "Konge"
@@ -320,7 +314,7 @@ def test_convert_to_os2sync_engagement_org_unit_uuid(mock_settings):
         )
     ]
     os2sync_user = convert_to_os2sync(
-        mock_settings, mo_it_user, UUID(mo_it_user.external_id), person_uuid=uuid4()
+        mock_settings, mo_it_user, UUID(mo_it_user.external_id)
     )
     assert os2sync_user.Positions[0].OrgUnitUuid == fk_org_unit_uuid
 
@@ -334,10 +328,7 @@ def test_convert_and_filter_same_uuid(mock_settings):
         uuid=uuid4(), external_id=it_user.external_id, user_key=it_user.external_id
     )
     os2sync_update, mo_new, os2sync_delete, mo_delete = convert_and_filter(
-        settings=mock_settings,
-        it_users=[it_user],
-        fk_org_users=[fk_org_user],
-        person_uuid=uuid4(),
+        settings=mock_settings, it_users=[it_user], fk_org_users=[fk_org_user]
     )
     assert one(os2sync_update).Uuid == UUID(fk_org_user.external_id)
     assert os2sync_delete == set()
@@ -352,10 +343,7 @@ def test_convert_and_filter_different_uuid(mock_settings):
         uuid=uuid4(), external_id=str(fk_org_uuid), user_key=it_user.external_id
     )
     os2sync_update, mo_new, os2sync_delete, mo_delete = convert_and_filter(
-        settings=mock_settings,
-        it_users=[it_user],
-        fk_org_users=[fk_org_user],
-        person_uuid=uuid4(),
+        settings=mock_settings, it_users=[it_user], fk_org_users=[fk_org_user]
     )
     assert one(os2sync_update).Uuid == fk_org_uuid
     assert os2sync_delete == set()
@@ -369,7 +357,7 @@ def test_convert_and_filter_no_fk_user(mock_settings):
     it_user = BASE_ITUSER_RESPONSE.copy()
     it_user.user_key = user_key
     os2sync_update, mo_new, os2sync_delete, mo_delete = convert_and_filter(
-        settings=mock_settings, it_users=[it_user], fk_org_users=[], person_uuid=uuid4()
+        settings=mock_settings, it_users=[it_user], fk_org_users=[]
     )
     assert one(os2sync_update).Uuid == UUID(it_user.external_id)
     assert os2sync_delete == set()
@@ -384,10 +372,7 @@ def test_convert_and_filter_no_ituser(mock_settings):
         uuid=uuid4(), external_id=str(uuid4()), user_key=user_key
     )
     os2sync_update, mo_new, os2sync_delete, mo_delete = convert_and_filter(
-        settings=mock_settings,
-        it_users=[],
-        fk_org_users=[fk_org_user],
-        person_uuid=uuid4(),
+        settings=mock_settings, it_users=[], fk_org_users=[fk_org_user]
     )
     assert os2sync_update == []
     assert os2sync_delete == set([UUID(fk_org_user.external_id)])
@@ -402,10 +387,7 @@ def test_convert_and_filter_different_user_key(mock_settings):
         uuid=uuid4(), external_id=str(uuid4()), user_key=str(uuid4())
     )
     os2sync_update, mo_new, os2sync_delete, mo_delete = convert_and_filter(
-        settings=mock_settings,
-        it_users=[it_user],
-        fk_org_users=[fk_org_user],
-        person_uuid=uuid4(),
+        settings=mock_settings, it_users=[it_user], fk_org_users=[fk_org_user]
     )
     assert one(os2sync_update).Uuid == UUID(it_user.external_id)
     assert os2sync_delete == set([UUID(fk_org_user.external_id)])
@@ -423,10 +405,7 @@ def test_convert_and_filter_no_engagement(mock_settings):
     )
     it_user.engagement = []
     os2sync_update, mo_new, os2sync_delete, mo_delete = convert_and_filter(
-        settings=mock_settings,
-        it_users=[it_user],
-        fk_org_users=[fk_org_user],
-        person_uuid=uuid4(),
+        settings=mock_settings, it_users=[it_user], fk_org_users=[fk_org_user]
     )
     assert os2sync_update == []
     assert os2sync_delete == set(
