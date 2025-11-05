@@ -38,7 +38,7 @@ u1 = {
     "Email": "bsg@digital-identity.dk",
     "Location": "Kontor 15",
     "Positions": [{"OrgUnitUuid": str(o.Uuid), "Name": "Udvikler"}],
-    "Person": {"Name": "Brian Storm Graversen", "Cpr": None, "Uuid": uuid4()},
+    "Person": {"Name": "Brian Storm Graversen", "Cpr": None},
 }
 u2 = {
     "Uuid": str(uuid4()),
@@ -48,7 +48,7 @@ u2 = {
     "Email": "bsg@digital-identity.dk",
     "Location": "Kontor 15",
     "Positions": [{"OrgUnitUuid": str(o.Uuid), "Name": "Udvikler"}],
-    "Person": {"Name": "Brian Storm Graversen", "Cpr": None, "Uuid": uuid4()},
+    "Person": {"Name": "Brian Storm Graversen", "Cpr": None},
 }
 
 
@@ -268,7 +268,7 @@ def test_update_user(mock_settings):
         **{
             "Uuid": uuid4(),
             "UserId": "BG",
-            "Person": {"Name": "Brian", "Uuid": uuid4()},
+            "Person": {"Name": "Brian"},
             "Positions": [{"OrgUnitUuid": uuid4(), "Name": "Open Source Developer"}],
         }
     )
@@ -284,7 +284,7 @@ def test_user_no_positions():
             **{
                 "Uuid": uuid4(),
                 "UserId": "BG",
-                "Person": {"Name": "Brian", "Uuid": uuid4()},
+                "Person": {"Name": "Brian"},
                 "Positions": [],
             }
         )
@@ -350,7 +350,7 @@ def test_dry_run_update_user(dry_run, mock_settings):
         Uuid=user_uuid,
         Name="test",
         UserId="test",
-        Person={"Name": "Brian", "Uuid": uuid4()},
+        Person={"Name": "Brian"},
         Positions=[{"Name": "Developer", "OrgUnitUuid": uuid4()}],
     )
     client.update_user(user)
