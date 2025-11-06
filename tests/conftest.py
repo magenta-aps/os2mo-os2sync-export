@@ -67,10 +67,11 @@ def set_settings() -> Generator[Callable[..., Settings], None, None]:
         client_secret: SecretStr = SecretStr("hunter2"),
         **kwargs: Any,
     ) -> Settings:
+        if "top_unit_uuid" not in kwargs:
+            kwargs["top_unit_uuid"] = top_unit_uuid
         settings = Settings(
             *args,
             municipality=municipality,
-            top_unit_uuid=top_unit_uuid,
             fastramqpi=FastRAMQPISettings(
                 amqp=AMQPConnectionSettings(url=amqp_url),  # type: ignore
                 client_id=client_id,
