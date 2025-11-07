@@ -98,22 +98,28 @@ def test_equivalence():
     units, persons = asyncio.run(read_all_units_and_persons(gql_client))
     click.echo(f"Found {len(units)} units and {len(persons)} persons.")
 
-
     for person in tqdm(persons, desc="persons"):
-        old = httpx.post(f"http://localhost:8000/trigger/user/{person}?dry_run=true")
+        old = httpx.post(
+            f"http://localhost:8000/trigger/user/{person}?dry_run=true", timeout=None
+        )
         new = httpx.post(
-            f"http://localhost:8000/trigger/user/{person}?dry_run=true&new=true"
+            f"http://localhost:8000/trigger/user/{person}?dry_run=true&new=true",
+            timeout=None,
         )
         if not old.json() == new.json():
             click.echo(f"User mismatch: {old.json()=} != {new.json()=}")
 
     for unit in tqdm(units, desc="units"):
-        old = httpx.post(f"http://localhost:8000/trigger/org_unit/{unit}?dry_run=true")
+        old = httpx.post(
+            f"http://localhost:8000/trigger/org_unit/{unit}?dry_run=true", timeout=None
+        )
         new = httpx.post(
-            f"http://localhost:8000/trigger/org_unit/{unit}?dry_run=true&new=true"
+            f"http://localhost:8000/trigger/org_unit/{unit}?dry_run=true&new=true",
+            timeout=None,
         )
         if old.json() != new.json():
             click.echo(f"Orgunit mismatch: {old.json()=} != {new.json()=}")
+
 
 if __name__ == "__main__":
     test_equivalence()
