@@ -526,7 +526,7 @@ async def trigger_user(
     os2sync_client.update_users(uuid, sts_users)
     logger.info(f"Synced user to fk-org: {uuid}")
 
-    return [User(**u) for u in sts_users], set()
+    return [User(**u) for u in sts_users if u["Positions"]], set()
 
 
 async def sync_orgunit(
