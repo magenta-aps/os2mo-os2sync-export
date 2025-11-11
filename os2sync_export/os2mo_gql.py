@@ -10,6 +10,7 @@ from uuid import uuid4
 
 import structlog
 from fastapi.encoders import jsonable_encoder
+from fastramqpi.ramqp.depends import handle_exclusively_decorator
 from more_itertools import first
 from more_itertools import one
 from more_itertools import only
@@ -222,11 +223,12 @@ def convert_to_os2sync(
     )
 
 
+@handle_exclusively_decorator(key=lambda uuid, *_, **__: uuid)
 async def sync_mo_user_to_fk_org(
+    uuid: UUID,
     graphql_client: GraphQLClient,
     settings: Settings,
     os2sync_client: OS2SyncClient,
-    uuid: UUID,
     dry_run: bool = False,
 ) -> tuple[list[User], set[UUID]]:
     """Handles sync of a persons users to fk-org.
@@ -321,11 +323,12 @@ async def sync_mo_user_to_fk_org(
     return updates_fk, deletes_fk
 
 
+@handle_exclusively_decorator(key=lambda uuid, *_, **__: uuid)
 async def sync_orgunit(
+    uuid: UUID,
     settings: Settings,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient,
-    uuid: UUID,
 ) -> OrgUnit | None:
     res = await graphql_client.read_orgunit(uuid=uuid)
     if not res.objects:
