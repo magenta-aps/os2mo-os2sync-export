@@ -286,6 +286,11 @@ async def sync_mo_user_to_fk_org(
     updates_fk, new_mo_itusers, deletes_fk, delete_mo_itusers = convert_and_filter(
         settings, fk_org_users, it_users
     )
+    if not (updates_fk or deletes_fk):
+        # If there are no fk-org users to update or delete we attempt to delete the user with the person-uuid.
+        # This is just to ensure we cleanup legacy-users that did not have their uuid in an it-user.
+        deletes_fk.add(uuid)
+
     for os2sync_user in updates_fk:
         os2sync_client.update_user(os2sync_user)
     for it in new_mo_itusers:
