@@ -11,3 +11,7 @@ class NotFoundError(Exception):
 
 class UnitNotRelevantError(Exception):
     pass
+
+
+class DuplicatedITUserError(Exception):
+    pass
