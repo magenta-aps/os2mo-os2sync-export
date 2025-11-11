@@ -50,6 +50,7 @@ class Settings(BaseSettings):  # type: ignore
     ignored_unit_levels: list[UUID] = []
     ignored_unit_types: list[UUID] = []
     templates: dict = {}
+    use_nickname: bool = False  # Only used in the new version
 
     sync_managers: bool = False
     use_contact_for_tasks: bool = False
