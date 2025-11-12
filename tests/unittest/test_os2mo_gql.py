@@ -243,7 +243,9 @@ def test_convert_to_os2sync(mock_settings):
     assert os2sync_user.Person.Name == "Brian"
 
 
-def test_convert_to_os2sync_nickname(mock_settings):
+@pytest.mark.parametrize("use_nickname", [True, False])
+def test_convert_to_os2sync_nickname(set_settings, use_nickname):
+    settings = set_settings(use_nickname=use_nickname)
     mo_it_user = BASE_ITUSER_RESPONSE.copy()
     mo_it_user.person = [
         ReadUserITAccountsEmployeesObjectsCurrentItusersPerson(
@@ -251,9 +253,12 @@ def test_convert_to_os2sync_nickname(mock_settings):
         )
     ]
     os2sync_user = convert_to_os2sync(
-        mock_settings, mo_it_user, UUID(mo_it_user.external_id)
+        settings, mo_it_user, UUID(mo_it_user.external_id)
     )
-    assert os2sync_user.Person.Name == "STORMEN"
+    if use_nickname:
+        assert os2sync_user.Person.Name == "STORMEN"
+    else:
+        assert os2sync_user.Person.Name == "Brian"
 
 
 @pytest.mark.parametrize("sync_cpr", [True, False])

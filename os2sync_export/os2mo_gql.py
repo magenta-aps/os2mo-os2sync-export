@@ -187,7 +187,12 @@ def convert_to_os2sync(
         )
     mo_person = one(it.person)
     cpr = mo_person.cpr_number if settings.sync_cpr else None
-    person = Person(Name=mo_person.nickname or mo_person.name, Cpr=cpr)
+    person = Person(
+        Name=mo_person.nickname
+        if mo_person.nickname and settings.use_nickname
+        else mo_person.name,
+        Cpr=cpr,
+    )
 
     landline = choose_public_address(it.landline, settings.landline_scope_classes)
     mobile = choose_public_address(it.mobile, settings.phone_scope_classes)
