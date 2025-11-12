@@ -10,8 +10,9 @@ from uuid import UUID
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from pydantic import Extra
-from pydantic import ValidationError
 from pydantic import validator
+
+from os2sync_export.exceptions import NoPositionError
 
 
 class OrgUnit(BaseModel):
@@ -149,5 +150,5 @@ class User(BaseModel):
     def has_positions(cls, v):
         """A user must have at least one engagement in os2sync"""
         if len(v) < 1:
-            raise ValidationError
+            raise NoPositionError
         return v

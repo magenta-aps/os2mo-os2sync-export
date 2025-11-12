@@ -15,3 +15,7 @@ class UnitNotRelevantError(Exception):
 
 class DuplicatedITUserError(Exception):
     pass
+
+
+class NoPositionError(Exception):
+    pass

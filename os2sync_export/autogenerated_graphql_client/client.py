@@ -90,44 +90,79 @@ class GraphQLClient(AsyncBaseClient):
                       engagement {
                         extension_3
                         org_unit {
-                          uuid
-                          itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
-                            user_key
-                          }
+                          ...UnitFields
                         }
                         job_function {
                           name
                         }
                       }
                       email: addresses(filter: {address_type: {uuids: $email}}) {
-                        address_type {
-                          uuid
-                        }
-                        visibility {
-                          scope
-                        }
-                        value
+                        ...AddressFields
                       }
                       mobile: addresses(filter: {address_type: {uuids: $mobile}}) {
-                        address_type {
-                          uuid
-                        }
-                        visibility {
-                          scope
-                        }
-                        value
+                        ...AddressFields
                       }
                       landline: addresses(filter: {address_type: {uuids: $landline}}) {
-                        address_type {
-                          uuid
-                        }
-                        visibility {
-                          scope
-                        }
-                        value
+                        ...AddressFields
                       }
                     }
                   }
+                }
+              }
+            }
+
+            fragment AddressFields on Address {
+              address_type {
+                uuid
+              }
+              visibility {
+                scope
+              }
+              value
+            }
+
+            fragment UnitFields on OrganisationUnit {
+              uuid
+              name
+              parent {
+                uuid
+                itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
+                  user_key
+                }
+              }
+              ancestors {
+                uuid
+              }
+              unit_type {
+                uuid
+              }
+              org_unit_level {
+                uuid
+              }
+              org_unit_hierarchy_model {
+                name
+              }
+              addresses {
+                address_type {
+                  scope
+                  uuid
+                  user_key
+                }
+                name
+              }
+              itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
+                user_key
+              }
+              managers {
+                person {
+                  itusers(filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}) {
+                    external_id
+                  }
+                }
+              }
+              kles {
+                kle_number {
+                  uuid
                 }
               }
             }
@@ -151,50 +186,54 @@ class GraphQLClient(AsyncBaseClient):
               org_units(filter: {uuids: [$uuid]}) {
                 objects {
                   current {
-                    uuid
-                    name
-                    parent {
-                      uuid
-                      itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
-                        user_key
-                      }
-                    }
-                    ancestors {
-                      uuid
-                    }
-                    unit_type {
-                      uuid
-                    }
-                    org_unit_level {
-                      uuid
-                    }
-                    org_unit_hierarchy_model {
-                      name
-                    }
-                    addresses {
-                      address_type {
-                        scope
-                        uuid
-                        user_key
-                      }
-                      name
-                    }
-                    itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
-                      user_key
-                    }
-                    managers {
-                      person {
-                        itusers(filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}) {
-                          external_id
-                        }
-                      }
-                    }
-                    kles {
-                      kle_number {
-                        uuid
-                      }
-                    }
+                    ...UnitFields
                   }
+                }
+              }
+            }
+
+            fragment UnitFields on OrganisationUnit {
+              uuid
+              name
+              parent {
+                uuid
+                itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
+                  user_key
+                }
+              }
+              ancestors {
+                uuid
+              }
+              unit_type {
+                uuid
+              }
+              org_unit_level {
+                uuid
+              }
+              org_unit_hierarchy_model {
+                name
+              }
+              addresses {
+                address_type {
+                  scope
+                  uuid
+                  user_key
+                }
+                name
+              }
+              itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
+                user_key
+              }
+              managers {
+                person {
+                  itusers(filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}) {
+                    external_id
+                  }
+                }
+              }
+              kles {
+                kle_number {
+                  uuid
                 }
               }
             }

@@ -4,6 +4,8 @@ from typing import Optional
 from uuid import UUID
 
 from .base_model import BaseModel
+from .fragments import AddressFields
+from .fragments import UnitFields
 
 
 class ReadUserITAccounts(BaseModel):
@@ -55,69 +57,24 @@ class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement(BaseModel):
     )
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit(BaseModel):
-    uuid: UUID
-    itusers: List[
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnitItusers"
-    ]
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnitItusers(
-    BaseModel
-):
-    user_key: str
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit(UnitFields):
+    pass
 
 
 class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction(BaseModel):
     name: str
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(BaseModel):
-    address_type: "ReadUserITAccountsEmployeesObjectsCurrentItusersEmailAddressType"
-    visibility: Optional[
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersEmailVisibility"
-    ]
-    value: str
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(AddressFields):
+    pass
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEmailAddressType(BaseModel):
-    uuid: UUID
+class ReadUserITAccountsEmployeesObjectsCurrentItusersMobile(AddressFields):
+    pass
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEmailVisibility(BaseModel):
-    scope: Optional[str]
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersMobile(BaseModel):
-    address_type: "ReadUserITAccountsEmployeesObjectsCurrentItusersMobileAddressType"
-    visibility: Optional[
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersMobileVisibility"
-    ]
-    value: str
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersMobileAddressType(BaseModel):
-    uuid: UUID
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersMobileVisibility(BaseModel):
-    scope: Optional[str]
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersLandline(BaseModel):
-    address_type: "ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineAddressType"
-    visibility: Optional[
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineVisibility"
-    ]
-    value: str
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineAddressType(BaseModel):
-    uuid: UUID
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineVisibility(BaseModel):
-    scope: Optional[str]
+class ReadUserITAccountsEmployeesObjectsCurrentItusersLandline(AddressFields):
+    pass
 
 
 ReadUserITAccounts.update_forward_refs()
@@ -129,14 +86,7 @@ ReadUserITAccountsEmployeesObjectsCurrentItusers.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersPerson.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnitItusers.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEmail.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEmailAddressType.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEmailVisibility.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersMobile.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersMobileAddressType.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersMobileVisibility.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersLandline.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineAddressType.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineVisibility.update_forward_refs()
