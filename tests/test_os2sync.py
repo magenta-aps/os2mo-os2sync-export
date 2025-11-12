@@ -9,9 +9,9 @@ from uuid import uuid4
 
 import pytest
 from fastapi.encoders import jsonable_encoder
-from pydantic import ValidationError
 from requests import HTTPError
 
+from os2sync_export.exceptions import NoPositionError
 from os2sync_export.os2sync import WritableOS2SyncClient
 from os2sync_export.os2sync import get_os2sync_client
 from os2sync_export.os2sync_models import OrgUnit
@@ -279,7 +279,7 @@ def test_update_user(mock_settings):
 
 
 def test_user_no_positions():
-    with pytest.raises(ValidationError):
+    with pytest.raises(NoPositionError):
         User(
             **{
                 "Uuid": uuid4(),
