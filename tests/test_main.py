@@ -8,6 +8,7 @@ from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
+from fastramqpi.events import Event
 
 from os2sync_export.main import amqp_trigger_it_user
 from os2sync_export.main import amqp_trigger_org_unit
@@ -37,7 +38,7 @@ async def test_trigger_it_user_update(
         "os2sync_export.main.get_sts_user", return_value=fk_org_users
     ) as get_user_mock:
         await amqp_trigger_it_user(
-            uuid=uuid4(),
+            event_uuid=Event(subject=uuid4(), priority=1000),
             settings=mock_settings,
             graphql_session=graphql_session,
             graphql_client=None,
@@ -84,7 +85,7 @@ async def test_trigger_it_orgunit_update(
     ) as get_org_unit_mock:
         with patch("os2sync_export.main.is_relevant", return_value=is_relevant):
             await amqp_trigger_it_user(
-                uuid=uuid4(),
+                event_uuid=Event(subject=uuid4(), priority=1000),
                 settings=mock_settings,
                 graphql_session=graphql_session,
                 graphql_client=None,
@@ -125,12 +126,11 @@ async def test_trigger_orgunit_update(
     ) as get_org_unit_mock:
         with patch("os2sync_export.main.is_relevant", return_value=is_relevant):
             await amqp_trigger_org_unit(
-                uuid=orgunit_uuid,
+                event_uuid=Event(subject=orgunit_uuid, priority=1000),
                 settings=mock_settings,
                 graphql_session=graphql_session,
                 graphql_client=None,
                 os2sync_client=os2sync_client,
-                rate_limit=None,
             )
     if is_relevant:
         get_org_unit_mock.assert_called_once_with(
@@ -162,21 +162,19 @@ async def test_trigger_orgunit_employees_update(
     employee_uuids = {uuid4(), uuid4()}
     with patch("os2sync_export.main.find_employees", return_value=employee_uuids):
         await amqp_trigger_org_unit(
-            uuid=uuid4(),
+            event_uuid=Event(subject=uuid4(), priority=1000),
             settings=mock_settings,
             graphql_session=graphql_session,
             graphql_client=None,
             os2sync_client=os2sync_client,
-            rate_limit=None,
         )
     assert trigger_employee_mock.call_args_list == [
         call(
-            uuid=u,
+            event_uuid=Event(subject=u, priority=1000),
             settings=mock_settings,
             graphql_session=graphql_session,
             graphql_client=None,
             os2sync_client=os2sync_client,
-            rate_limit=None,
         )
         for u in employee_uuids
     ]
@@ -292,7 +290,12 @@ async def test_amqp_trigger_it_user_no_old_accounts(set_settings):
         return_value=(set(), set()),
     ):
         await amqp_trigger_it_user(
-            uuid4(), mock_settings, AsyncMock(), AsyncMock(), os2sync_client_mock, ""
+            Event(subject=uuid4(), priority=1000),
+            mock_settings,
+            AsyncMock(),
+            AsyncMock(),
+            os2sync_client_mock,
+            "",
         )
 
     os2sync_client_mock.delete_orgunit.assert_not_called()
@@ -316,7 +319,12 @@ async def test_amqp_trigger_it_user_deletes_old_accounts(
         return_value=(old_user_uuids, old_org_unit_uuids),
     ):
         await amqp_trigger_it_user(
-            uuid4(), mock_settings, AsyncMock(), AsyncMock(), os2sync_client_mock, ""
+            Event(subject=uuid4(), priority=1000),
+            mock_settings,
+            AsyncMock(),
+            AsyncMock(),
+            os2sync_client_mock,
+            "",
         )
 
     for uuid in old_org_unit_uuids:
