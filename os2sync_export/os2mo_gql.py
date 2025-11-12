@@ -10,6 +10,7 @@ from uuid import uuid4
 
 import structlog
 from fastapi.encoders import jsonable_encoder
+from fastramqpi.ramqp.depends import handle_exclusively_decorator
 from more_itertools import first
 from more_itertools import one
 from more_itertools import only
@@ -55,6 +56,7 @@ from os2sync_export.config import Settings
 from os2sync_export.depends import GraphQLClient
 from os2sync_export.exceptions import DuplicatedITUserError
 from os2sync_export.exceptions import ITSystemError
+from os2sync_export.exceptions import NotFoundError
 from os2sync_export.exceptions import UnitNotRelevantError
 from os2sync_export.os2mo import addresses_to_orgunit
 from os2sync_export.os2sync import OS2SyncClient
@@ -221,11 +223,12 @@ def convert_to_os2sync(
     )
 
 
+@handle_exclusively_decorator(key=lambda uuid, *_, **__: uuid)
 async def sync_mo_user_to_fk_org(
+    uuid: UUID,
     graphql_client: GraphQLClient,
     settings: Settings,
     os2sync_client: OS2SyncClient,
-    uuid: UUID,
     dry_run: bool = False,
 ) -> tuple[list[User], set[UUID]]:
     """Handles sync of a persons users to fk-org.
@@ -318,6 +321,32 @@ async def sync_mo_user_to_fk_org(
                 to=date.today() - timedelta(days=1),  # type: ignore
             )  # type: ignore
     return updates_fk, deletes_fk
+
+
+@handle_exclusively_decorator(key=lambda uuid, *_, **__: uuid)
+async def sync_orgunit(
+    uuid: UUID,
+    settings: Settings,
+    graphql_client: GraphQLClient,
+    os2sync_client: OS2SyncClient,
+) -> OrgUnit | None:
+    res = await graphql_client.read_orgunit(uuid=uuid)
+    if not res.objects:
+        raise NotFoundError()
+    orgunit_data = one(res.objects).current
+    if not orgunit_data:
+        raise NotFoundError()
+    try:
+        os2sync_orgunit = mo_orgunit_to_os2sync(
+            settings=settings, orgunit_data=orgunit_data
+        )
+    except UnitNotRelevantError:
+        logger.info("Unit not found relevant for os2sync", unit_uuid=uuid)
+        os2sync_client.delete_orgunit(uuid)
+        return None
+
+    os2sync_client.update_org_unit(os2sync_orgunit.Uuid, org_unit=os2sync_orgunit)
+    return os2sync_orgunit
 
 
 def filter_relevant_orgunit(
