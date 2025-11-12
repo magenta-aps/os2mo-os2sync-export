@@ -14,10 +14,11 @@ from fastapi import FastAPI
 from fastapi import HTTPException
 from fastramqpi.depends import LegacyGraphQLSession
 from fastramqpi.depends import from_user_context
+from fastramqpi.events import Event
+from fastramqpi.events import GraphQLEvents
+from fastramqpi.events import Listener
 from fastramqpi.main import FastRAMQPI  # type: ignore
 from fastramqpi.ramqp.depends import RateLimit
-from fastramqpi.ramqp.mo import MORouter
-from fastramqpi.ramqp.mo import PayloadUUID
 
 from os2sync_export.__main__ import cleanup_duplicate_engagements
 from os2sync_export.__main__ import cleanup_duplicates
@@ -48,7 +49,6 @@ from os2sync_export.os2sync_models import User
 logger = structlog.stdlib.get_logger()
 
 fastapi_router = APIRouter()
-amqp_router = MORouter()
 
 Settings_ = Annotated[Settings, Depends(from_user_context("settings"))]
 OS2SyncClient_ = Annotated[OS2SyncClient, Depends(from_user_context("os2sync_client"))]
@@ -119,15 +119,15 @@ async def trigger_cleanup_duplicates(
     return {"triggered": "OK"}
 
 
-@amqp_router.register("person")
+@fastapi_router.post("/event/person")
 async def amqp_trigger_employee(
-    uuid: PayloadUUID,
+    event_uuid: Event[UUID],
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
-    rate_limit: RateLimit,
 ) -> None:
+    uuid = event_uuid.subject
     if settings.new:
         await sync_mo_user_to_fk_org(
             graphql_client=graphql_client,
@@ -152,15 +152,15 @@ async def amqp_trigger_employee(
         os2sync_client.update_users(uuid, sts_users)
 
 
-@amqp_router.register("org_unit")
+@fastapi_router.post("/event/org_unit")
 async def amqp_trigger_org_unit(
-    uuid: PayloadUUID,
+    event_uuid: Event[UUID],
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
-    rate_limit: RateLimit,
 ) -> None:
+    uuid = event_uuid.subject
     if settings.new:
         await sync_orgunit(
             settings=settings,
@@ -191,24 +191,24 @@ async def amqp_trigger_org_unit(
     employees = await find_employees(graphql_session, uuid)
     for e in employees:
         await amqp_trigger_employee(
-            uuid=e,
+            event_uuid=Event(subject=e, priority=1000),
             settings=settings,
             graphql_session=graphql_session,
             graphql_client=graphql_client,
             os2sync_client=os2sync_client,
-            rate_limit=rate_limit,
         )
 
 
-@amqp_router.register("address")
+@fastapi_router.post("/event/address")
 async def amqp_trigger_address(
-    uuid: PayloadUUID,
+    event_uuid: Event[UUID],
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    uuid = event_uuid.subject
     if settings.new:
         res = await graphql_client.find_address_unit_or_person(uuid=uuid)
         org_units = find_object_unit(res)
@@ -264,15 +264,16 @@ async def amqp_trigger_address(
     )
 
 
-@amqp_router.register("ituser")
+@fastapi_router.post("/event/ituser")
 async def amqp_trigger_it_user(
-    uuid: PayloadUUID,
+    event_uuid: Event[UUID],
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    uuid = event_uuid.subject
     if settings.new:
         res = await graphql_client.find_ituser_unit_or_person(uuid=uuid)
 
@@ -361,15 +362,16 @@ async def amqp_trigger_it_user(
     logger.warn(f"Unable to update ituser, could not find owners for: {uuid}")
 
 
-@amqp_router.register("manager")
+@fastapi_router.post("/event/manager")
 async def amqp_trigger_manager(
-    uuid: PayloadUUID,
+    event_uuid: Event[UUID],
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    uuid = event_uuid.subject
     if settings.new:
         res = await graphql_client.find_manager_unit(uuid=uuid)
         org_units = find_object_unit(res)
@@ -406,15 +408,16 @@ async def amqp_trigger_manager(
     logger.warn(f"Unable to update manager, could not find owners for: {uuid}")
 
 
-@amqp_router.register("engagement")
+@fastapi_router.post("/event/engagement")
 async def amqp_trigger_engagement(
-    uuid: PayloadUUID,
+    event_uuid: Event[UUID],
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    uuid = event_uuid.subject
     logger.debug("Event registered for engagement", engagement=uuid)
     if settings.new:
         res = await graphql_client.find_engagement_person(uuid=uuid)
@@ -447,15 +450,16 @@ async def amqp_trigger_engagement(
     logger.warn(f"Unable to update ituser, could not find owners for: {uuid}")
 
 
-@amqp_router.register("kle")
+@fastapi_router.post("/event/kle")
 async def amqp_trigger_kle(
-    uuid: PayloadUUID,
+    event_uuid: Event[UUID],
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
     _: RateLimit,
 ) -> None:
+    uuid = event_uuid.subject
     if settings.new:
         res = await graphql_client.find_k_l_e_unit(uuid=uuid)
         org_units = find_object_unit(res)
@@ -572,10 +576,26 @@ def create_fastramqpi(**kwargs) -> FastRAMQPI:
         settings=settings.fastramqpi,
         graphql_version=25,
         graphql_client_cls=GraphQLClient_,
+        graphql_events=GraphQLEvents(
+            declare_listeners=[
+                Listener(
+                    namespace="mo",
+                    user_key=f"os2sync_export_{object_type}",
+                    routing_key=f"{object_type}",
+                    path=f"/event/{object_type}",
+                )
+                for object_type in (
+                    "address",
+                    "engagement",
+                    "ituser",
+                    "kle",
+                    "manager",
+                    "org_unit",
+                    "person",
+                )
+            ],
+        ),
     )
-    if settings.events:
-        amqpsystem = fastramqpi.get_amqpsystem()
-        amqpsystem.router.registry.update(amqp_router.registry)
 
     fastramqpi.add_context(
         settings=settings,
