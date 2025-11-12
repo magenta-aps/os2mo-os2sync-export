@@ -5,6 +5,7 @@ from uuid import UUID
 
 from .base_model import BaseModel
 from .fragments import AddressFields
+from .fragments import UnitFields
 
 
 class ReadUserITAccounts(BaseModel):
@@ -56,17 +57,8 @@ class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement(BaseModel):
     )
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit(BaseModel):
-    uuid: UUID
-    itusers: List[
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnitItusers"
-    ]
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnitItusers(
-    BaseModel
-):
-    user_key: str
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit(UnitFields):
+    pass
 
 
 class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction(BaseModel):
@@ -94,7 +86,6 @@ ReadUserITAccountsEmployeesObjectsCurrentItusers.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersPerson.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnitItusers.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEmail.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersMobile.update_forward_refs()

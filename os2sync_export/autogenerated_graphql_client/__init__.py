@@ -57,6 +57,21 @@ from .find_manager_unit import FindManagerUnitManagersObjectsValiditiesOrgUnit
 from .fragments import AddressFields
 from .fragments import AddressFieldsAddressType
 from .fragments import AddressFieldsVisibility
+from .fragments import UnitFields
+from .fragments import UnitFieldsAddresses
+from .fragments import UnitFieldsAddressesAddressType
+from .fragments import UnitFieldsAncestors
+from .fragments import UnitFieldsItusers
+from .fragments import UnitFieldsKles
+from .fragments import UnitFieldsKlesKleNumber
+from .fragments import UnitFieldsManagers
+from .fragments import UnitFieldsManagersPerson
+from .fragments import UnitFieldsManagersPersonItusers
+from .fragments import UnitFieldsOrgUnitHierarchyModel
+from .fragments import UnitFieldsOrgUnitLevel
+from .fragments import UnitFieldsParent
+from .fragments import UnitFieldsParentItusers
+from .fragments import UnitFieldsUnitType
 from .input_types import AccessLogFilter
 from .input_types import AddressCreateInput
 from .input_types import AddressFilter
@@ -193,20 +208,6 @@ from .read_orgunit import ReadOrgunit
 from .read_orgunit import ReadOrgunitOrgUnits
 from .read_orgunit import ReadOrgunitOrgUnitsObjects
 from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrent
-from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrentAddresses
-from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrentAddressesAddressType
-from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrentAncestors
-from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrentItusers
-from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrentKles
-from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrentKlesKleNumber
-from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrentManagers
-from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrentManagersPerson
-from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrentManagersPersonItusers
-from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrentOrgUnitHierarchyModel
-from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrentOrgUnitLevel
-from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrentParent
-from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrentParentItusers
-from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrentUnitType
 from .read_user_i_t_accounts import ReadUserITAccounts
 from .read_user_i_t_accounts import ReadUserITAccountsEmployees
 from .read_user_i_t_accounts import ReadUserITAccountsEmployeesObjects
@@ -224,9 +225,6 @@ from .read_user_i_t_accounts import (
 )
 from .read_user_i_t_accounts import (
     ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit,
-)
-from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnitItusers,
 )
 from .read_user_i_t_accounts import (
     ReadUserITAccountsEmployeesObjectsCurrentItusersLandline,
@@ -425,20 +423,6 @@ __all__ = [
     "ReadOrgunitOrgUnits",
     "ReadOrgunitOrgUnitsObjects",
     "ReadOrgunitOrgUnitsObjectsCurrent",
-    "ReadOrgunitOrgUnitsObjectsCurrentAddresses",
-    "ReadOrgunitOrgUnitsObjectsCurrentAddressesAddressType",
-    "ReadOrgunitOrgUnitsObjectsCurrentAncestors",
-    "ReadOrgunitOrgUnitsObjectsCurrentItusers",
-    "ReadOrgunitOrgUnitsObjectsCurrentKles",
-    "ReadOrgunitOrgUnitsObjectsCurrentKlesKleNumber",
-    "ReadOrgunitOrgUnitsObjectsCurrentManagers",
-    "ReadOrgunitOrgUnitsObjectsCurrentManagersPerson",
-    "ReadOrgunitOrgUnitsObjectsCurrentManagersPersonItusers",
-    "ReadOrgunitOrgUnitsObjectsCurrentOrgUnitHierarchyModel",
-    "ReadOrgunitOrgUnitsObjectsCurrentOrgUnitLevel",
-    "ReadOrgunitOrgUnitsObjectsCurrentParent",
-    "ReadOrgunitOrgUnitsObjectsCurrentParentItusers",
-    "ReadOrgunitOrgUnitsObjectsCurrentUnitType",
     "ReadUserITAccounts",
     "ReadUserITAccountsEmployees",
     "ReadUserITAccountsEmployeesObjects",
@@ -449,7 +433,6 @@ __all__ = [
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnitItusers",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersLandline",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersMobile",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersPerson",
@@ -481,6 +464,21 @@ __all__ = [
     "TestingItuserCreateItuserCreate",
     "TestingOrgUnitCreate",
     "TestingOrgUnitCreateOrgUnitCreate",
+    "UnitFields",
+    "UnitFieldsAddresses",
+    "UnitFieldsAddressesAddressType",
+    "UnitFieldsAncestors",
+    "UnitFieldsItusers",
+    "UnitFieldsKles",
+    "UnitFieldsKlesKleNumber",
+    "UnitFieldsManagers",
+    "UnitFieldsManagersPerson",
+    "UnitFieldsManagersPersonItusers",
+    "UnitFieldsOrgUnitHierarchyModel",
+    "UnitFieldsOrgUnitLevel",
+    "UnitFieldsParent",
+    "UnitFieldsParentItusers",
+    "UnitFieldsUnitType",
     "UuidsBoundClassFilter",
     "UuidsBoundEmployeeFilter",
     "UuidsBoundEngagementFilter",

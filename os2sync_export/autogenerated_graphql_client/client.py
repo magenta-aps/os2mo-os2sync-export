@@ -90,10 +90,7 @@ class GraphQLClient(AsyncBaseClient):
                       engagement {
                         extension_3
                         org_unit {
-                          uuid
-                          itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
-                            user_key
-                          }
+                          ...UnitFields
                         }
                         job_function {
                           name
@@ -123,6 +120,52 @@ class GraphQLClient(AsyncBaseClient):
               }
               value
             }
+
+            fragment UnitFields on OrganisationUnit {
+              uuid
+              name
+              parent {
+                uuid
+                itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
+                  user_key
+                }
+              }
+              ancestors {
+                uuid
+              }
+              unit_type {
+                uuid
+              }
+              org_unit_level {
+                uuid
+              }
+              org_unit_hierarchy_model {
+                name
+              }
+              addresses {
+                address_type {
+                  scope
+                  uuid
+                  user_key
+                }
+                name
+              }
+              itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
+                user_key
+              }
+              managers {
+                person {
+                  itusers(filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}) {
+                    external_id
+                  }
+                }
+              }
+              kles {
+                kle_number {
+                  uuid
+                }
+              }
+            }
             """
         )
         variables: dict[str, object] = {
@@ -143,50 +186,54 @@ class GraphQLClient(AsyncBaseClient):
               org_units(filter: {uuids: [$uuid]}) {
                 objects {
                   current {
-                    uuid
-                    name
-                    parent {
-                      uuid
-                      itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
-                        user_key
-                      }
-                    }
-                    ancestors {
-                      uuid
-                    }
-                    unit_type {
-                      uuid
-                    }
-                    org_unit_level {
-                      uuid
-                    }
-                    org_unit_hierarchy_model {
-                      name
-                    }
-                    addresses {
-                      address_type {
-                        scope
-                        uuid
-                        user_key
-                      }
-                      name
-                    }
-                    itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
-                      user_key
-                    }
-                    managers {
-                      person {
-                        itusers(filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}) {
-                          external_id
-                        }
-                      }
-                    }
-                    kles {
-                      kle_number {
-                        uuid
-                      }
-                    }
+                    ...UnitFields
                   }
+                }
+              }
+            }
+
+            fragment UnitFields on OrganisationUnit {
+              uuid
+              name
+              parent {
+                uuid
+                itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
+                  user_key
+                }
+              }
+              ancestors {
+                uuid
+              }
+              unit_type {
+                uuid
+              }
+              org_unit_level {
+                uuid
+              }
+              org_unit_hierarchy_model {
+                name
+              }
+              addresses {
+                address_type {
+                  scope
+                  uuid
+                  user_key
+                }
+                name
+              }
+              itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
+                user_key
+              }
+              managers {
+                person {
+                  itusers(filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}) {
+                    external_id
+                  }
+                }
+              }
+              kles {
+                kle_number {
+                  uuid
                 }
               }
             }
