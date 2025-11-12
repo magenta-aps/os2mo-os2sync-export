@@ -54,6 +54,9 @@ from .find_manager_unit import FindManagerUnitManagers
 from .find_manager_unit import FindManagerUnitManagersObjects
 from .find_manager_unit import FindManagerUnitManagersObjectsValidities
 from .find_manager_unit import FindManagerUnitManagersObjectsValiditiesOrgUnit
+from .fragments import AddressFields
+from .fragments import AddressFieldsAddressType
+from .fragments import AddressFieldsVisibility
 from .input_types import AccessLogFilter
 from .input_types import AddressCreateInput
 from .input_types import AddressFilter
@@ -214,12 +217,6 @@ from .read_user_i_t_accounts import (
     ReadUserITAccountsEmployeesObjectsCurrentItusersEmail,
 )
 from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersEmailAddressType,
-)
-from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersEmailVisibility,
-)
-from .read_user_i_t_accounts import (
     ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement,
 )
 from .read_user_i_t_accounts import (
@@ -235,19 +232,7 @@ from .read_user_i_t_accounts import (
     ReadUserITAccountsEmployeesObjectsCurrentItusersLandline,
 )
 from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineAddressType,
-)
-from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineVisibility,
-)
-from .read_user_i_t_accounts import (
     ReadUserITAccountsEmployeesObjectsCurrentItusersMobile,
-)
-from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersMobileAddressType,
-)
-from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersMobileVisibility,
 )
 from .read_user_i_t_accounts import (
     ReadUserITAccountsEmployeesObjectsCurrentItusersPerson,
@@ -277,6 +262,9 @@ __all__ = [
     "AccessLogFilter",
     "AccessLogModel",
     "AddressCreateInput",
+    "AddressFields",
+    "AddressFieldsAddressType",
+    "AddressFieldsVisibility",
     "AddressFilter",
     "AddressRegistrationFilter",
     "AddressTerminateInput",
@@ -458,18 +446,12 @@ __all__ = [
     "ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids",
     "ReadUserITAccountsEmployeesObjectsCurrentItusers",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEmail",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersEmailAddressType",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersEmailVisibility",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnitItusers",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersLandline",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineAddressType",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineVisibility",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersMobile",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersMobileAddressType",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersMobileVisibility",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersPerson",
     "RegistrationFilter",
     "RelatedUnitFilter",

@@ -4,6 +4,7 @@ from typing import Optional
 from uuid import UUID
 
 from .base_model import BaseModel
+from .fragments import AddressFields
 
 
 class ReadUserITAccounts(BaseModel):
@@ -72,52 +73,16 @@ class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction(Base
     name: str
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(BaseModel):
-    address_type: "ReadUserITAccountsEmployeesObjectsCurrentItusersEmailAddressType"
-    visibility: Optional[
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersEmailVisibility"
-    ]
-    value: str
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(AddressFields):
+    pass
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEmailAddressType(BaseModel):
-    uuid: UUID
+class ReadUserITAccountsEmployeesObjectsCurrentItusersMobile(AddressFields):
+    pass
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEmailVisibility(BaseModel):
-    scope: Optional[str]
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersMobile(BaseModel):
-    address_type: "ReadUserITAccountsEmployeesObjectsCurrentItusersMobileAddressType"
-    visibility: Optional[
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersMobileVisibility"
-    ]
-    value: str
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersMobileAddressType(BaseModel):
-    uuid: UUID
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersMobileVisibility(BaseModel):
-    scope: Optional[str]
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersLandline(BaseModel):
-    address_type: "ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineAddressType"
-    visibility: Optional[
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineVisibility"
-    ]
-    value: str
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineAddressType(BaseModel):
-    uuid: UUID
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineVisibility(BaseModel):
-    scope: Optional[str]
+class ReadUserITAccountsEmployeesObjectsCurrentItusersLandline(AddressFields):
+    pass
 
 
 ReadUserITAccounts.update_forward_refs()
@@ -132,11 +97,5 @@ ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit.update_forward
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnitItusers.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEmail.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEmailAddressType.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEmailVisibility.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersMobile.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersMobileAddressType.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersMobileVisibility.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersLandline.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineAddressType.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersLandlineVisibility.update_forward_refs()

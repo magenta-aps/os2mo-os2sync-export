@@ -100,36 +100,28 @@ class GraphQLClient(AsyncBaseClient):
                         }
                       }
                       email: addresses(filter: {address_type: {uuids: $email}}) {
-                        address_type {
-                          uuid
-                        }
-                        visibility {
-                          scope
-                        }
-                        value
+                        ...AddressFields
                       }
                       mobile: addresses(filter: {address_type: {uuids: $mobile}}) {
-                        address_type {
-                          uuid
-                        }
-                        visibility {
-                          scope
-                        }
-                        value
+                        ...AddressFields
                       }
                       landline: addresses(filter: {address_type: {uuids: $landline}}) {
-                        address_type {
-                          uuid
-                        }
-                        visibility {
-                          scope
-                        }
-                        value
+                        ...AddressFields
                       }
                     }
                   }
                 }
               }
+            }
+
+            fragment AddressFields on Address {
+              address_type {
+                uuid
+              }
+              visibility {
+                scope
+              }
+              value
             }
             """
         )
