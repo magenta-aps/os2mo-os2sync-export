@@ -77,7 +77,6 @@ def set_settings() -> Generator[Callable[..., Settings], None, None]:
                 client_id=client_id,
                 client_secret=client_secret,
             ),  # type: ignore
-            events=False,
             **kwargs,
         )
         return settings
