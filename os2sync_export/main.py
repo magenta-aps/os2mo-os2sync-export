@@ -168,24 +168,24 @@ async def amqp_trigger_org_unit(
             os2sync_client=os2sync_client,
             uuid=uuid,
         )
-        return
-    sts_org_unit = None
-    if await is_relevant(
-        graphql_session,
-        uuid,
-        settings,
-    ):
-        try:
-            sts_org_unit = await get_sts_orgunit(
-                uuid, settings=settings, graphql_session=graphql_session
-            )
-        except ValueError:
-            logger.info(f"Event registered but no org_unit was found with {uuid=}")
-            os2sync_client.delete_orgunit(uuid)
-    if sts_org_unit is None:
-        os2sync_client.delete_orgunit(uuid)
     else:
-        os2sync_client.upsert_org_unit(sts_org_unit)
+        sts_org_unit = None
+        if await is_relevant(
+            graphql_session,
+            uuid,
+            settings,
+        ):
+            try:
+                sts_org_unit = await get_sts_orgunit(
+                    uuid, settings=settings, graphql_session=graphql_session
+                )
+            except ValueError:
+                logger.info(f"Event registered but no org_unit was found with {uuid=}")
+                os2sync_client.delete_orgunit(uuid)
+        if sts_org_unit is None:
+            os2sync_client.delete_orgunit(uuid)
+        else:
+            os2sync_client.upsert_org_unit(sts_org_unit)
 
     logger.info(f"Synced org_unit to fk-org: {uuid=}, now checking engagements")
     employees = await find_employees(graphql_session, uuid)
