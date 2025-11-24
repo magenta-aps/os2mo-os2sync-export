@@ -209,32 +209,26 @@ from .read_orgunit import ReadOrgunitOrgUnits
 from .read_orgunit import ReadOrgunitOrgUnitsObjects
 from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrent
 from .read_user_i_t_accounts import ReadUserITAccounts
-from .read_user_i_t_accounts import ReadUserITAccountsEmployees
-from .read_user_i_t_accounts import ReadUserITAccountsEmployeesObjects
-from .read_user_i_t_accounts import ReadUserITAccountsEmployeesObjectsCurrent
-from .read_user_i_t_accounts import ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids
-from .read_user_i_t_accounts import ReadUserITAccountsEmployeesObjectsCurrentItusers
+from .read_user_i_t_accounts import ReadUserITAccountsPersons
+from .read_user_i_t_accounts import ReadUserITAccountsPersonsObjects
+from .read_user_i_t_accounts import ReadUserITAccountsPersonsObjectsCurrent
+from .read_user_i_t_accounts import ReadUserITAccountsPersonsObjectsCurrentFkOrgUuids
+from .read_user_i_t_accounts import ReadUserITAccountsPersonsObjectsCurrentItusers
+from .read_user_i_t_accounts import ReadUserITAccountsPersonsObjectsCurrentItusersEmail
 from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersEmail,
+    ReadUserITAccountsPersonsObjectsCurrentItusersEngagement,
 )
 from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement,
+    ReadUserITAccountsPersonsObjectsCurrentItusersEngagementJobFunction,
 )
 from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction,
+    ReadUserITAccountsPersonsObjectsCurrentItusersEngagementOrgUnit,
 )
 from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit,
+    ReadUserITAccountsPersonsObjectsCurrentItusersLandline,
 )
-from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersLandline,
-)
-from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersMobile,
-)
-from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersPerson,
-)
+from .read_user_i_t_accounts import ReadUserITAccountsPersonsObjectsCurrentItusersMobile
+from .read_user_i_t_accounts import ReadUserITAccountsPersonsObjectsCurrentItusersPerson
 from .terminate_i_t_user import TerminateITUser
 from .terminate_i_t_user import TerminateITUserItuserTerminate
 from .testing__address_create import TestingAddressCreate
@@ -424,18 +418,18 @@ __all__ = [
     "ReadOrgunitOrgUnitsObjects",
     "ReadOrgunitOrgUnitsObjectsCurrent",
     "ReadUserITAccounts",
-    "ReadUserITAccountsEmployees",
-    "ReadUserITAccountsEmployeesObjects",
-    "ReadUserITAccountsEmployeesObjectsCurrent",
-    "ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusers",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersEmail",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersLandline",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersMobile",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersPerson",
+    "ReadUserITAccountsPersons",
+    "ReadUserITAccountsPersonsObjects",
+    "ReadUserITAccountsPersonsObjectsCurrent",
+    "ReadUserITAccountsPersonsObjectsCurrentFkOrgUuids",
+    "ReadUserITAccountsPersonsObjectsCurrentItusers",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersEmail",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersEngagement",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersEngagementJobFunction",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersEngagementOrgUnit",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersLandline",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersMobile",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersPerson",
     "RegistrationFilter",
     "RelatedUnitFilter",
     "RelatedUnitsUpdateInput",

@@ -32,7 +32,7 @@ from .input_types import OrganisationUnitCreateInput
 from .read_orgunit import ReadOrgunit
 from .read_orgunit import ReadOrgunitOrgUnits
 from .read_user_i_t_accounts import ReadUserITAccounts
-from .read_user_i_t_accounts import ReadUserITAccountsEmployees
+from .read_user_i_t_accounts import ReadUserITAccountsPersons
 from .terminate_i_t_user import TerminateITUser
 from .terminate_i_t_user import TerminateITUserItuserTerminate
 from .testing__address_create import TestingAddressCreate
@@ -65,11 +65,11 @@ class GraphQLClient(AsyncBaseClient):
         email: Union[Optional[List[UUID]], UnsetType] = UNSET,
         mobile: Union[Optional[List[UUID]], UnsetType] = UNSET,
         landline: Union[Optional[List[UUID]], UnsetType] = UNSET,
-    ) -> ReadUserITAccountsEmployees:
+    ) -> ReadUserITAccountsPersons:
         query = gql(
             """
             query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!], $email: [UUID!] = [], $mobile: [UUID!] = [], $landline: [UUID!] = []) {
-              employees(filter: {uuids: [$uuid]}) {
+              persons(filter: {uuids: [$uuid]}) {
                 objects {
                   current {
                     fk_org_uuids: itusers(
@@ -177,7 +177,7 @@ class GraphQLClient(AsyncBaseClient):
         }
         response = await self.execute(query=query, variables=variables)
         data = self.get_data(response)
-        return ReadUserITAccounts.parse_obj(data).employees
+        return ReadUserITAccounts.parse_obj(data).persons
 
     async def read_orgunit(self, uuid: UUID) -> ReadOrgunitOrgUnits:
         query = gql(

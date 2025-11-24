@@ -9,84 +9,82 @@ from .fragments import UnitFields
 
 
 class ReadUserITAccounts(BaseModel):
-    employees: "ReadUserITAccountsEmployees"
+    persons: "ReadUserITAccountsPersons"
 
 
-class ReadUserITAccountsEmployees(BaseModel):
-    objects: List["ReadUserITAccountsEmployeesObjects"]
+class ReadUserITAccountsPersons(BaseModel):
+    objects: List["ReadUserITAccountsPersonsObjects"]
 
 
-class ReadUserITAccountsEmployeesObjects(BaseModel):
-    current: Optional["ReadUserITAccountsEmployeesObjectsCurrent"]
+class ReadUserITAccountsPersonsObjects(BaseModel):
+    current: Optional["ReadUserITAccountsPersonsObjectsCurrent"]
 
 
-class ReadUserITAccountsEmployeesObjectsCurrent(BaseModel):
-    fk_org_uuids: List["ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids"]
-    itusers: List["ReadUserITAccountsEmployeesObjectsCurrentItusers"]
+class ReadUserITAccountsPersonsObjectsCurrent(BaseModel):
+    fk_org_uuids: List["ReadUserITAccountsPersonsObjectsCurrentFkOrgUuids"]
+    itusers: List["ReadUserITAccountsPersonsObjectsCurrentItusers"]
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids(BaseModel):
+class ReadUserITAccountsPersonsObjectsCurrentFkOrgUuids(BaseModel):
     uuid: UUID
     user_key: str
     external_id: Optional[str]
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusers(BaseModel):
+class ReadUserITAccountsPersonsObjectsCurrentItusers(BaseModel):
     user_key: str
     external_id: Optional[str]
-    person: Optional[List["ReadUserITAccountsEmployeesObjectsCurrentItusersPerson"]]
+    person: Optional[List["ReadUserITAccountsPersonsObjectsCurrentItusersPerson"]]
     engagement: Optional[
-        List["ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement"]
+        List["ReadUserITAccountsPersonsObjectsCurrentItusersEngagement"]
     ]
-    email: List["ReadUserITAccountsEmployeesObjectsCurrentItusersEmail"]
-    mobile: List["ReadUserITAccountsEmployeesObjectsCurrentItusersMobile"]
-    landline: List["ReadUserITAccountsEmployeesObjectsCurrentItusersLandline"]
+    email: List["ReadUserITAccountsPersonsObjectsCurrentItusersEmail"]
+    mobile: List["ReadUserITAccountsPersonsObjectsCurrentItusersMobile"]
+    landline: List["ReadUserITAccountsPersonsObjectsCurrentItusersLandline"]
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersPerson(BaseModel):
+class ReadUserITAccountsPersonsObjectsCurrentItusersPerson(BaseModel):
     cpr_number: Optional[Any]
     name: str
     nickname: str
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement(BaseModel):
+class ReadUserITAccountsPersonsObjectsCurrentItusersEngagement(BaseModel):
     extension_3: Optional[str]
-    org_unit: List["ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit"]
-    job_function: (
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction"
-    )
+    org_unit: List["ReadUserITAccountsPersonsObjectsCurrentItusersEngagementOrgUnit"]
+    job_function: "ReadUserITAccountsPersonsObjectsCurrentItusersEngagementJobFunction"
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit(UnitFields):
+class ReadUserITAccountsPersonsObjectsCurrentItusersEngagementOrgUnit(UnitFields):
     pass
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction(BaseModel):
+class ReadUserITAccountsPersonsObjectsCurrentItusersEngagementJobFunction(BaseModel):
     name: str
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(AddressFields):
+class ReadUserITAccountsPersonsObjectsCurrentItusersEmail(AddressFields):
     pass
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersMobile(AddressFields):
+class ReadUserITAccountsPersonsObjectsCurrentItusersMobile(AddressFields):
     pass
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersLandline(AddressFields):
+class ReadUserITAccountsPersonsObjectsCurrentItusersLandline(AddressFields):
     pass
 
 
 ReadUserITAccounts.update_forward_refs()
-ReadUserITAccountsEmployees.update_forward_refs()
-ReadUserITAccountsEmployeesObjects.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrent.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusers.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersPerson.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEmail.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersMobile.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersLandline.update_forward_refs()
+ReadUserITAccountsPersons.update_forward_refs()
+ReadUserITAccountsPersonsObjects.update_forward_refs()
+ReadUserITAccountsPersonsObjectsCurrent.update_forward_refs()
+ReadUserITAccountsPersonsObjectsCurrentFkOrgUuids.update_forward_refs()
+ReadUserITAccountsPersonsObjectsCurrentItusers.update_forward_refs()
+ReadUserITAccountsPersonsObjectsCurrentItusersPerson.update_forward_refs()
+ReadUserITAccountsPersonsObjectsCurrentItusersEngagement.update_forward_refs()
+ReadUserITAccountsPersonsObjectsCurrentItusersEngagementOrgUnit.update_forward_refs()
+ReadUserITAccountsPersonsObjectsCurrentItusersEngagementJobFunction.update_forward_refs()
+ReadUserITAccountsPersonsObjectsCurrentItusersEmail.update_forward_refs()
+ReadUserITAccountsPersonsObjectsCurrentItusersMobile.update_forward_refs()
+ReadUserITAccountsPersonsObjectsCurrentItusersLandline.update_forward_refs()
