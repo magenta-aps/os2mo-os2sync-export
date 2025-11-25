@@ -18,15 +18,19 @@ class FindAddressUnitOrPersonAddressesObjects(BaseModel):
 
 
 class FindAddressUnitOrPersonAddressesObjectsValidities(BaseModel):
-    org_unit: Optional[List["FindAddressUnitOrPersonAddressesObjectsValiditiesOrgUnit"]]
-    person: Optional[List["FindAddressUnitOrPersonAddressesObjectsValiditiesPerson"]]
+    org_unit_response: Optional[
+        "FindAddressUnitOrPersonAddressesObjectsValiditiesOrgUnitResponse"
+    ]
+    person_response: Optional[
+        "FindAddressUnitOrPersonAddressesObjectsValiditiesPersonResponse"
+    ]
 
 
-class FindAddressUnitOrPersonAddressesObjectsValiditiesOrgUnit(BaseModel):
+class FindAddressUnitOrPersonAddressesObjectsValiditiesOrgUnitResponse(BaseModel):
     uuid: UUID
 
 
-class FindAddressUnitOrPersonAddressesObjectsValiditiesPerson(BaseModel):
+class FindAddressUnitOrPersonAddressesObjectsValiditiesPersonResponse(BaseModel):
     uuid: UUID
 
 
@@ -34,5 +38,5 @@ FindAddressUnitOrPerson.update_forward_refs()
 FindAddressUnitOrPersonAddresses.update_forward_refs()
 FindAddressUnitOrPersonAddressesObjects.update_forward_refs()
 FindAddressUnitOrPersonAddressesObjectsValidities.update_forward_refs()
-FindAddressUnitOrPersonAddressesObjectsValiditiesOrgUnit.update_forward_refs()
-FindAddressUnitOrPersonAddressesObjectsValiditiesPerson.update_forward_refs()
+FindAddressUnitOrPersonAddressesObjectsValiditiesOrgUnitResponse.update_forward_refs()
+FindAddressUnitOrPersonAddressesObjectsValiditiesPersonResponse.update_forward_refs()

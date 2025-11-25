@@ -72,38 +72,60 @@ class GraphQLClient(AsyncBaseClient):
               persons(filter: {uuids: [$uuid]}) {
                 objects {
                   current {
-                    fk_org_uuids: itusers(
+                    fk_org_uuids: itusers_response(
                       filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}
                     ) {
-                      uuid
-                      user_key
-                      external_id
+                      objects {
+                        current {
+                          uuid
+                          user_key
+                          external_id
+                        }
+                      }
                     }
-                    itusers: itusers(filter: {itsystem: {user_keys: $it_user_keys}}) {
-                      user_key
-                      external_id
-                      person {
-                        cpr_number
-                        name
-                        nickname
-                      }
-                      engagement {
-                        extension_3
-                        org_unit {
-                          ...UnitFields
+                    itusers: itusers_response(filter: {itsystem: {user_keys: $it_user_keys}}) {
+                      objects {
+                        current {
+                          user_key
+                          external_id
+                          person_response {
+                            current {
+                              cpr_number
+                              name
+                              nickname
+                            }
+                          }
+                          engagements_responses {
+                            objects {
+                              current {
+                                extension_3
+                                org_unit_response {
+                                  ...UnitFields
+                                }
+                                job_function_response {
+                                  current {
+                                    name
+                                  }
+                                }
+                              }
+                            }
+                          }
+                          email: addresses_response(filter: {address_type: {uuids: $email}}) {
+                            objects {
+                              ...AddressFields
+                            }
+                          }
+                          mobile: addresses_response(filter: {address_type: {uuids: $mobile}}) {
+                            objects {
+                              ...AddressFields
+                            }
+                          }
+                          landline: addresses_response(filter: {address_type: {uuids: $landline}}) {
+                            objects {
+                              ...AddressFields
+                            }
+                          }
                         }
-                        job_function {
-                          name
-                        }
-                      }
-                      email: addresses(filter: {address_type: {uuids: $email}}) {
-                        ...AddressFields
-                      }
-                      mobile: addresses(filter: {address_type: {uuids: $mobile}}) {
-                        ...AddressFields
-                      }
-                      landline: addresses(filter: {address_type: {uuids: $landline}}) {
-                        ...AddressFields
                       }
                     }
                   }
@@ -111,58 +133,98 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment AddressFields on Address {
-              address_type {
-                uuid
-              }
-              visibility {
-                scope
-              }
-              value
-            }
-
-            fragment UnitFields on OrganisationUnit {
-              uuid
-              name
-              parent {
-                uuid
-                itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
-                  user_key
-                }
-              }
-              ancestors {
-                uuid
-              }
-              unit_type {
-                uuid
-              }
-              org_unit_level {
-                uuid
-              }
-              org_unit_hierarchy_model {
-                name
-              }
-              addresses {
-                address_type {
-                  scope
+            fragment AddressFields on AddressResponse {
+              current {
+                address_type_response {
                   uuid
-                  user_key
                 }
-                name
-              }
-              itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
-                user_key
-              }
-              managers {
-                person {
-                  itusers(filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}) {
-                    external_id
+                visibility_response {
+                  current {
+                    scope
                   }
                 }
+                value
               }
-              kles {
-                kle_number {
+            }
+
+            fragment UnitFields on OrganisationUnitResponse {
+              current {
+                uuid
+                name
+                parent_response {
+                  current {
+                    uuid
+                    itusers_response(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
+                      objects {
+                        current {
+                          user_key
+                        }
+                      }
+                    }
+                  }
+                }
+                ancestors {
                   uuid
+                }
+                unit_type_response {
+                  uuid
+                }
+                unit_level_response {
+                  uuid
+                }
+                unit_hierarchy_response {
+                  current {
+                    name
+                  }
+                }
+                addresses_response {
+                  objects {
+                    current {
+                      address_type_response {
+                        current {
+                          scope
+                          uuid
+                          user_key
+                        }
+                      }
+                      name
+                    }
+                  }
+                }
+                itusers_response(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
+                  objects {
+                    current {
+                      user_key
+                    }
+                  }
+                }
+                managers_response {
+                  objects {
+                    current {
+                      person_response {
+                        current {
+                          itusers_response(
+                            filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}
+                          ) {
+                            objects {
+                              current {
+                                external_id
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                kles_response {
+                  objects {
+                    current {
+                      kle_number_response {
+                        uuid
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -185,55 +247,89 @@ class GraphQLClient(AsyncBaseClient):
             query read_orgunit($uuid: UUID!) {
               org_units(filter: {uuids: [$uuid]}) {
                 objects {
-                  current {
-                    ...UnitFields
-                  }
+                  ...UnitFields
                 }
               }
             }
 
-            fragment UnitFields on OrganisationUnit {
-              uuid
-              name
-              parent {
+            fragment UnitFields on OrganisationUnitResponse {
+              current {
                 uuid
-                itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
-                  user_key
-                }
-              }
-              ancestors {
-                uuid
-              }
-              unit_type {
-                uuid
-              }
-              org_unit_level {
-                uuid
-              }
-              org_unit_hierarchy_model {
                 name
-              }
-              addresses {
-                address_type {
-                  scope
-                  uuid
-                  user_key
-                }
-                name
-              }
-              itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
-                user_key
-              }
-              managers {
-                person {
-                  itusers(filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}) {
-                    external_id
+                parent_response {
+                  current {
+                    uuid
+                    itusers_response(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
+                      objects {
+                        current {
+                          user_key
+                        }
+                      }
+                    }
                   }
                 }
-              }
-              kles {
-                kle_number {
+                ancestors {
                   uuid
+                }
+                unit_type_response {
+                  uuid
+                }
+                unit_level_response {
+                  uuid
+                }
+                unit_hierarchy_response {
+                  current {
+                    name
+                  }
+                }
+                addresses_response {
+                  objects {
+                    current {
+                      address_type_response {
+                        current {
+                          scope
+                          uuid
+                          user_key
+                        }
+                      }
+                      name
+                    }
+                  }
+                }
+                itusers_response(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
+                  objects {
+                    current {
+                      user_key
+                    }
+                  }
+                }
+                managers_response {
+                  objects {
+                    current {
+                      person_response {
+                        current {
+                          itusers_response(
+                            filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}
+                          ) {
+                            objects {
+                              current {
+                                external_id
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                kles_response {
+                  objects {
+                    current {
+                      kle_number_response {
+                        uuid
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -253,10 +349,10 @@ class GraphQLClient(AsyncBaseClient):
               addresses(filter: {uuids: [$uuid], from_date: null, to_date: null}) {
                 objects {
                   validities {
-                    org_unit {
+                    org_unit_response {
                       uuid
                     }
-                    person {
+                    person_response {
                       uuid
                     }
                   }
@@ -279,10 +375,10 @@ class GraphQLClient(AsyncBaseClient):
               itusers(filter: {uuids: [$uuid], from_date: null, to_date: null}) {
                 objects {
                   validities {
-                    org_unit {
+                    org_unit_response {
                       uuid
                     }
-                    person {
+                    person_response {
                       uuid
                     }
                   }
@@ -303,7 +399,7 @@ class GraphQLClient(AsyncBaseClient):
               itusers(filter: {uuids: [$uuid], from_date: null, to_date: null}) {
                 objects {
                   validities {
-                    org_unit {
+                    org_unit_response {
                       uuid
                     }
                   }
@@ -324,7 +420,7 @@ class GraphQLClient(AsyncBaseClient):
               managers(filter: {uuids: [$uuid], from_date: null, to_date: null}) {
                 objects {
                   validities {
-                    org_unit {
+                    org_unit_response {
                       uuid
                     }
                   }
@@ -347,7 +443,7 @@ class GraphQLClient(AsyncBaseClient):
               engagements(filter: {uuids: [$uuid], from_date: null, to_date: null}) {
                 objects {
                   validities {
-                    person {
+                    person_response {
                       uuid
                     }
                   }

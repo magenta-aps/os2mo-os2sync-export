@@ -17,10 +17,10 @@ class FindEngagementPersonEngagementsObjects(BaseModel):
 
 
 class FindEngagementPersonEngagementsObjectsValidities(BaseModel):
-    person: List["FindEngagementPersonEngagementsObjectsValiditiesPerson"]
+    person_response: "FindEngagementPersonEngagementsObjectsValiditiesPersonResponse"
 
 
-class FindEngagementPersonEngagementsObjectsValiditiesPerson(BaseModel):
+class FindEngagementPersonEngagementsObjectsValiditiesPersonResponse(BaseModel):
     uuid: UUID
 
 
@@ -28,4 +28,4 @@ FindEngagementPerson.update_forward_refs()
 FindEngagementPersonEngagements.update_forward_refs()
 FindEngagementPersonEngagementsObjects.update_forward_refs()
 FindEngagementPersonEngagementsObjectsValidities.update_forward_refs()
-FindEngagementPersonEngagementsObjectsValiditiesPerson.update_forward_refs()
+FindEngagementPersonEngagementsObjectsValiditiesPersonResponse.update_forward_refs()

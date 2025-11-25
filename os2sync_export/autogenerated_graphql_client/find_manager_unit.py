@@ -17,10 +17,10 @@ class FindManagerUnitManagersObjects(BaseModel):
 
 
 class FindManagerUnitManagersObjectsValidities(BaseModel):
-    org_unit: List["FindManagerUnitManagersObjectsValiditiesOrgUnit"]
+    org_unit_response: "FindManagerUnitManagersObjectsValiditiesOrgUnitResponse"
 
 
-class FindManagerUnitManagersObjectsValiditiesOrgUnit(BaseModel):
+class FindManagerUnitManagersObjectsValiditiesOrgUnitResponse(BaseModel):
     uuid: UUID
 
 
@@ -28,4 +28,4 @@ FindManagerUnit.update_forward_refs()
 FindManagerUnitManagers.update_forward_refs()
 FindManagerUnitManagersObjects.update_forward_refs()
 FindManagerUnitManagersObjectsValidities.update_forward_refs()
-FindManagerUnitManagersObjectsValiditiesOrgUnit.update_forward_refs()
+FindManagerUnitManagersObjectsValiditiesOrgUnitResponse.update_forward_refs()

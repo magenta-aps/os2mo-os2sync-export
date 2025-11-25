@@ -18,15 +18,19 @@ class FindItuserUnitOrPersonItusersObjects(BaseModel):
 
 
 class FindItuserUnitOrPersonItusersObjectsValidities(BaseModel):
-    org_unit: Optional[List["FindItuserUnitOrPersonItusersObjectsValiditiesOrgUnit"]]
-    person: Optional[List["FindItuserUnitOrPersonItusersObjectsValiditiesPerson"]]
+    org_unit_response: Optional[
+        "FindItuserUnitOrPersonItusersObjectsValiditiesOrgUnitResponse"
+    ]
+    person_response: Optional[
+        "FindItuserUnitOrPersonItusersObjectsValiditiesPersonResponse"
+    ]
 
 
-class FindItuserUnitOrPersonItusersObjectsValiditiesOrgUnit(BaseModel):
+class FindItuserUnitOrPersonItusersObjectsValiditiesOrgUnitResponse(BaseModel):
     uuid: UUID
 
 
-class FindItuserUnitOrPersonItusersObjectsValiditiesPerson(BaseModel):
+class FindItuserUnitOrPersonItusersObjectsValiditiesPersonResponse(BaseModel):
     uuid: UUID
 
 
@@ -34,5 +38,5 @@ FindItuserUnitOrPerson.update_forward_refs()
 FindItuserUnitOrPersonItusers.update_forward_refs()
 FindItuserUnitOrPersonItusersObjects.update_forward_refs()
 FindItuserUnitOrPersonItusersObjectsValidities.update_forward_refs()
-FindItuserUnitOrPersonItusersObjectsValiditiesOrgUnit.update_forward_refs()
-FindItuserUnitOrPersonItusersObjectsValiditiesPerson.update_forward_refs()
+FindItuserUnitOrPersonItusersObjectsValiditiesOrgUnitResponse.update_forward_refs()
+FindItuserUnitOrPersonItusersObjectsValiditiesPersonResponse.update_forward_refs()

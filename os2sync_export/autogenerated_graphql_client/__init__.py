@@ -19,17 +19,17 @@ from .find_address_unit_or_person import (
     FindAddressUnitOrPersonAddressesObjectsValidities,
 )
 from .find_address_unit_or_person import (
-    FindAddressUnitOrPersonAddressesObjectsValiditiesOrgUnit,
+    FindAddressUnitOrPersonAddressesObjectsValiditiesOrgUnitResponse,
 )
 from .find_address_unit_or_person import (
-    FindAddressUnitOrPersonAddressesObjectsValiditiesPerson,
+    FindAddressUnitOrPersonAddressesObjectsValiditiesPersonResponse,
 )
 from .find_engagement_person import FindEngagementPerson
 from .find_engagement_person import FindEngagementPersonEngagements
 from .find_engagement_person import FindEngagementPersonEngagementsObjects
 from .find_engagement_person import FindEngagementPersonEngagementsObjectsValidities
 from .find_engagement_person import (
-    FindEngagementPersonEngagementsObjectsValiditiesPerson,
+    FindEngagementPersonEngagementsObjectsValiditiesPersonResponse,
 )
 from .find_f_k_itsystem import FindFKItsystem
 from .find_f_k_itsystem import FindFKItsystemItsystems
@@ -39,39 +39,72 @@ from .find_ituser_unit_or_person import FindItuserUnitOrPersonItusers
 from .find_ituser_unit_or_person import FindItuserUnitOrPersonItusersObjects
 from .find_ituser_unit_or_person import FindItuserUnitOrPersonItusersObjectsValidities
 from .find_ituser_unit_or_person import (
-    FindItuserUnitOrPersonItusersObjectsValiditiesOrgUnit,
+    FindItuserUnitOrPersonItusersObjectsValiditiesOrgUnitResponse,
 )
 from .find_ituser_unit_or_person import (
-    FindItuserUnitOrPersonItusersObjectsValiditiesPerson,
+    FindItuserUnitOrPersonItusersObjectsValiditiesPersonResponse,
 )
 from .find_k_l_e_unit import FindKLEUnit
 from .find_k_l_e_unit import FindKLEUnitItusers
 from .find_k_l_e_unit import FindKLEUnitItusersObjects
 from .find_k_l_e_unit import FindKLEUnitItusersObjectsValidities
-from .find_k_l_e_unit import FindKLEUnitItusersObjectsValiditiesOrgUnit
+from .find_k_l_e_unit import FindKLEUnitItusersObjectsValiditiesOrgUnitResponse
 from .find_manager_unit import FindManagerUnit
 from .find_manager_unit import FindManagerUnitManagers
 from .find_manager_unit import FindManagerUnitManagersObjects
 from .find_manager_unit import FindManagerUnitManagersObjectsValidities
-from .find_manager_unit import FindManagerUnitManagersObjectsValiditiesOrgUnit
+from .find_manager_unit import FindManagerUnitManagersObjectsValiditiesOrgUnitResponse
 from .fragments import AddressFields
-from .fragments import AddressFieldsAddressType
-from .fragments import AddressFieldsVisibility
+from .fragments import AddressFieldsCurrent
+from .fragments import AddressFieldsCurrentAddressTypeResponse
+from .fragments import AddressFieldsCurrentVisibilityResponse
+from .fragments import AddressFieldsCurrentVisibilityResponseCurrent
 from .fragments import UnitFields
-from .fragments import UnitFieldsAddresses
-from .fragments import UnitFieldsAddressesAddressType
-from .fragments import UnitFieldsAncestors
-from .fragments import UnitFieldsItusers
-from .fragments import UnitFieldsKles
-from .fragments import UnitFieldsKlesKleNumber
-from .fragments import UnitFieldsManagers
-from .fragments import UnitFieldsManagersPerson
-from .fragments import UnitFieldsManagersPersonItusers
-from .fragments import UnitFieldsOrgUnitHierarchyModel
-from .fragments import UnitFieldsOrgUnitLevel
-from .fragments import UnitFieldsParent
-from .fragments import UnitFieldsParentItusers
-from .fragments import UnitFieldsUnitType
+from .fragments import UnitFieldsCurrent
+from .fragments import UnitFieldsCurrentAddressesResponse
+from .fragments import UnitFieldsCurrentAddressesResponseObjects
+from .fragments import UnitFieldsCurrentAddressesResponseObjectsCurrent
+from .fragments import (
+    UnitFieldsCurrentAddressesResponseObjectsCurrentAddressTypeResponse,
+)
+from .fragments import (
+    UnitFieldsCurrentAddressesResponseObjectsCurrentAddressTypeResponseCurrent,
+)
+from .fragments import UnitFieldsCurrentAncestors
+from .fragments import UnitFieldsCurrentItusersResponse
+from .fragments import UnitFieldsCurrentItusersResponseObjects
+from .fragments import UnitFieldsCurrentItusersResponseObjectsCurrent
+from .fragments import UnitFieldsCurrentKlesResponse
+from .fragments import UnitFieldsCurrentKlesResponseObjects
+from .fragments import UnitFieldsCurrentKlesResponseObjectsCurrent
+from .fragments import UnitFieldsCurrentKlesResponseObjectsCurrentKleNumberResponse
+from .fragments import UnitFieldsCurrentManagersResponse
+from .fragments import UnitFieldsCurrentManagersResponseObjects
+from .fragments import UnitFieldsCurrentManagersResponseObjectsCurrent
+from .fragments import UnitFieldsCurrentManagersResponseObjectsCurrentPersonResponse
+from .fragments import (
+    UnitFieldsCurrentManagersResponseObjectsCurrentPersonResponseCurrent,
+)
+from .fragments import (
+    UnitFieldsCurrentManagersResponseObjectsCurrentPersonResponseCurrentItusersResponse,
+)
+from .fragments import (
+    UnitFieldsCurrentManagersResponseObjectsCurrentPersonResponseCurrentItusersResponseObjects,
+)
+from .fragments import (
+    UnitFieldsCurrentManagersResponseObjectsCurrentPersonResponseCurrentItusersResponseObjectsCurrent,
+)
+from .fragments import UnitFieldsCurrentParentResponse
+from .fragments import UnitFieldsCurrentParentResponseCurrent
+from .fragments import UnitFieldsCurrentParentResponseCurrentItusersResponse
+from .fragments import UnitFieldsCurrentParentResponseCurrentItusersResponseObjects
+from .fragments import (
+    UnitFieldsCurrentParentResponseCurrentItusersResponseObjectsCurrent,
+)
+from .fragments import UnitFieldsCurrentUnitHierarchyResponse
+from .fragments import UnitFieldsCurrentUnitHierarchyResponseCurrent
+from .fragments import UnitFieldsCurrentUnitLevelResponse
+from .fragments import UnitFieldsCurrentUnitTypeResponse
 from .input_types import AccessLogFilter
 from .input_types import AddressCreateInput
 from .input_types import AddressFilter
@@ -207,28 +240,66 @@ from .input_types import ValidityInput
 from .read_orgunit import ReadOrgunit
 from .read_orgunit import ReadOrgunitOrgUnits
 from .read_orgunit import ReadOrgunitOrgUnitsObjects
-from .read_orgunit import ReadOrgunitOrgUnitsObjectsCurrent
 from .read_user_i_t_accounts import ReadUserITAccounts
 from .read_user_i_t_accounts import ReadUserITAccountsPersons
 from .read_user_i_t_accounts import ReadUserITAccountsPersonsObjects
 from .read_user_i_t_accounts import ReadUserITAccountsPersonsObjectsCurrent
 from .read_user_i_t_accounts import ReadUserITAccountsPersonsObjectsCurrentFkOrgUuids
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsPersonsObjectsCurrentFkOrgUuidsObjects,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsPersonsObjectsCurrentFkOrgUuidsObjectsCurrent,
+)
 from .read_user_i_t_accounts import ReadUserITAccountsPersonsObjectsCurrentItusers
-from .read_user_i_t_accounts import ReadUserITAccountsPersonsObjectsCurrentItusersEmail
 from .read_user_i_t_accounts import (
-    ReadUserITAccountsPersonsObjectsCurrentItusersEngagement,
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjects,
 )
 from .read_user_i_t_accounts import (
-    ReadUserITAccountsPersonsObjectsCurrentItusersEngagementJobFunction,
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrent,
 )
 from .read_user_i_t_accounts import (
-    ReadUserITAccountsPersonsObjectsCurrentItusersEngagementOrgUnit,
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEmail,
 )
 from .read_user_i_t_accounts import (
-    ReadUserITAccountsPersonsObjectsCurrentItusersLandline,
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEmailObjects,
 )
-from .read_user_i_t_accounts import ReadUserITAccountsPersonsObjectsCurrentItusersMobile
-from .read_user_i_t_accounts import ReadUserITAccountsPersonsObjectsCurrentItusersPerson
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEngagementsResponses,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEngagementsResponsesObjects,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEngagementsResponsesObjectsCurrent,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEngagementsResponsesObjectsCurrentJobFunctionResponse,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEngagementsResponsesObjectsCurrentJobFunctionResponseCurrent,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEngagementsResponsesObjectsCurrentOrgUnitResponse,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentLandline,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentLandlineObjects,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentMobile,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentMobileObjects,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentPersonResponse,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentPersonResponseCurrent,
+)
 from .terminate_i_t_user import TerminateITUser
 from .terminate_i_t_user import TerminateITUserItuserTerminate
 from .testing__address_create import TestingAddressCreate
@@ -255,8 +326,10 @@ __all__ = [
     "AccessLogModel",
     "AddressCreateInput",
     "AddressFields",
-    "AddressFieldsAddressType",
-    "AddressFieldsVisibility",
+    "AddressFieldsCurrent",
+    "AddressFieldsCurrentAddressTypeResponse",
+    "AddressFieldsCurrentVisibilityResponse",
+    "AddressFieldsCurrentVisibilityResponseCurrent",
     "AddressFilter",
     "AddressRegistrationFilter",
     "AddressTerminateInput",
@@ -312,13 +385,13 @@ __all__ = [
     "FindAddressUnitOrPersonAddresses",
     "FindAddressUnitOrPersonAddressesObjects",
     "FindAddressUnitOrPersonAddressesObjectsValidities",
-    "FindAddressUnitOrPersonAddressesObjectsValiditiesOrgUnit",
-    "FindAddressUnitOrPersonAddressesObjectsValiditiesPerson",
+    "FindAddressUnitOrPersonAddressesObjectsValiditiesOrgUnitResponse",
+    "FindAddressUnitOrPersonAddressesObjectsValiditiesPersonResponse",
     "FindEngagementPerson",
     "FindEngagementPersonEngagements",
     "FindEngagementPersonEngagementsObjects",
     "FindEngagementPersonEngagementsObjectsValidities",
-    "FindEngagementPersonEngagementsObjectsValiditiesPerson",
+    "FindEngagementPersonEngagementsObjectsValiditiesPersonResponse",
     "FindFKItsystem",
     "FindFKItsystemItsystems",
     "FindFKItsystemItsystemsObjects",
@@ -326,18 +399,18 @@ __all__ = [
     "FindItuserUnitOrPersonItusers",
     "FindItuserUnitOrPersonItusersObjects",
     "FindItuserUnitOrPersonItusersObjectsValidities",
-    "FindItuserUnitOrPersonItusersObjectsValiditiesOrgUnit",
-    "FindItuserUnitOrPersonItusersObjectsValiditiesPerson",
+    "FindItuserUnitOrPersonItusersObjectsValiditiesOrgUnitResponse",
+    "FindItuserUnitOrPersonItusersObjectsValiditiesPersonResponse",
     "FindKLEUnit",
     "FindKLEUnitItusers",
     "FindKLEUnitItusersObjects",
     "FindKLEUnitItusersObjectsValidities",
-    "FindKLEUnitItusersObjectsValiditiesOrgUnit",
+    "FindKLEUnitItusersObjectsValiditiesOrgUnitResponse",
     "FindManagerUnit",
     "FindManagerUnitManagers",
     "FindManagerUnitManagersObjects",
     "FindManagerUnitManagersObjectsValidities",
-    "FindManagerUnitManagersObjectsValiditiesOrgUnit",
+    "FindManagerUnitManagersObjectsValiditiesOrgUnitResponse",
     "FullEventFilter",
     "GraphQLClient",
     "GraphQLClientError",
@@ -416,20 +489,30 @@ __all__ = [
     "ReadOrgunit",
     "ReadOrgunitOrgUnits",
     "ReadOrgunitOrgUnitsObjects",
-    "ReadOrgunitOrgUnitsObjectsCurrent",
     "ReadUserITAccounts",
     "ReadUserITAccountsPersons",
     "ReadUserITAccountsPersonsObjects",
     "ReadUserITAccountsPersonsObjectsCurrent",
     "ReadUserITAccountsPersonsObjectsCurrentFkOrgUuids",
+    "ReadUserITAccountsPersonsObjectsCurrentFkOrgUuidsObjects",
+    "ReadUserITAccountsPersonsObjectsCurrentFkOrgUuidsObjectsCurrent",
     "ReadUserITAccountsPersonsObjectsCurrentItusers",
-    "ReadUserITAccountsPersonsObjectsCurrentItusersEmail",
-    "ReadUserITAccountsPersonsObjectsCurrentItusersEngagement",
-    "ReadUserITAccountsPersonsObjectsCurrentItusersEngagementJobFunction",
-    "ReadUserITAccountsPersonsObjectsCurrentItusersEngagementOrgUnit",
-    "ReadUserITAccountsPersonsObjectsCurrentItusersLandline",
-    "ReadUserITAccountsPersonsObjectsCurrentItusersMobile",
-    "ReadUserITAccountsPersonsObjectsCurrentItusersPerson",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjects",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrent",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEmail",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEmailObjects",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEngagementsResponses",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEngagementsResponsesObjects",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEngagementsResponsesObjectsCurrent",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEngagementsResponsesObjectsCurrentJobFunctionResponse",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEngagementsResponsesObjectsCurrentJobFunctionResponseCurrent",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentEngagementsResponsesObjectsCurrentOrgUnitResponse",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentLandline",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentLandlineObjects",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentMobile",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentMobileObjects",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentPersonResponse",
+    "ReadUserITAccountsPersonsObjectsCurrentItusersObjectsCurrentPersonResponseCurrent",
     "RegistrationFilter",
     "RelatedUnitFilter",
     "RelatedUnitsUpdateInput",
@@ -459,20 +542,37 @@ __all__ = [
     "TestingOrgUnitCreate",
     "TestingOrgUnitCreateOrgUnitCreate",
     "UnitFields",
-    "UnitFieldsAddresses",
-    "UnitFieldsAddressesAddressType",
-    "UnitFieldsAncestors",
-    "UnitFieldsItusers",
-    "UnitFieldsKles",
-    "UnitFieldsKlesKleNumber",
-    "UnitFieldsManagers",
-    "UnitFieldsManagersPerson",
-    "UnitFieldsManagersPersonItusers",
-    "UnitFieldsOrgUnitHierarchyModel",
-    "UnitFieldsOrgUnitLevel",
-    "UnitFieldsParent",
-    "UnitFieldsParentItusers",
-    "UnitFieldsUnitType",
+    "UnitFieldsCurrent",
+    "UnitFieldsCurrentAddressesResponse",
+    "UnitFieldsCurrentAddressesResponseObjects",
+    "UnitFieldsCurrentAddressesResponseObjectsCurrent",
+    "UnitFieldsCurrentAddressesResponseObjectsCurrentAddressTypeResponse",
+    "UnitFieldsCurrentAddressesResponseObjectsCurrentAddressTypeResponseCurrent",
+    "UnitFieldsCurrentAncestors",
+    "UnitFieldsCurrentItusersResponse",
+    "UnitFieldsCurrentItusersResponseObjects",
+    "UnitFieldsCurrentItusersResponseObjectsCurrent",
+    "UnitFieldsCurrentKlesResponse",
+    "UnitFieldsCurrentKlesResponseObjects",
+    "UnitFieldsCurrentKlesResponseObjectsCurrent",
+    "UnitFieldsCurrentKlesResponseObjectsCurrentKleNumberResponse",
+    "UnitFieldsCurrentManagersResponse",
+    "UnitFieldsCurrentManagersResponseObjects",
+    "UnitFieldsCurrentManagersResponseObjectsCurrent",
+    "UnitFieldsCurrentManagersResponseObjectsCurrentPersonResponse",
+    "UnitFieldsCurrentManagersResponseObjectsCurrentPersonResponseCurrent",
+    "UnitFieldsCurrentManagersResponseObjectsCurrentPersonResponseCurrentItusersResponse",
+    "UnitFieldsCurrentManagersResponseObjectsCurrentPersonResponseCurrentItusersResponseObjects",
+    "UnitFieldsCurrentManagersResponseObjectsCurrentPersonResponseCurrentItusersResponseObjectsCurrent",
+    "UnitFieldsCurrentParentResponse",
+    "UnitFieldsCurrentParentResponseCurrent",
+    "UnitFieldsCurrentParentResponseCurrentItusersResponse",
+    "UnitFieldsCurrentParentResponseCurrentItusersResponseObjects",
+    "UnitFieldsCurrentParentResponseCurrentItusersResponseObjectsCurrent",
+    "UnitFieldsCurrentUnitHierarchyResponse",
+    "UnitFieldsCurrentUnitHierarchyResponseCurrent",
+    "UnitFieldsCurrentUnitLevelResponse",
+    "UnitFieldsCurrentUnitTypeResponse",
     "UuidsBoundClassFilter",
     "UuidsBoundEmployeeFilter",
     "UuidsBoundEngagementFilter",

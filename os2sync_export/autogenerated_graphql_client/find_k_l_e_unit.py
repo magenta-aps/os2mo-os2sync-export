@@ -18,10 +18,10 @@ class FindKLEUnitItusersObjects(BaseModel):
 
 
 class FindKLEUnitItusersObjectsValidities(BaseModel):
-    org_unit: Optional[List["FindKLEUnitItusersObjectsValiditiesOrgUnit"]]
+    org_unit_response: Optional["FindKLEUnitItusersObjectsValiditiesOrgUnitResponse"]
 
 
-class FindKLEUnitItusersObjectsValiditiesOrgUnit(BaseModel):
+class FindKLEUnitItusersObjectsValiditiesOrgUnitResponse(BaseModel):
     uuid: UUID
 
 
@@ -29,4 +29,4 @@ FindKLEUnit.update_forward_refs()
 FindKLEUnitItusers.update_forward_refs()
 FindKLEUnitItusersObjects.update_forward_refs()
 FindKLEUnitItusersObjectsValidities.update_forward_refs()
-FindKLEUnitItusersObjectsValiditiesOrgUnit.update_forward_refs()
+FindKLEUnitItusersObjectsValiditiesOrgUnitResponse.update_forward_refs()
