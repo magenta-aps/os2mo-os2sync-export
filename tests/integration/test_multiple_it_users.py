@@ -209,11 +209,12 @@ async def test_two_ad_one_fk(
         uuid=person_uuid, it_user_keys=["Active Directory"]
     )
     fk_org_it_users = one(it_accounts.objects).current.fk_org_uuids  # type: ignore
-    for fk_user in fk_org_it_users:
-        if fk_user.user_key == str(adguid1):
-            assert fk_user.external_id == str(fkorg_uuid)
-        elif fk_user.user_key == str(adguid2):
-            assert fk_user.external_id == str(adguid2)
+    for fk_user in fk_org_it_users.objects:
+        assert fk_user and fk_user.current
+        if fk_user.current.user_key == str(adguid1):
+            assert fk_user.current.external_id == str(fkorg_uuid)
+        elif fk_user.current.user_key == str(adguid2):
+            assert fk_user.current.external_id == str(adguid2)
         else:
             assert False
 
@@ -653,11 +654,12 @@ async def test_two_ad_zero_fk(
         uuid=person_uuid, it_user_keys=["Active Directory"]
     )
     fk_org_it_users = one(it_accounts.objects).current.fk_org_uuids  # type: ignore
-    for fk_user in fk_org_it_users:
-        if fk_user.user_key == str(adguid1):
-            assert fk_user.external_id == str(adguid1)
-        elif fk_user.user_key == str(adguid2):
-            assert fk_user.external_id == str(adguid2)
+    for fk_user in fk_org_it_users.objects:
+        assert fk_user and fk_user.current
+        if fk_user.current.user_key == str(adguid1):
+            assert fk_user.current.external_id == str(adguid1)
+        elif fk_user.current.user_key == str(adguid2):
+            assert fk_user.current.external_id == str(adguid2)
         else:
             assert False
 
