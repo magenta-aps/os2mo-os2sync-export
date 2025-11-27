@@ -24,6 +24,9 @@ facets:
     tester:
       title: "Tester"
       scope: "TEXT"
+    ninja:
+      title: "Ninja"
+      scope: "TEXT"
   employee_address_type:
     email:
       title: "Email"

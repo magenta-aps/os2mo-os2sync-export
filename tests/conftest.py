@@ -189,7 +189,7 @@ async def create_engagements(
     )
 
     engagement_type = first(all_engagement_types.objects).uuid
-    all_job_functions = await graphql_client.testing__get_class(
+    tester = await graphql_client.testing__get_class(
         ClassFilter(
             user_keys=["tester"],
             facet=FacetFilter(
@@ -200,7 +200,19 @@ async def create_engagements(
         )
     )
 
-    job_function = first(all_job_functions.objects).uuid
+    tester_uuid = first(tester.objects).uuid
+    ninja = await graphql_client.testing__get_class(
+        ClassFilter(
+            user_keys=["ninja"],
+            facet=FacetFilter(
+                user_keys=["engagement_job_function"], from_date=None, to_date=None
+            ),
+            from_date=None,
+            to_date=None,
+        )
+    )
+
+    ninja_uuid = first(ninja.objects).uuid
     engagements = [
         EngagementCreateInput(
             uuid=engagement_uuid1,
@@ -208,7 +220,7 @@ async def create_engagements(
             org_unit=create_org_unit.uuid,
             user_key="eng1",
             engagement_type=engagement_type,
-            job_function=job_function,
+            job_function=tester_uuid,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         ),
         EngagementCreateInput(
@@ -217,7 +229,7 @@ async def create_engagements(
             org_unit=create_org_unit.uuid,
             user_key="eng2",
             engagement_type=engagement_type,
-            job_function=job_function,
+            job_function=ninja_uuid,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         ),
     ]
