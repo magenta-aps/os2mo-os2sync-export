@@ -18,7 +18,6 @@ from fastramqpi.events import Event
 from fastramqpi.events import GraphQLEvents
 from fastramqpi.events import Listener
 from fastramqpi.main import FastRAMQPI  # type: ignore
-from fastramqpi.ramqp.depends import RateLimit
 
 from os2sync_export.__main__ import cleanup_duplicate_engagements
 from os2sync_export.__main__ import cleanup_duplicates
@@ -206,7 +205,6 @@ async def amqp_trigger_address(
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
-    _: RateLimit,
 ) -> None:
     uuid = event_uuid.subject
     if settings.new:
@@ -271,7 +269,6 @@ async def amqp_trigger_it_user(
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
-    _: RateLimit,
 ) -> None:
     uuid = event_uuid.subject
     if settings.new:
@@ -369,7 +366,6 @@ async def amqp_trigger_manager(
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
-    _: RateLimit,
 ) -> None:
     uuid = event_uuid.subject
     if settings.new:
@@ -415,7 +411,6 @@ async def amqp_trigger_engagement(
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
-    _: RateLimit,
 ) -> None:
     uuid = event_uuid.subject
     logger.debug("Event registered for engagement", engagement=uuid)
@@ -457,7 +452,6 @@ async def amqp_trigger_kle(
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
     os2sync_client: OS2SyncClient_,
-    _: RateLimit,
 ) -> None:
     uuid = event_uuid.subject
     if settings.new:

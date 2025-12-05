@@ -8,7 +8,6 @@ from unittest.mock import call
 from uuid import uuid4
 
 import pytest
-from httpx import AsyncClient
 from more_itertools import first
 from more_itertools import one
 
@@ -29,11 +28,11 @@ from os2sync_export.os2sync_models import User
 
 @pytest.mark.integration_test
 async def test_no_engagements(
-    test_client: AsyncClient,
     graphql_client: GraphQLClient,
     create_person,
     mock_settings,
 ) -> None:
+    # Test a scenario where a user has an AD and FK-org account, but no engagements.
     # Arrange
     adguid = uuid4()
     fkorg_uuid = uuid4()
@@ -89,7 +88,6 @@ async def test_no_engagements(
 
 @pytest.mark.integration_test
 async def test_two_ad_one_fk(
-    test_client: AsyncClient,
     graphql_client: GraphQLClient,
     create_person,
     create_engagements,
@@ -220,7 +218,6 @@ async def test_two_ad_one_fk(
 
 @pytest.mark.integration_test
 async def test_one_ad_zero_fk(
-    test_client: AsyncClient,
     graphql_client: GraphQLClient,
     create_person,
     create_engagements,
@@ -304,7 +301,6 @@ async def test_one_ad_zero_fk(
 
 @pytest.mark.integration_test
 async def test_one_ad_zero_fk_user_not_found(
-    test_client: AsyncClient,
     graphql_client: GraphQLClient,
     create_person,
     create_engagements,
@@ -381,7 +377,6 @@ async def test_one_ad_zero_fk_user_not_found(
 
 @pytest.mark.integration_test
 async def test_one_ad_zero_fk_user_not_active(
-    test_client: AsyncClient,
     graphql_client: GraphQLClient,
     create_person,
     create_engagements,
@@ -465,7 +460,6 @@ async def test_one_ad_zero_fk_user_not_active(
 
 @pytest.mark.integration_test
 async def test_one_ad_zero_fk_dry_run(
-    test_client: AsyncClient,
     graphql_client: GraphQLClient,
     create_person,
     create_engagements,
@@ -549,7 +543,6 @@ async def test_one_ad_zero_fk_dry_run(
 
 @pytest.mark.integration_test
 async def test_two_ad_zero_fk(
-    test_client: AsyncClient,
     graphql_client: GraphQLClient,
     create_person,
     create_engagements,
@@ -728,7 +721,6 @@ async def test_duplicate_fk_account(
 
 @pytest.mark.integration_test
 async def test_no_fk_itsystem(
-    test_client: AsyncClient,
     graphql_client: GraphQLClient,
     create_person,
     create_engagements,
