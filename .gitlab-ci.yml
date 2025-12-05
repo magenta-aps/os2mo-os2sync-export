@@ -79,5 +79,6 @@ Integration-test:
     new: "true"
     municipality: "Andeby Kommune"
     top_unit_uuid: a347c13b-bc63-4fc3-83cb-d26c1f0b63fa
+    os2sync_api_url: "stub" # Creates a dummy http client that dosn't send any requests
   rules:
     - <<: *if-merge-request
