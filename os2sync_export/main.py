@@ -236,7 +236,7 @@ async def amqp_trigger_address(
         logger.debug(f"No address found {uuid=}")
         return
 
-    if ou_uuid and is_relevant(
+    if ou_uuid and await is_relevant(
         graphql_session,
         uuid,
         settings,
