@@ -43,7 +43,6 @@ async def test_trigger_it_user_update(
             graphql_session=graphql_session,
             graphql_client=None,
             os2sync_client=os2sync_client,
-            _=None,
         )
     get_mock.assert_awaited_once()
     get_user_mock.assert_called_once_with(
@@ -90,7 +89,6 @@ async def test_trigger_it_orgunit_update(
                 graphql_session=graphql_session,
                 graphql_client=None,
                 os2sync_client=os2sync_client,
-                _=None,
             )
 
     get_mock.assert_awaited_once()
@@ -295,7 +293,6 @@ async def test_amqp_trigger_it_user_no_old_accounts(set_settings):
             AsyncMock(),
             AsyncMock(),
             os2sync_client_mock,
-            "",
         )
 
     os2sync_client_mock.delete_orgunit.assert_not_called()
@@ -324,7 +321,6 @@ async def test_amqp_trigger_it_user_deletes_old_accounts(
             AsyncMock(),
             AsyncMock(),
             os2sync_client_mock,
-            "",
         )
 
     for uuid in old_org_unit_uuids:
