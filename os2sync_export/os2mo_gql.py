@@ -292,12 +292,38 @@ async def sync_mo_user_to_fk_org(
                     user_key=one(it_users).external_id,  # type: ignore
                     from_=datetime.now(),
                 )
-                fk_org_users, it_users = await read_fk_users_from_person(
+                fk_org_users, _ = await read_fk_users_from_person(
                     graphql_client=graphql_client,
                     uuid=uuid,
                     it_user_keys=settings.it_system_user_keys,
                 )
     # The code above could be be deleted after the initial runs.
+
+    # Create a fk-org ituser for each it-user if it dosn't already exist
+    for it in it_users:
+        if (
+            it.external_id not in (f.user_key if f else None for f in fk_org_users)
+            and not dry_run
+        ):
+            await graphql_client.create_i_t_user(
+                external_id=it.external_id,  # type: ignore
+                itsystem=fk_it_uuid,
+                person=uuid,
+                user_key=it.external_id,  # type: ignore
+                from_=datetime.now(),
+            )
+    # remove fk-org itusers it the it-user no longer exists.
+    for fk in fk_org_users:
+        if (
+            fk.user_key not in (i.external_id if i else None for i in it_users)
+            and not dry_run
+        ):
+            await graphql_client.terminate_i_t_user(
+                uuid=fk.uuid,
+                # TODO: ensure it is correct behavior to terminate from yesterday. It is done to ensure
+                # FK-org accounts are terminated right away.
+                to=date.today() - timedelta(days=1),  # type: ignore
+            )
     updates_fk, new_mo_itusers, deletes_fk, delete_mo_itusers = convert_and_filter(
         settings, fk_org_users, it_users
     )
@@ -308,25 +334,8 @@ async def sync_mo_user_to_fk_org(
 
     for os2sync_user in updates_fk:
         os2sync_client.update_user(os2sync_user)
-    for it in new_mo_itusers:
-        if not dry_run:
-            await graphql_client.create_i_t_user(
-                external_id=it.external_id,  # type: ignore
-                itsystem=fk_it_uuid,
-                person=uuid,
-                user_key=it.external_id,  # type: ignore
-                from_=datetime.now(),
-            )
     for deleted_user_uuid in deletes_fk:
         os2sync_client.delete_user(deleted_user_uuid)
-    for deleted_it_uuid in delete_mo_itusers:
-        if not dry_run:
-            await graphql_client.terminate_i_t_user(
-                # TODO: ensure it is correct behavior to terminate from yesterday. It is done to ensure
-                # FK-org accounts are terminated right away.
-                uuid=deleted_it_uuid,
-                to=date.today() - timedelta(days=1),  # type: ignore
-            )  # type: ignore
     return updates_fk, deletes_fk
 
 
