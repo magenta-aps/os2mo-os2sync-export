@@ -211,7 +211,13 @@ async def test_account_with_addresses(
                         OrgUnitUuid=first(create_engagements).org_unit,
                         StartDate=None,
                         StopDate=None,
-                    )
+                    ),
+                    Position(
+                        Name="Tester",
+                        OrgUnitUuid=first(create_engagements).org_unit,
+                        StartDate=None,
+                        StopDate=None,
+                    ),
                 ],
                 PhoneNumber="11223344",
                 Landline=None,
@@ -234,7 +240,13 @@ async def test_account_with_addresses(
                         OrgUnitUuid=first(create_engagements).org_unit,
                         StartDate=None,
                         StopDate=None,
-                    )
+                    ),
+                    Position(
+                        Name="Tester",
+                        OrgUnitUuid=first(create_engagements).org_unit,
+                        StartDate=None,
+                        StopDate=None,
+                    ),
                 ],
                 PhoneNumber=None,
                 Landline="12345678",

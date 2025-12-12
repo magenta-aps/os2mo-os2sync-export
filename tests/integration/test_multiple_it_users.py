@@ -154,7 +154,13 @@ async def test_two_ad_one_fk(
                         OrgUnitUuid=first(create_engagements).org_unit,
                         StartDate=None,
                         StopDate=None,
-                    )
+                    ),
+                    Position(
+                        Name="Tester",
+                        OrgUnitUuid=first(create_engagements).org_unit,
+                        StartDate=None,
+                        StopDate=None,
+                    ),
                 ],
                 PhoneNumber=None,
                 Landline=None,
@@ -177,7 +183,13 @@ async def test_two_ad_one_fk(
                         OrgUnitUuid=first(create_engagements).org_unit,
                         StartDate=None,
                         StopDate=None,
-                    )
+                    ),
+                    Position(
+                        Name="Tester",
+                        OrgUnitUuid=first(create_engagements).org_unit,
+                        StartDate=None,
+                        StopDate=None,
+                    ),
                 ],
                 PhoneNumber=None,
                 Landline=None,
@@ -276,7 +288,13 @@ async def test_one_ad_zero_fk(
                         OrgUnitUuid=first(create_engagements).org_unit,
                         StartDate=None,
                         StopDate=None,
-                    )
+                    ),
+                    Position(
+                        Name="Tester",
+                        OrgUnitUuid=first(create_engagements).org_unit,
+                        StartDate=None,
+                        StopDate=None,
+                    ),
                 ],
                 PhoneNumber=None,
                 Landline=None,
@@ -352,7 +370,13 @@ async def test_one_ad_zero_fk_user_not_found(
                         OrgUnitUuid=first(create_engagements).org_unit,
                         StartDate=None,
                         StopDate=None,
-                    )
+                    ),
+                    Position(
+                        Name="Tester",
+                        OrgUnitUuid=first(create_engagements).org_unit,
+                        StartDate=None,
+                        StopDate=None,
+                    ),
                 ],
                 PhoneNumber=None,
                 Landline=None,
@@ -435,7 +459,13 @@ async def test_one_ad_zero_fk_user_not_active(
                         OrgUnitUuid=first(create_engagements).org_unit,
                         StartDate=None,
                         StopDate=None,
-                    )
+                    ),
+                    Position(
+                        Name="Tester",
+                        OrgUnitUuid=first(create_engagements).org_unit,
+                        StartDate=None,
+                        StopDate=None,
+                    ),
                 ],
                 PhoneNumber=None,
                 Landline=None,
@@ -519,7 +549,13 @@ async def test_one_ad_zero_fk_dry_run(
                         OrgUnitUuid=first(create_engagements).org_unit,
                         StartDate=None,
                         StopDate=None,
-                    )
+                    ),
+                    Position(
+                        Name="Tester",
+                        OrgUnitUuid=first(create_engagements).org_unit,
+                        StartDate=None,
+                        StopDate=None,
+                    ),
                 ],
                 PhoneNumber=None,
                 Landline=None,
@@ -593,7 +629,13 @@ async def test_two_ad_zero_fk(
                         OrgUnitUuid=first(create_engagements).org_unit,
                         StartDate=None,
                         StopDate=None,
-                    )
+                    ),
+                    Position(
+                        Name="Tester",
+                        OrgUnitUuid=first(create_engagements).org_unit,
+                        StartDate=None,
+                        StopDate=None,
+                    ),
                 ],
                 PhoneNumber=None,
                 Landline=None,
@@ -616,7 +658,13 @@ async def test_two_ad_zero_fk(
                         OrgUnitUuid=first(create_engagements).org_unit,
                         StartDate=None,
                         StopDate=None,
-                    )
+                    ),
+                    Position(
+                        Name="Tester",
+                        OrgUnitUuid=first(create_engagements).org_unit,
+                        StartDate=None,
+                        StopDate=None,
+                    ),
                 ],
                 PhoneNumber=None,
                 Landline=None,
