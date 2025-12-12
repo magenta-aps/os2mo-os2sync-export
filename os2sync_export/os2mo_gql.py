@@ -84,6 +84,7 @@ async def read_fk_users_from_person(
         email=email,
         mobile=mobile,
         landline=landline,
+        now=datetime.now(),
     )
     current_accounts = one(it_accounts.objects).current
     if current_accounts is None:

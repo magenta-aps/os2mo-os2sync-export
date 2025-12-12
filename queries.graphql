@@ -63,6 +63,7 @@ query ReadUserITAccounts(
   $email: [UUID!] = []
   $mobile: [UUID!] = []
   $landline: [UUID!] = []
+  $now: DateTime
 ) {
   employees(filter: {uuids: [$uuid]}) {
     objects {
@@ -91,6 +92,11 @@ query ReadUserITAccounts(
                 }
                 job_function {
                   name
+                }
+              }
+              validities(start: null, end: $now) {
+                validity {
+                  from
                 }
               }
             }

@@ -83,7 +83,7 @@ async def test_no_engagements(
     os2sync_mock.delete_user.assert_called_once_with(fkorg_uuid)
     # Check that the expected it-accounts exists in MO
     it_accounts_after = await graphql_client.read_user_i_t_accounts(
-        uuid=person_uuid, it_user_keys=["Active Directory"]
+        uuid=person_uuid, it_user_keys=["Active Directory"], now=datetime.now()
     )
     assert it_accounts_after == it_accounts_before  # type: ignore
 
@@ -218,7 +218,7 @@ async def test_two_ad_one_fk(
 
     # Check that the expected it-accounts exists in MO
     it_accounts = await graphql_client.read_user_i_t_accounts(
-        uuid=person_uuid, it_user_keys=["Active Directory"]
+        uuid=person_uuid, it_user_keys=["Active Directory"], now=datetime.now()
     )
     fk_org_it_users = one(it_accounts.objects).current.fk_org_uuids  # type: ignore
     for fk_user in fk_org_it_users:
@@ -312,7 +312,7 @@ async def test_one_ad_zero_fk(
 
     # Check that the expected it-accounts exists in MO
     it_accounts = await graphql_client.read_user_i_t_accounts(
-        uuid=person_uuid, it_user_keys=["Active Directory"]
+        uuid=person_uuid, it_user_keys=["Active Directory"], now=datetime.now()
     )
     fk_org_it_users = one(it_accounts.objects).current.fk_org_uuids  # type: ignore
     assert one(fk_org_it_users).user_key == str(adguid)
@@ -394,7 +394,7 @@ async def test_one_ad_zero_fk_user_not_found(
 
     # Check that the expected it-accounts exists in MO
     it_accounts = await graphql_client.read_user_i_t_accounts(
-        uuid=person_uuid, it_user_keys=["Active Directory"]
+        uuid=person_uuid, it_user_keys=["Active Directory"], now=datetime.now()
     )
     fk_org_it_users = one(it_accounts.objects).current.fk_org_uuids  # type: ignore
     assert one(fk_org_it_users).user_key == str(adguid)
@@ -483,7 +483,7 @@ async def test_one_ad_zero_fk_user_not_active(
 
     # Check that the expected it-accounts exists in MO
     it_accounts = await graphql_client.read_user_i_t_accounts(
-        uuid=person_uuid, it_user_keys=["Active Directory"]
+        uuid=person_uuid, it_user_keys=["Active Directory"], now=datetime.now()
     )
     fk_org_it_users = one(it_accounts.objects).current.fk_org_uuids  # type: ignore
     assert one(fk_org_it_users).user_key == str(adguid)
@@ -573,7 +573,7 @@ async def test_one_ad_zero_fk_dry_run(
 
     # Check that the expected it-accounts exists in MO
     it_accounts = await graphql_client.read_user_i_t_accounts(
-        uuid=person_uuid, it_user_keys=["Active Directory"]
+        uuid=person_uuid, it_user_keys=["Active Directory"], now=datetime.now()
     )
     # Because we ran in dry-run mode the fk-org it user should not be created
     assert one(it_accounts.objects).current.fk_org_uuids == []  # type: ignore
@@ -693,7 +693,7 @@ async def test_two_ad_zero_fk(
 
     # Check that the expected it-accounts exists in MO
     it_accounts = await graphql_client.read_user_i_t_accounts(
-        uuid=person_uuid, it_user_keys=["Active Directory"]
+        uuid=person_uuid, it_user_keys=["Active Directory"], now=datetime.now()
     )
     fk_org_it_users = one(it_accounts.objects).current.fk_org_uuids  # type: ignore
     for fk_user in fk_org_it_users:

@@ -1,7 +1,10 @@
+from datetime import datetime
 from typing import Any
 from typing import List
 from typing import Optional
 from uuid import UUID
+
+from pydantic import Field
 
 from .base_model import BaseModel
 from .fragments import AddressFields
@@ -61,6 +64,9 @@ class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObject
     current: Optional[
         "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent"
     ]
+    validities: List[
+        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities"
+    ]
 
 
 class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent(
@@ -83,6 +89,18 @@ class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObject
     BaseModel
 ):
     name: str
+
+
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities(
+    BaseModel
+):
+    validity: "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesValidity"
+
+
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesValidity(
+    BaseModel
+):
+    from_: datetime = Field(alias="from")
 
 
 class ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(AddressFields):
@@ -109,6 +127,8 @@ ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjects.upda
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentOrgUnit.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentJobFunction.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesValidity.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEmail.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersMobile.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersLandline.update_forward_refs()

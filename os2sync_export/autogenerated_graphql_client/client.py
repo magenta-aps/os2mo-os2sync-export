@@ -65,10 +65,11 @@ class GraphQLClient(AsyncBaseClient):
         email: Union[Optional[List[UUID]], UnsetType] = UNSET,
         mobile: Union[Optional[List[UUID]], UnsetType] = UNSET,
         landline: Union[Optional[List[UUID]], UnsetType] = UNSET,
+        now: Union[Optional[datetime], UnsetType] = UNSET,
     ) -> ReadUserITAccountsEmployees:
         query = gql(
             """
-            query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!], $email: [UUID!] = [], $mobile: [UUID!] = [], $landline: [UUID!] = []) {
+            query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!], $email: [UUID!] = [], $mobile: [UUID!] = [], $landline: [UUID!] = [], $now: DateTime) {
               employees(filter: {uuids: [$uuid]}) {
                 objects {
                   current {
@@ -96,6 +97,11 @@ class GraphQLClient(AsyncBaseClient):
                             }
                             job_function {
                               name
+                            }
+                          }
+                          validities(start: null, end: $now) {
+                            validity {
+                              from
                             }
                           }
                         }
@@ -178,6 +184,7 @@ class GraphQLClient(AsyncBaseClient):
             "email": email,
             "mobile": mobile,
             "landline": landline,
+            "now": now,
         }
         response = await self.execute(query=query, variables=variables)
         data = self.get_data(response)

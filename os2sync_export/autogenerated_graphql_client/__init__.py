@@ -233,6 +233,12 @@ from .read_user_i_t_accounts import (
     ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentOrgUnit,
 )
 from .read_user_i_t_accounts import (
+    ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities,
+)
+from .read_user_i_t_accounts import (
+    ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesValidity,
+)
+from .read_user_i_t_accounts import (
     ReadUserITAccountsEmployeesObjectsCurrentItusersLandline,
 )
 from .read_user_i_t_accounts import (
@@ -441,6 +447,8 @@ __all__ = [
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentJobFunction",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentOrgUnit",
+    "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities",
+    "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesValidity",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersLandline",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersMobile",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersPerson",
