@@ -224,13 +224,13 @@ from .read_user_i_t_accounts import (
     ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjects,
 )
 from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent,
+    ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities,
 )
 from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentJobFunction,
+    ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesJobFunction,
 )
 from .read_user_i_t_accounts import (
-    ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentOrgUnit,
+    ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesOrgUnit,
 )
 from .read_user_i_t_accounts import (
     ReadUserITAccountsEmployeesObjectsCurrentItusersLandline,
@@ -438,9 +438,9 @@ __all__ = [
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEmail",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponses",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjects",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentJobFunction",
-    "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentOrgUnit",
+    "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities",
+    "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesJobFunction",
+    "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesOrgUnit",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersLandline",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersMobile",
     "ReadUserITAccountsEmployeesObjectsCurrentItusersPerson",

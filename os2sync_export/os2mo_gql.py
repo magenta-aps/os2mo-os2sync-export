@@ -202,12 +202,12 @@ def convert_to_os2sync(
     positions = []
     if it.engagements_responses and it.engagements_responses.objects:
         engagements = [
-            e.current
+            first(e.validities)
             for e in it.engagements_responses.objects
             if e
-            and e.current
+            and e.validities
             and filter_relevant_orgunit(
-                settings=settings, orgunit_data=one(e.current.org_unit)
+                settings=settings, orgunit_data=one(first(e.validities).org_unit)
             )
         ]
 

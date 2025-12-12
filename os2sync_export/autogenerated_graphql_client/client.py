@@ -89,7 +89,7 @@ class GraphQLClient(AsyncBaseClient):
                       }
                       engagements_responses {
                         objects {
-                          current {
+                          validities(end: null) {
                             extension_3
                             org_unit {
                               ...UnitFields
