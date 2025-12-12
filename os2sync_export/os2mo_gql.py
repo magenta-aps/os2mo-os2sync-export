@@ -200,12 +200,15 @@ def convert_to_os2sync(
     email = choose_public_address(it.email, settings.email_scope_classes)
     # Filter engagements in irrelevant units
     positions = []
-    if it.engagement_response and it.engagement_response.current:
+    if it.engagements_responses and it.engagements_responses.objects:
         engagements = [
-            e
-            for e in [it.engagement_response.current]
+            e.current
+            for e in it.engagements_responses.objects
             if e
-            and filter_relevant_orgunit(settings=settings, orgunit_data=one(e.org_unit))
+            and e.current
+            and filter_relevant_orgunit(
+                settings=settings, orgunit_data=one(e.current.org_unit)
+            )
         ]
 
         positions = [

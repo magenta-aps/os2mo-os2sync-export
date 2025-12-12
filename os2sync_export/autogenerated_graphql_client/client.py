@@ -87,14 +87,16 @@ class GraphQLClient(AsyncBaseClient):
                         name
                         nickname
                       }
-                      engagement_response {
-                        current {
-                          extension_3
-                          org_unit {
-                            ...UnitFields
-                          }
-                          job_function {
-                            name
+                      engagements_responses {
+                        objects {
+                          current {
+                            extension_3
+                            org_unit {
+                              ...UnitFields
+                            }
+                            job_function {
+                              name
+                            }
                           }
                         }
                       }
