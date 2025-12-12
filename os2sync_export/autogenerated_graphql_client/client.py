@@ -87,13 +87,15 @@ class GraphQLClient(AsyncBaseClient):
                         name
                         nickname
                       }
-                      engagement {
-                        extension_3
-                        org_unit {
-                          ...UnitFields
-                        }
-                        job_function {
-                          name
+                      engagement_response {
+                        current {
+                          extension_3
+                          org_unit {
+                            ...UnitFields
+                          }
+                          job_function {
+                            name
+                          }
                         }
                       }
                       email: addresses(filter: {address_type: {uuids: $email}}) {

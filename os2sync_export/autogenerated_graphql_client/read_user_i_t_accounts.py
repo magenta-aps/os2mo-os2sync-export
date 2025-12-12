@@ -35,8 +35,8 @@ class ReadUserITAccountsEmployeesObjectsCurrentItusers(BaseModel):
     user_key: str
     external_id: Optional[str]
     person: Optional[List["ReadUserITAccountsEmployeesObjectsCurrentItusersPerson"]]
-    engagement: Optional[
-        List["ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement"]
+    engagement_response: Optional[
+        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementResponse"
     ]
     email: List["ReadUserITAccountsEmployeesObjectsCurrentItusersEmail"]
     mobile: List["ReadUserITAccountsEmployeesObjectsCurrentItusersMobile"]
@@ -49,19 +49,31 @@ class ReadUserITAccountsEmployeesObjectsCurrentItusersPerson(BaseModel):
     nickname: str
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement(BaseModel):
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementResponse(BaseModel):
+    current: Optional[
+        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementResponseCurrent"
+    ]
+
+
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementResponseCurrent(
+    BaseModel
+):
     extension_3: Optional[str]
-    org_unit: List["ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit"]
-    job_function: (
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction"
-    )
+    org_unit: List[
+        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementResponseCurrentOrgUnit"
+    ]
+    job_function: "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementResponseCurrentJobFunction"
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit(UnitFields):
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementResponseCurrentOrgUnit(
+    UnitFields
+):
     pass
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction(BaseModel):
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementResponseCurrentJobFunction(
+    BaseModel
+):
     name: str
 
 
@@ -84,9 +96,10 @@ ReadUserITAccountsEmployeesObjectsCurrent.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusers.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersPerson.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementResponse.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementResponseCurrent.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementResponseCurrentOrgUnit.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementResponseCurrentJobFunction.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEmail.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersMobile.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersLandline.update_forward_refs()
