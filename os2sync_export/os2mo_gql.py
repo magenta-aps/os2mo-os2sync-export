@@ -199,25 +199,26 @@ def convert_to_os2sync(
     mobile = choose_public_address(it.mobile, settings.phone_scope_classes)
     email = choose_public_address(it.email, settings.email_scope_classes)
     # Filter engagements in irrelevant units
-    it.engagement = it.engagement or []
-    it.engagement = [
-        e
-        for e in it.engagement
-        if e.org_unit
-        and filter_relevant_orgunit(settings=settings, orgunit_data=one(e.org_unit))
-    ]
+    positions = []
+    if it.engagement_response and it.engagement_response.current:
+        engagements = [
+            e
+            for e in [it.engagement_response.current]
+            if e
+            and filter_relevant_orgunit(settings=settings, orgunit_data=one(e.org_unit))
+        ]
 
-    positions = [
-        Position(
-            Name=i.extension_3
-            if settings.use_extension_field_as_job_function and i.extension_3
-            else i.job_function.name,
-            OrgUnitUuid=UUID(first(one(i.org_unit).itusers).user_key)
-            if one(i.org_unit).itusers
-            else one(i.org_unit).uuid,
-        )
-        for i in it.engagement
-    ]
+        positions = [
+            Position(
+                Name=i.extension_3
+                if settings.use_extension_field_as_job_function and i.extension_3
+                else i.job_function.name,
+                OrgUnitUuid=UUID(first(one(i.org_unit).itusers).user_key)
+                if one(i.org_unit).itusers
+                else one(i.org_unit).uuid,
+            )
+            for i in engagements
+        ]
 
     return User(
         Uuid=uuid,

@@ -808,6 +808,7 @@ class ListenerDeleteInput(BaseModel):
 
 class ListenerFilter(BaseModel):
     uuids: Optional[List[UUID]] = None
+    user_keys: Optional[List[str]] = None
     owners: Optional[List[UUID]] = None
     routing_keys: Optional[List[str]] = None
     namespaces: Optional["NamespaceFilter"] = None
@@ -891,6 +892,7 @@ class NamespaceFilter(BaseModel):
 
 class NamespacesBoundListenerFilter(BaseModel):
     uuids: Optional[List[UUID]] = None
+    user_keys: Optional[List[str]] = None
     owners: Optional[List[UUID]] = None
     routing_keys: Optional[List[str]] = None
 
@@ -1097,6 +1099,7 @@ class OwnerUpdateInput(BaseModel):
 
 class OwnersBoundListenerFilter(BaseModel):
     uuids: Optional[List[UUID]] = None
+    user_keys: Optional[List[str]] = None
     routing_keys: Optional[List[str]] = None
     namespaces: Optional["NamespaceFilter"] = None
 
