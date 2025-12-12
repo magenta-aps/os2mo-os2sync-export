@@ -68,7 +68,9 @@ async def test_no_engagements(
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
-
+    it_accounts_before = await graphql_client.read_user_i_t_accounts(
+        uuid=person_uuid, it_user_keys=["Active Directory"]
+    )
     # Act
     await sync_mo_user_to_fk_org(
         uuid=person_uuid,
@@ -80,10 +82,10 @@ async def test_no_engagements(
     os2sync_mock.update_user.assert_not_called()
     os2sync_mock.delete_user.assert_called_once_with(fkorg_uuid)
     # Check that the expected it-accounts exists in MO
-    it_accounts = await graphql_client.read_user_i_t_accounts(
+    it_accounts_after = await graphql_client.read_user_i_t_accounts(
         uuid=person_uuid, it_user_keys=["Active Directory"]
     )
-    assert one(it_accounts.objects).current.fk_org_uuids == []  # type: ignore
+    assert it_accounts_after == it_accounts_before  # type: ignore
 
 
 @pytest.mark.integration_test
@@ -717,6 +719,110 @@ async def test_duplicate_fk_account(
             settings=mock_settings,
             os2sync_client=os2sync_mock,
         )
+
+
+@pytest.mark.integration_test
+async def test_remove_old_fk_accounts(
+    graphql_client: GraphQLClient,
+    create_person,
+    create_engagements,
+    mock_settings,
+) -> None:
+    # Arrange
+    adguid = uuid4()
+    old_fk_uuid = uuid4()
+    os2sync_mock = MagicMock()
+    person_uuid = create_person.uuid
+    itsystem_AD = await graphql_client.testing__get_itsystem(
+        ITSystemFilter(user_keys=["Active Directory"], from_date=None, to_date=None)
+    )
+    AD_uuid = first(itsystem_AD.objects).uuid
+    itsystem_FK = await graphql_client.testing__get_itsystem(
+        ITSystemFilter(user_keys=["FK-ORG-UUID"], from_date=None, to_date=None)
+    )
+    FK_uuid = first(itsystem_FK.objects).uuid
+    # current AD user
+    await graphql_client.testing__ituser_create(
+        input=ITUserCreateInput(
+            person=person_uuid,
+            user_key="AD-username 1",
+            external_id=str(adguid),
+            engagements=[e.uuid for e in create_engagements],
+            itsystem=AD_uuid,
+            validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
+        )
+    )
+    # old FK-org user 1
+    await graphql_client.testing__ituser_create(
+        input=ITUserCreateInput(
+            uuid=uuid4(),
+            person=person_uuid,
+            user_key=str(uuid4()),
+            external_id=str(person_uuid),
+            itsystem=FK_uuid,
+            validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
+        )
+    )
+    # old FK-org user 2
+    await graphql_client.testing__ituser_create(
+        input=ITUserCreateInput(
+            uuid=uuid4(),
+            person=person_uuid,
+            user_key=str(uuid4()),
+            external_id=str(old_fk_uuid),
+            itsystem=FK_uuid,
+            validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
+        )
+    )
+    # Act
+    await sync_mo_user_to_fk_org(
+        uuid=person_uuid,
+        graphql_client=graphql_client,
+        settings=mock_settings,
+        os2sync_client=os2sync_mock,
+    )
+    expected = [
+        call(
+            User(
+                Uuid=adguid,
+                ShortKey=None,
+                UserId="AD-username 1",
+                Person=Person(Name="Brian Graversen", Cpr=None),
+                Positions=[
+                    Position(
+                        Name="Tester",
+                        OrgUnitUuid=first(create_engagements).org_unit,
+                        StartDate=None,
+                        StopDate=None,
+                    )
+                ],
+                PhoneNumber=None,
+                Landline=None,
+                Email=None,
+                Location=None,
+                RacfID=None,
+                FMKID=None,
+                DateTime=None,
+            )
+        ),
+    ]
+    # Assert
+    assert os2sync_mock.update_user.call_count == len(expected)
+    for c in os2sync_mock.update_user.call_args_list:
+        assert c in expected
+
+    assert os2sync_mock.delete_user.call_count == 2
+    for c in os2sync_mock.delete_user.call_args_list:
+        assert c in [call(person_uuid), call(old_fk_uuid)]
+
+    # Check that the expected it-accounts exists in MO
+    it_accounts = await graphql_client.read_user_i_t_accounts(
+        uuid=person_uuid, it_user_keys=["Active Directory"]
+    )
+    fk_org_it_users = one(it_accounts.objects).current.fk_org_uuids  # type: ignore
+    assert len(fk_org_it_users) == 1
+    fk_org_user = one(fk_org_it_users)
+    assert fk_org_user.external_id == str(adguid)
 
 
 @pytest.mark.integration_test
