@@ -69,7 +69,7 @@ async def test_no_engagements(
         )
     )
     it_accounts_before = await graphql_client.read_user_i_t_accounts(
-        uuid=person_uuid, it_user_keys=["Active Directory"]
+        uuid=person_uuid, it_user_keys=["Active Directory"], now=datetime.now()
     )
     # Act
     await sync_mo_user_to_fk_org(
@@ -154,13 +154,13 @@ async def test_two_ad_one_fk(
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                 ],
@@ -183,13 +183,13 @@ async def test_two_ad_one_fk(
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                 ],
@@ -288,13 +288,13 @@ async def test_one_ad_zero_fk(
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                 ],
@@ -370,13 +370,13 @@ async def test_one_ad_zero_fk_user_not_found(
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                 ],
@@ -459,13 +459,13 @@ async def test_one_ad_zero_fk_user_not_active(
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                 ],
@@ -549,13 +549,13 @@ async def test_one_ad_zero_fk_dry_run(
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                 ],
@@ -629,13 +629,13 @@ async def test_two_ad_zero_fk(
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                 ],
@@ -658,13 +658,13 @@ async def test_two_ad_zero_fk(
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
                     ),
                 ],
@@ -840,9 +840,15 @@ async def test_remove_old_fk_accounts(
                     Position(
                         Name="Tester",
                         OrgUnitUuid=first(create_engagements).org_unit,
-                        StartDate=None,
+                        StartDate=datetime(1970, 1, 1),
                         StopDate=None,
-                    )
+                    ),
+                    Position(
+                        Name="Tester",
+                        OrgUnitUuid=first(create_engagements).org_unit,
+                        StartDate=datetime(1970, 1, 1),
+                        StopDate=None,
+                    ),
                 ],
                 PhoneNumber=None,
                 Landline=None,
@@ -865,7 +871,7 @@ async def test_remove_old_fk_accounts(
 
     # Check that the expected it-accounts exists in MO
     it_accounts = await graphql_client.read_user_i_t_accounts(
-        uuid=person_uuid, it_user_keys=["Active Directory"]
+        uuid=person_uuid, it_user_keys=["Active Directory"], now=datetime.now()
     )
     fk_org_it_users = one(it_accounts.objects).current.fk_org_uuids  # type: ignore
     assert len(fk_org_it_users) == 1

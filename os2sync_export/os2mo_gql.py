@@ -203,7 +203,7 @@ def convert_to_os2sync(
     positions = []
     if it.engagements_responses and it.engagements_responses.objects:
         engagements = [
-            e.current
+            e
             for e in it.engagements_responses.objects
             if e
             and e.current
@@ -214,14 +214,17 @@ def convert_to_os2sync(
 
         positions = [
             Position(
-                Name=i.extension_3
-                if settings.use_extension_field_as_job_function and i.extension_3
-                else i.job_function.name,
-                OrgUnitUuid=UUID(first(one(i.org_unit).itusers).user_key)
-                if one(i.org_unit).itusers
-                else one(i.org_unit).uuid,
+                Name=i.current.extension_3
+                if settings.use_extension_field_as_job_function
+                and i.current.extension_3
+                else i.current.job_function.name,
+                OrgUnitUuid=UUID(first(one(i.current.org_unit).itusers).user_key)
+                if one(i.current.org_unit).itusers
+                else one(i.current.org_unit).uuid,
+                StartDate=min([s.validity.from_ for s in i.validities]),
             )
             for i in engagements
+            if i.current and i.validities
         ]
 
     return User(

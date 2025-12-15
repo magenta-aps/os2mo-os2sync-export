@@ -255,6 +255,8 @@ from .testing__employee_create import TestingEmployeeCreate
 from .testing__employee_create import TestingEmployeeCreateEmployeeCreate
 from .testing__engagement_create import TestingEngagementCreate
 from .testing__engagement_create import TestingEngagementCreateEngagementCreate
+from .testing__engagement_update import TestingEngagementUpdate
+from .testing__engagement_update import TestingEngagementUpdateEngagementUpdate
 from .testing__get_class import TestingGetClass
 from .testing__get_class import TestingGetClassClasses
 from .testing__get_class import TestingGetClassClassesObjects
@@ -468,6 +470,8 @@ __all__ = [
     "TestingEmployeeCreateEmployeeCreate",
     "TestingEngagementCreate",
     "TestingEngagementCreateEngagementCreate",
+    "TestingEngagementUpdate",
+    "TestingEngagementUpdateEngagementUpdate",
     "TestingGetClass",
     "TestingGetClassClasses",
     "TestingGetClassClassesObjects",
