@@ -23,6 +23,8 @@ websockets = "^13.1" # for ariadne
 click = "^8.1.7"
 tqdm = "^4.67.1"
 types-tqdm = "^4.66.0.20240417"
+types-requests = "^2.32.4.20250913"
+sentry-sdk = {extras = ["fastapi"], version = "^2.47.0"}
 
 [tool.poetry.group.pre-commit.dependencies]
 pre-commit = "^3.8.0"
