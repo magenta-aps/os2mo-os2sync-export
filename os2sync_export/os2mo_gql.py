@@ -199,10 +199,13 @@ def convert_to_os2sync(
     landline = choose_public_address(it.landline, settings.landline_scope_classes)
     mobile = choose_public_address(it.mobile, settings.phone_scope_classes)
     email = choose_public_address(it.email, settings.email_scope_classes)
-    # Filter engagements in irrelevant units
+
+    mo_engagements = []
     positions = []
+
     if it.engagements_responses and it.engagements_responses.objects:
-        engagements = [
+        # Filter engagements in irrelevant units
+        mo_engagements = [
             e
             for e in it.engagements_responses.objects
             if e
@@ -211,21 +214,27 @@ def convert_to_os2sync(
                 settings=settings, orgunit_data=one(e.current.org_unit)
             )
         ]
-
-        positions = [
-            Position(
-                Name=i.current.extension_3
+    for i in mo_engagements:
+        if i.current and i.validities:
+            # Job title can be read from extension_3 if configured to do so.
+            name = (
+                i.current.extension_3
                 if settings.use_extension_field_as_job_function
                 and i.current.extension_3
-                else i.current.job_function.name,
-                OrgUnitUuid=UUID(first(one(i.current.org_unit).itusers).user_key)
-                if one(i.current.org_unit).itusers
-                else one(i.current.org_unit).uuid,
-                StartDate=min([s.validity.from_ for s in i.validities]),
+                else i.current.job_function.name
             )
-            for i in engagements
-            if i.current and i.validities
-        ]
+            # Org units can be mapped to other uuids in fk-org by adding an it-user to the unit in MO
+            org_unit_uuid = (
+                UUID(first(one(i.current.org_unit).itusers).user_key)
+                if one(i.current.org_unit).itusers
+                else one(i.current.org_unit).uuid
+            )
+            # Original startdate of the engagement
+            start_date = min([s.validity.from_ for s in i.validities])
+
+            positions.append(
+                Position(Name=name, OrgUnitUuid=org_unit_uuid, StartDate=start_date)
+            )
 
     return User(
         Uuid=uuid,
