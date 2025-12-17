@@ -62,6 +62,7 @@ def gql(q: str) -> str:
 
 
 class GraphQLClient(AsyncBaseClient):
+
     async def read_user_i_t_accounts(
         self,
         uuid: UUID,
@@ -103,7 +104,7 @@ class GraphQLClient(AsyncBaseClient):
                               name
                             }
                           }
-                          validities(start: null, end: $now) {
+                          startdates: validities(start: null, end: $now) {
                             validity {
                               from
                             }
