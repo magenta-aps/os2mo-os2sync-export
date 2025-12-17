@@ -16,7 +16,7 @@ fragment UnitFields on OrganisationUnit {
   name
   parent {
     uuid
-    itusers(filter: { user_keys: ["FK-ORG-UUID", "FK-ORG UUID"] }) {
+    itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
       user_key
     }
   }
@@ -40,14 +40,12 @@ fragment UnitFields on OrganisationUnit {
     }
     name
   }
-  itusers(filter: { user_keys: ["FK-ORG-UUID", "FK-ORG UUID"] }) {
+  itusers(filter: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}) {
     user_key
   }
   managers {
     person {
-      itusers(
-        filter: { itsystem: { user_keys: ["FK-ORG-UUID", "FK-ORG UUID"] } }
-      ) {
+      itusers(filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}) {
         external_id
       }
     }
@@ -65,18 +63,19 @@ query ReadUserITAccounts(
   $email: [UUID!] = []
   $mobile: [UUID!] = []
   $landline: [UUID!] = []
+  $now: DateTime
 ) {
-  employees(filter: { uuids: [$uuid] }) {
+  employees(filter: {uuids: [$uuid]}) {
     objects {
       current {
         fk_org_uuids: itusers(
-          filter: { itsystem: { user_keys: ["FK-ORG-UUID", "FK-ORG UUID"] } }
+          filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}
         ) {
           uuid
           user_key
           external_id
         }
-        itusers: itusers(filter: { itsystem: { user_keys: $it_user_keys } }) {
+        itusers: itusers(filter: {itsystem: {user_keys: $it_user_keys}}) {
           user_key
           external_id
           person {
@@ -84,22 +83,31 @@ query ReadUserITAccounts(
             name
             nickname
           }
-          engagement {
-            extension_3
-            org_unit {
-              ...UnitFields
-            }
-            job_function {
-              name
+          engagements_responses {
+            objects {
+              current {
+                extension_3
+                org_unit {
+                  ...UnitFields
+                }
+                job_function {
+                  name
+                }
+              }
+              validities(start: null, end: $now) {
+                validity {
+                  from
+                }
+              }
             }
           }
-          email: addresses(filter: { address_type: { uuids: $email } }) {
+          email: addresses(filter: {address_type: {uuids: $email}}) {
             ...AddressFields
           }
-          mobile: addresses(filter: { address_type: { uuids: $mobile } }) {
+          mobile: addresses(filter: {address_type: {uuids: $mobile}}) {
             ...AddressFields
           }
-          landline: addresses(filter: { address_type: { uuids: $landline } }) {
+          landline: addresses(filter: {address_type: {uuids: $landline}}) {
             ...AddressFields
           }
         }
@@ -108,9 +116,8 @@ query ReadUserITAccounts(
   }
 }
 
-
 query read_orgunit($uuid: UUID!) {
-  org_units(filter: { uuids: [$uuid] }) {
+  org_units(filter: {uuids: [$uuid]}) {
     objects {
       current {
         ...UnitFields
@@ -119,10 +126,10 @@ query read_orgunit($uuid: UUID!) {
   }
 }
 
-query FindAddressUnitOrPerson($uuid: UUID! ) {
-  addresses(filter: { uuids: [$uuid], from_date: null, to_date: null}) {
+query FindAddressUnitOrPerson($uuid: UUID!) {
+  addresses(filter: {uuids: [$uuid], from_date: null, to_date: null}) {
     objects {
-      validities{
+      validities {
         org_unit {
           uuid
         }
@@ -134,9 +141,8 @@ query FindAddressUnitOrPerson($uuid: UUID! ) {
   }
 }
 
-
 query FindItuserUnitOrPerson($uuid: UUID!) {
-  itusers(filter: { uuids: [$uuid], from_date: null, to_date: null}) {
+  itusers(filter: {uuids: [$uuid], from_date: null, to_date: null}) {
     objects {
       validities {
         org_unit {
@@ -151,7 +157,7 @@ query FindItuserUnitOrPerson($uuid: UUID!) {
 }
 
 query FindKLEUnit($uuid: UUID!) {
-  itusers(filter: { uuids: [$uuid], from_date: null, to_date: null}) {
+  itusers(filter: {uuids: [$uuid], from_date: null, to_date: null}) {
     objects {
       validities {
         org_unit {
@@ -163,7 +169,7 @@ query FindKLEUnit($uuid: UUID!) {
 }
 
 query FindManagerUnit($uuid: UUID!) {
-  managers(filter: { uuids: [$uuid], from_date: null, to_date: null}) {
+  managers(filter: {uuids: [$uuid], from_date: null, to_date: null}) {
     objects {
       validities {
         org_unit {
@@ -175,7 +181,7 @@ query FindManagerUnit($uuid: UUID!) {
 }
 
 query FindEngagementPerson($uuid: UUID!) {
-  engagements(filter: { uuids: [$uuid], from_date: null, to_date: null}) {
+  engagements(filter: {uuids: [$uuid], from_date: null, to_date: null}) {
     objects {
       validities {
         person {
@@ -203,7 +209,7 @@ mutation CreateITUser(
 ) {
   ituser_create(
     input: {
-      validity: { from: $from }
+      validity: {from: $from}
       user_key: $user_key
       itsystem: $itsystem
       external_id: $external_id
@@ -215,7 +221,7 @@ mutation CreateITUser(
 }
 
 mutation TerminateITUser($uuid: UUID!, $to: DateTime!) {
-  ituser_terminate(input: { uuid: $uuid, to: $to }) {
+  ituser_terminate(input: {uuid: $uuid, to: $to}) {
     uuid
   }
 }
@@ -268,6 +274,12 @@ mutation _testing__ituser_create($input: ITUserCreateInput!) {
 
 mutation _testing__itsystem_terminate($input: ITSystemTerminateInput!) {
   itsystem_terminate(input: $input) {
+    uuid
+  }
+}
+
+mutation _testing__engagement_update($input: EngagementUpdateInput!) {
+  engagement_update(input: $input) {
     uuid
   }
 }

@@ -25,6 +25,7 @@ from .input_types import AddressCreateInput
 from .input_types import ClassFilter
 from .input_types import EmployeeCreateInput
 from .input_types import EngagementCreateInput
+from .input_types import EngagementUpdateInput
 from .input_types import ITSystemFilter
 from .input_types import ITSystemTerminateInput
 from .input_types import ITUserCreateInput
@@ -41,6 +42,8 @@ from .testing__employee_create import TestingEmployeeCreate
 from .testing__employee_create import TestingEmployeeCreateEmployeeCreate
 from .testing__engagement_create import TestingEngagementCreate
 from .testing__engagement_create import TestingEngagementCreateEngagementCreate
+from .testing__engagement_update import TestingEngagementUpdate
+from .testing__engagement_update import TestingEngagementUpdateEngagementUpdate
 from .testing__get_class import TestingGetClass
 from .testing__get_class import TestingGetClassClasses
 from .testing__get_itsystem import TestingGetItsystem
@@ -65,10 +68,11 @@ class GraphQLClient(AsyncBaseClient):
         email: Union[Optional[List[UUID]], UnsetType] = UNSET,
         mobile: Union[Optional[List[UUID]], UnsetType] = UNSET,
         landline: Union[Optional[List[UUID]], UnsetType] = UNSET,
+        now: Union[Optional[datetime], UnsetType] = UNSET,
     ) -> ReadUserITAccountsEmployees:
         query = gql(
             """
-            query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!], $email: [UUID!] = [], $mobile: [UUID!] = [], $landline: [UUID!] = []) {
+            query ReadUserITAccounts($uuid: UUID!, $it_user_keys: [String!], $email: [UUID!] = [], $mobile: [UUID!] = [], $landline: [UUID!] = [], $now: DateTime) {
               employees(filter: {uuids: [$uuid]}) {
                 objects {
                   current {
@@ -87,13 +91,22 @@ class GraphQLClient(AsyncBaseClient):
                         name
                         nickname
                       }
-                      engagement {
-                        extension_3
-                        org_unit {
-                          ...UnitFields
-                        }
-                        job_function {
-                          name
+                      engagements_responses {
+                        objects {
+                          current {
+                            extension_3
+                            org_unit {
+                              ...UnitFields
+                            }
+                            job_function {
+                              name
+                            }
+                          }
+                          validities(start: null, end: $now) {
+                            validity {
+                              from
+                            }
+                          }
                         }
                       }
                       email: addresses(filter: {address_type: {uuids: $email}}) {
@@ -174,6 +187,7 @@ class GraphQLClient(AsyncBaseClient):
             "email": email,
             "mobile": mobile,
             "landline": landline,
+            "now": now,
         }
         response = await self.execute(query=query, variables=variables)
         data = self.get_data(response)
@@ -564,3 +578,20 @@ class GraphQLClient(AsyncBaseClient):
         response = await self.execute(query=query, variables=variables)
         data = self.get_data(response)
         return TestingItsystemTerminate.parse_obj(data).itsystem_terminate
+
+    async def testing__engagement_update(
+        self, input: EngagementUpdateInput
+    ) -> TestingEngagementUpdateEngagementUpdate:
+        query = gql(
+            """
+            mutation _testing__engagement_update($input: EngagementUpdateInput!) {
+              engagement_update(input: $input) {
+                uuid
+              }
+            }
+            """
+        )
+        variables: dict[str, object] = {"input": input}
+        response = await self.execute(query=query, variables=variables)
+        data = self.get_data(response)
+        return TestingEngagementUpdate.parse_obj(data).engagement_update

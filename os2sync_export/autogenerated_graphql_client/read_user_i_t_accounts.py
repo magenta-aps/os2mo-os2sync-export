@@ -1,7 +1,10 @@
+from datetime import datetime
 from typing import Any
 from typing import List
 from typing import Optional
 from uuid import UUID
+
+from pydantic import Field
 
 from .base_model import BaseModel
 from .fragments import AddressFields
@@ -35,9 +38,9 @@ class ReadUserITAccountsEmployeesObjectsCurrentItusers(BaseModel):
     user_key: str
     external_id: Optional[str]
     person: Optional[List["ReadUserITAccountsEmployeesObjectsCurrentItusersPerson"]]
-    engagement: Optional[
-        List["ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement"]
-    ]
+    engagements_responses: (
+        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponses"
+    )
     email: List["ReadUserITAccountsEmployeesObjectsCurrentItusersEmail"]
     mobile: List["ReadUserITAccountsEmployeesObjectsCurrentItusersMobile"]
     landline: List["ReadUserITAccountsEmployeesObjectsCurrentItusersLandline"]
@@ -49,20 +52,55 @@ class ReadUserITAccountsEmployeesObjectsCurrentItusersPerson(BaseModel):
     nickname: str
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement(BaseModel):
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponses(BaseModel):
+    objects: List[
+        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjects"
+    ]
+
+
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjects(
+    BaseModel
+):
+    current: Optional[
+        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent"
+    ]
+    validities: List[
+        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities"
+    ]
+
+
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent(
+    BaseModel
+):
     extension_3: Optional[str]
-    org_unit: List["ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit"]
-    job_function: (
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction"
-    )
+    org_unit: List[
+        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentOrgUnit"
+    ]
+    job_function: "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentJobFunction"
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit(UnitFields):
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentOrgUnit(
+    UnitFields
+):
     pass
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction(BaseModel):
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentJobFunction(
+    BaseModel
+):
     name: str
+
+
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities(
+    BaseModel
+):
+    validity: "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesValidity"
+
+
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesValidity(
+    BaseModel
+):
+    from_: datetime = Field(alias="from")
 
 
 class ReadUserITAccountsEmployeesObjectsCurrentItusersEmail(AddressFields):
@@ -84,9 +122,13 @@ ReadUserITAccountsEmployeesObjectsCurrent.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusers.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersPerson.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagement.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementOrgUnit.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementJobFunction.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponses.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjects.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentOrgUnit.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentJobFunction.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesValidity.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEmail.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersMobile.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersLandline.update_forward_refs()
