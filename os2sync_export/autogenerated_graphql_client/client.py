@@ -62,7 +62,6 @@ def gql(q: str) -> str:
 
 
 class GraphQLClient(AsyncBaseClient):
-
     async def read_user_i_t_accounts(
         self,
         uuid: UUID,
@@ -92,9 +91,9 @@ class GraphQLClient(AsyncBaseClient):
                         name
                         nickname
                       }
-                      engagements_responses {
+                      engagements_responses(filter: {from_date: $now, to_date: null}) {
                         objects {
-                          current {
+                          validities(start: $now, end: null) {
                             extension_1
                             extension_3
                             org_unit {
@@ -104,7 +103,7 @@ class GraphQLClient(AsyncBaseClient):
                               name
                             }
                           }
-                          startdates: validities(start: null, end: $now) {
+                          startdates: validities(start: null, end: null) {
                             validity {
                               from
                             }
