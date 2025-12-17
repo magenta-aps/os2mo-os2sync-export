@@ -215,7 +215,7 @@ def convert_to_os2sync(
             )
         ]
     for i in mo_engagements:
-        if i.current and i.validities:
+        if i.current and i.startdates:
             # Job title can be read from extension_3 if configured to do so.
             name = (
                 i.current.extension_3
@@ -230,7 +230,7 @@ def convert_to_os2sync(
                 else one(i.current.org_unit).uuid
             )
             # Original startdate of the engagement
-            start_date = min([s.validity.from_ for s in i.validities])
+            start_date = min([s.validity.from_ for s in i.startdates])
 
             positions.append(
                 Position(Name=name, OrgUnitUuid=org_unit_uuid, StartDate=start_date)

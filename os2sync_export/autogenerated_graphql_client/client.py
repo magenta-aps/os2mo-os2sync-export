@@ -102,7 +102,7 @@ class GraphQLClient(AsyncBaseClient):
                               name
                             }
                           }
-                          validities(start: null, end: $now) {
+                          startdates: validities(start: null, end: $now) {
                             validity {
                               from
                             }
