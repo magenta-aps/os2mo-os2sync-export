@@ -61,31 +61,31 @@ class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponses(BaseM
 class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjects(
     BaseModel
 ):
-    current: Optional[
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent"
+    validities: List[
+        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities"
     ]
     startdates: List[
         "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsStartdates"
     ]
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent(
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities(
     BaseModel
 ):
     extension_3: Optional[str]
     org_unit: List[
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentOrgUnit"
+        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesOrgUnit"
     ]
-    job_function: "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentJobFunction"
+    job_function: "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesJobFunction"
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentOrgUnit(
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesOrgUnit(
     UnitFields
 ):
     pass
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentJobFunction(
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesJobFunction(
     BaseModel
 ):
     name: str
@@ -124,9 +124,9 @@ ReadUserITAccountsEmployeesObjectsCurrentItusers.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersPerson.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponses.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjects.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentOrgUnit.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentJobFunction.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesOrgUnit.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesJobFunction.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsStartdates.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsStartdatesValidity.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEmail.update_forward_refs()
