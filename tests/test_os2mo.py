@@ -62,9 +62,9 @@ class TestsMOAd(unittest.TestCase):
 
     @parameterized.expand(
         [
-            ({"os2mo_has_kle": True}, ["2", "4", "6"], []),
+            ({}, ["2", "4", "6"], []),
             (
-                {"os2mo_has_kle": True, "os2sync_use_contact_for_tasks": True},
+                {"os2sync_use_contact_for_tasks": True},
                 ["2", "4"],
                 ["6"],
             ),
