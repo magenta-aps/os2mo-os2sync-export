@@ -145,10 +145,6 @@ def os2mo_get(url, **params):
     return r
 
 
-def has_kle():
-    os2mo_config = os2mo_get("{BASE}/configuration").json()
-    return os2mo_config["show_kle"]
-
 
 def pick_address(addresses: list[dict], classes: list[UUID]) -> str | None:
     """Finds the correct address.
@@ -670,7 +666,7 @@ async def get_sts_orgunit(
                 manager_uuid = manager_uuid_from_it_accounts or manager_uuid
             sts_org_unit["ManagerUuid"] = manager_uuid
 
-    if settings.enable_kle and has_kle():
+    if settings.enable_kle:
         kle_to_orgunit(
             sts_org_unit,
             os2mo_get("{BASE}/ou/" + str(uuid) + "/details/kle").json(),
