@@ -169,11 +169,7 @@ async def amqp_trigger_org_unit(
         )
     else:
         sts_org_unit = None
-        if await is_relevant(
-            graphql_session,
-            uuid,
-            settings,
-        ):
+        if await is_relevant(graphql_session, uuid, settings):
             try:
                 sts_org_unit = await get_sts_orgunit(
                     uuid, settings=settings, graphql_session=graphql_session
@@ -234,11 +230,7 @@ async def amqp_trigger_address(
         logger.debug(f"No address found {uuid=}")
         return
 
-    if ou_uuid and await is_relevant(
-        graphql_session,
-        uuid,
-        settings,
-    ):
+    if ou_uuid and await is_relevant(graphql_session, ou_uuid, settings):
         try:
             sts_org_unit = await get_sts_orgunit(
                 ou_uuid, settings, graphql_session=graphql_session
@@ -385,11 +377,7 @@ async def amqp_trigger_manager(
         logger.debug(f"Event registered but no manager found with {uuid=}")
         return
 
-    if ou_uuid and await is_relevant(
-        graphql_session,
-        ou_uuid,
-        settings,
-    ):
+    if ou_uuid and await is_relevant(graphql_session, ou_uuid, settings):
         try:
             sts_org_unit = await get_sts_orgunit(
                 ou_uuid, settings, graphql_session=graphql_session
@@ -470,11 +458,7 @@ async def amqp_trigger_kle(
     except ValueError:
         logger.debug(f"Event registered but no KLE found with {uuid=}")
         return
-    if ou_uuid and await is_relevant(
-        graphql_session,
-        ou_uuid,
-        settings,
-    ):
+    if ou_uuid and await is_relevant(graphql_session, ou_uuid, settings):
         try:
             sts_org_unit = await get_sts_orgunit(
                 ou_uuid, settings, graphql_session=graphql_session
