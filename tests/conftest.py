@@ -223,3 +223,45 @@ async def create_engagements(
     for e in engagements:
         await graphql_client.testing__engagement_create(input=e)
     return engagements
+
+
+@pytest.fixture
+async def create_engagement(
+    graphql_client: GraphQLClient, create_person, create_org_unit
+):
+    engagement_uuid = uuid4()
+    all_engagement_types = await graphql_client.testing__get_class(
+        ClassFilter(
+            facet=FacetFilter(
+                user_keys=["engagement_type"], from_date=None, to_date=None
+            ),
+            from_date=None,
+            to_date=None,
+        )
+    )
+
+    engagement_type = first(all_engagement_types.objects).uuid
+    all_job_functions = await graphql_client.testing__get_class(
+        ClassFilter(
+            user_keys=["tester"],
+            facet=FacetFilter(
+                user_keys=["engagement_job_function"], from_date=None, to_date=None
+            ),
+            from_date=None,
+            to_date=None,
+        )
+    )
+
+    job_function = first(all_job_functions.objects).uuid
+
+    return await graphql_client.testing__engagement_create(
+        input=EngagementCreateInput(
+            uuid=engagement_uuid,
+            employee=create_person.uuid,
+            org_unit=create_org_unit.uuid,
+            user_key="eng1",
+            engagement_type=engagement_type,
+            job_function=job_function,
+            validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
+        )
+    )

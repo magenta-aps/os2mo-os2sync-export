@@ -4,6 +4,7 @@
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
+from datetime import timezone
 from typing import Iterable
 from uuid import UUID
 from uuid import uuid4
@@ -84,7 +85,7 @@ async def read_fk_users_from_person(
         email=email,
         mobile=mobile,
         landline=landline,
-        now=datetime.now(),
+        now=datetime.now(timezone.utc),
     )
     current_accounts = one(it_accounts.objects).current
     if current_accounts is None:
@@ -307,7 +308,7 @@ async def sync_mo_user_to_fk_org(
                     itsystem=fk_it_uuid,
                     person=uuid,
                     user_key=one(it_users).external_id,  # type: ignore
-                    from_=datetime.now(),
+                    from_=datetime.now(timezone.utc),
                 )
                 fk_org_users, _ = await read_fk_users_from_person(
                     graphql_client=graphql_client,
@@ -327,7 +328,7 @@ async def sync_mo_user_to_fk_org(
                 itsystem=fk_it_uuid,
                 person=uuid,
                 user_key=it.external_id,  # type: ignore
-                from_=datetime.now(),
+                from_=datetime.now(timezone.utc),
             )
     # remove fk-org itusers it the it-user no longer exists.
     for fk in fk_org_users:
