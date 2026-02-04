@@ -138,7 +138,7 @@ def os2mo_get(url, **params):
         res = r.json()
         if isinstance(res, dict) and res.get("cpr_no"):
             res.update({"cpr_no": "removed from logs"})
-        logger.debug(f"os2mo_get {url=} returned {res=}")
+        logger.info(f"os2mo_get {url=} returned {res=}")
     except:  # noqa: E722
         pass
 
@@ -626,9 +626,7 @@ async def get_sts_orgunit(
             parent = parent["parent"]
 
     if not parent["uuid"] == top_unit_uuid:
-        logger.debug(
-            f"Unit with {uuid=} is not a unit below {top_unit_uuid=}. Ignoring"
-        )
+        logger.info(f"Unit with {uuid=} is not a unit below {top_unit_uuid=}. Ignoring")
         return None
 
     sts_org_unit = {"ItSystems": [], "Name": base["name"], "Uuid": str(uuid)}
@@ -1004,7 +1002,7 @@ async def is_relevant(
     if unit_uuid in settings.filter_orgunit_uuid or any(
         uuid in ancestors for uuid in settings.filter_orgunit_uuid
     ):
-        logger.debug(f"Orgunit is filtered based on settings {unit_uuid=}")
+        logger.info(f"Orgunit is filtered based on settings {unit_uuid=}")
         return False
 
     if settings.filter_hierarchy_names:
@@ -1021,11 +1019,11 @@ async def is_relevant(
             for it in org_unit["itusers"]
         )
 
-        logger.debug(
+        logger.info(
             f"is_relevant check found that {is_below_top_uuid=}, {is_in_hierarchies=}, {has_it_account=}"
         )
         return is_below_top_uuid and (is_in_hierarchies or has_it_account)
-    logger.debug(f"is_relevant check found that {is_below_top_uuid=}")
+    logger.info(f"is_relevant check found that {is_below_top_uuid=}")
     return is_below_top_uuid
 
 
