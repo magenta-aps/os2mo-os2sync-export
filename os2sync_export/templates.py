@@ -147,10 +147,10 @@ class Person(Entity):
             if not cpr:
                 logger.warning("no 'cpr_no' for user %r", self.context["uuid"])
             else:
-                logger.debug("transferring CPR for user %r", self.context["uuid"])
+                logger.info("transferring CPR for user %r", self.context["uuid"])
         else:
             cpr = None
-            logger.debug("not configured to transfer CPR")
+            logger.info("not configured to transfer CPR")
 
         return {
             "Name": self.field_renderer.render(

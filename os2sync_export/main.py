@@ -141,9 +141,7 @@ async def amqp_trigger_employee(
             graphql_session=graphql_session,
             settings=settings,
         )
-        logger.debug(
-            f"Event registered for person with {uuid=}", fk_org_users=sts_users
-        )
+        logger.info(f"Event registered for person with {uuid=}", fk_org_users=sts_users)
     except ValueError:
         os2sync_client.delete_user(uuid)
         logger.info(f"No fk-org user was found for {uuid=}. Deleting from fk-org")
@@ -227,7 +225,7 @@ async def amqp_trigger_address(
             graphql_session, uuid
         )
     except ValueError:
-        logger.debug(f"No address found {uuid=}")
+        logger.info(f"No address found {uuid=}")
         return
 
     if ou_uuid and await is_relevant(graphql_session, ou_uuid, settings):
@@ -294,7 +292,7 @@ async def amqp_trigger_it_user(
             graphql_session, uuid
         )
     except ValueError:
-        logger.debug(f"Event registered but no it-user found with {uuid=}")
+        logger.info(f"Event registered but no it-user found with {uuid=}")
         return
 
     if settings.uuid_from_it_systems:
@@ -374,7 +372,7 @@ async def amqp_trigger_manager(
     try:
         ou_uuid = await get_manager_org_unit_uuid(graphql_session, uuid)
     except ValueError:
-        logger.debug(f"Event registered but no manager found with {uuid=}")
+        logger.info(f"Event registered but no manager found with {uuid=}")
         return
 
     if ou_uuid and await is_relevant(graphql_session, ou_uuid, settings):
@@ -401,13 +399,13 @@ async def amqp_trigger_engagement(
     os2sync_client: OS2SyncClient_,
 ) -> None:
     uuid = event_uuid.subject
-    logger.debug("Event registered for engagement", engagement=uuid)
+    logger.info("Event registered for engagement", engagement=uuid)
     if settings.new:
         res = await graphql_client.find_engagement_person(uuid=uuid)
         try:
             employees = find_object_person(res)
         except ValueError:
-            logger.debug(f"Event registered but no engagement found {uuid=}")
+            logger.info(f"Event registered but no engagement found {uuid=}")
             return
         for e in employees:
             await sync_mo_user_to_fk_org(
@@ -420,7 +418,7 @@ async def amqp_trigger_engagement(
     try:
         e_uuid = await get_engagement_employee_uuid(graphql_session, uuid)
     except ValueError:
-        logger.debug(f"Event registered but no engagement found with {uuid=}")
+        logger.info(f"Event registered but no engagement found with {uuid=}")
         return
 
     if e_uuid:
@@ -456,7 +454,7 @@ async def amqp_trigger_kle(
     try:
         ou_uuid = await get_kle_org_unit_uuid(graphql_session, uuid)
     except ValueError:
-        logger.debug(f"Event registered but no KLE found with {uuid=}")
+        logger.info(f"Event registered but no KLE found with {uuid=}")
         return
     if ou_uuid and await is_relevant(graphql_session, ou_uuid, settings):
         try:

@@ -19,10 +19,10 @@ class TestPerson(unittest.TestCase, MoEmployeeMixin):
     @parameterized.expand(
         [
             # mock CPR, os2sync_xfer_cpr, key of expected CPR value, expected log level
-            ("0101013333", True, "cpr_no", "debug"),
+            ("0101013333", True, "cpr_no", "info"),
             (None, True, "cpr_no", "warning"),
-            ("0101013333", False, None, "debug"),
-            (None, False, None, "debug"),
+            ("0101013333", False, None, "info"),
+            (None, False, None, "info"),
         ]
     )
     def test_transfer_cpr(self, cpr, flag, expected_key, expected_log_level):
