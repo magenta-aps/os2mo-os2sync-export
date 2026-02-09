@@ -13,7 +13,7 @@ from typing import Set
 from typing import Tuple
 from uuid import UUID
 
-import requests
+import httpx
 import structlog
 from fastramqpi.ra_utils.headers import TokenSettings
 from gql import gql
@@ -33,13 +33,14 @@ logger = structlog.stdlib.get_logger()
 
 
 def get_mo_session():
-    session = requests.Session()
     settings = get_os2sync_settings()
-    session.verify = settings.ca_verify_os2mo
+    session = httpx.Client(verify=settings.ca_verify_os2mo)
 
-    session.headers = {
-        "User-Agent": "os2mo-data-import-and-export",
-    }
+    session.headers = httpx.Headers(
+        {
+            "User-Agent": "os2mo-data-import-and-export",
+        }
+    )
 
     session_headers = TokenSettings(
         auth_server=settings.fastramqpi.auth_server,
@@ -126,8 +127,8 @@ def os2mo_get(url, **params):
     mo_url = get_os2sync_settings().fastramqpi.mo_url
 
     url = url.format(BASE=f"{mo_url}/service")
-    session = get_mo_session()
-    r = session.get(url, params=params)
+    with get_mo_session() as session:
+        r = session.get(url, params=params)
     if r.status_code == 404:
         raise ValueError("No object found with this uuid")
     r.raise_for_status()

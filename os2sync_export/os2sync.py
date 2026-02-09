@@ -7,7 +7,7 @@ from typing import Set
 from typing import Tuple
 from uuid import UUID
 
-import requests
+import httpx
 import structlog
 from fastapi.encoders import jsonable_encoder
 from tenacity import retry
@@ -40,12 +40,10 @@ class OS2SyncClient:
         raise NotImplementedError
 
     def _get_os2sync_session(self):
-        session = requests.Session()
-
         if self.settings.os2sync_api_url == "stub":
             return stub.Session()
 
-        session.verify = self.settings.ca_verify_os2sync
+        session = httpx.Client(verify=self.settings.ca_verify_os2sync)
         session.headers["User-Agent"] = "os2mo-data-import-and-export"
         session.headers["CVR"] = self.settings.municipality
         return session
@@ -130,7 +128,7 @@ class OS2SyncClient:
         wait=wait_fixed(5),
         reraise=True,
         stop=stop_after_delay(10 * 60),
-        retry=retry_if_exception_type(requests.HTTPError),
+        retry=retry_if_exception_type(httpx.HTTPStatusError),
     )
     def get_hierarchy(self, request_uuid: UUID) -> Tuple[dict, dict]:
         """Fetches the hierarchy from os2sync. Retries for 10 minutes until it is ready."""
@@ -192,7 +190,7 @@ class WritableOS2SyncClient(OS2SyncClient):
             r = self.session.delete(url, **params)
             r.raise_for_status()
             return r
-        except requests.HTTPError as e:
+        except httpx.HTTPStatusError as e:
             if e.response.status_code == 404:
                 logger.warning("delete %r %r :404", url, params)
                 return r
@@ -211,7 +209,7 @@ class WritableOS2SyncClient(OS2SyncClient):
 
 
 def get_os2sync_client(
-    settings: Settings, session: requests.Session | None, dry_run: bool
+    settings: Settings, session: httpx.Client | None, dry_run: bool
 ) -> OS2SyncClient:
     return (
         ReadOnlyOS2SyncClient(settings, session)

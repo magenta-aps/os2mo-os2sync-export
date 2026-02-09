@@ -14,6 +14,15 @@ class Session:
     text = str(uuid4())
     status_code = 404
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def close(self):
+        pass
+
     def raise_for_status(self):
         pass
 
