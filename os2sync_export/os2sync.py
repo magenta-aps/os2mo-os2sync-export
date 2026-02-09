@@ -188,14 +188,15 @@ class ReadOnlyOS2SyncClient(OS2SyncClient):
 class WritableOS2SyncClient(OS2SyncClient):
     async def os2sync_delete(self, url, **params):
         url = self.os2sync_url(url)
+        r = await self.session.delete(url, **params)
         try:
-            r = await self.session.delete(url, **params)
             r.raise_for_status()
-            return r
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 404:
                 logger.warning("delete %r %r :404", url, params)
-                return r
+            raise
+        finally:
+            return r
 
     async def os2sync_post(self, url, **params):
         url = self.os2sync_url(url)
