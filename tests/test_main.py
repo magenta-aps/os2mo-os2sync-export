@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 from unittest.mock import AsyncMock
-from unittest.mock import MagicMock
 from unittest.mock import call
 from unittest.mock import patch
 from uuid import uuid4
@@ -49,9 +48,9 @@ async def test_trigger_it_user_update(
         user_uuid, graphql_session=graphql_session, settings=mock_settings
     )
     # Test that we call update_user on events
-    os2sync_client.update_users.assert_called_once_with(user_uuid, fk_org_users)
+    os2sync_client.update_users.assert_awaited_once_with(user_uuid, fk_org_users)
     if overwritten_uuid:
-        os2sync_client.delete_user.assert_called_with(user_uuid)
+        os2sync_client.delete_user.assert_awaited_once_with(user_uuid)
     else:
         os2sync_client.delete_user.assert_not_called()
 
@@ -98,15 +97,17 @@ async def test_trigger_it_orgunit_update(
             orgunit_uuid, mock_settings, graphql_session=graphql_session
         )
         if overwritten_uuid:
-            os2sync_client.delete_orgunit.assert_called_once_with(orgunit_uuid)
+            os2sync_client.delete_orgunit.assert_awaited_once_with(orgunit_uuid)
         else:
             os2sync_client.delete_orgunit.assert_not_called()
+        # Test that we call update_org_unit on events
+        os2sync_client.update_org_unit.assert_awaited_with(
+            orgunit_uuid, fk_org_orggunit
+        )
     else:
         get_org_unit_mock.assert_not_called()
         os2sync_client.delete_orgunit.assert_not_called()
-    # Test that we call update_org_unit on events
-    os2sync_client.update_org_unit(orgunit_uuid, fk_org_orggunit.json())
-    # Ensure we won't delete the org_unit
+        os2sync_client.update_org_unit.assert_not_called()
 
 
 @pytest.mark.parametrize("is_relevant", (True, False))
@@ -135,11 +136,12 @@ async def test_trigger_orgunit_update(
             orgunit_uuid, settings=mock_settings, graphql_session=graphql_session
         )
         os2sync_client.delete_orgunit.assert_not_called()
+        # Test that we call update_org_unit on events
+        os2sync_client.upsert_org_unit.assert_awaited_with(fk_org_orggunit)
     else:
         get_org_unit_mock.assert_not_called()
-        os2sync_client.delete_orgunit.assert_called_once_with(orgunit_uuid)
-    # Test that we call update_org_unit on events
-    os2sync_client.update_org_unit(orgunit_uuid, fk_org_orggunit.json())
+        os2sync_client.delete_orgunit.assert_awaited_once_with(orgunit_uuid)
+        os2sync_client.upsert_org_unit.assert_not_called()
 
 
 @patch("os2sync_export.main.is_relevant", return_value=True)
@@ -282,7 +284,7 @@ async def test_is_relevant_has_it_account(set_settings):
 
 async def test_amqp_trigger_it_user_no_old_accounts(set_settings):
     mock_settings = set_settings(uuid_from_it_systems=["FK-org uuid"])
-    os2sync_client_mock = MagicMock()
+    os2sync_client_mock = AsyncMock()
     with patch(
         "os2sync_export.main.check_terminated_accounts",
         return_value=(set(), set()),
@@ -310,7 +312,7 @@ async def test_amqp_trigger_it_user_deletes_old_accounts(
     old_user_uuids = {uuid4(), uuid4()}
     old_org_unit_uuids = {uuid4(), uuid4()}
     mock_settings = set_settings(uuid_from_it_systems=["FK-org uuid"])
-    os2sync_client_mock = MagicMock()
+    os2sync_client_mock = AsyncMock()
     with patch(
         "os2sync_export.main.check_terminated_accounts",
         return_value=(old_user_uuids, old_org_unit_uuids),

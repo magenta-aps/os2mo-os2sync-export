@@ -30,20 +30,20 @@ class OS2SyncClient:
         self.settings = settings or get_os2sync_settings()
         self.session = session or self._get_os2sync_session()
 
-    def os2sync_post(self, url, **params):
+    async def os2sync_post(self, url, **params):
         raise NotImplementedError
 
-    def os2sync_delete(self, url, **params):
+    async def os2sync_delete(self, url, **params):
         raise NotImplementedError
 
-    def os2sync_passivate(self, url, **params):
+    async def os2sync_passivate(self, url, **params):
         raise NotImplementedError
 
     def _get_os2sync_session(self):
         if self.settings.os2sync_api_url == "stub":
             return stub.Session()
 
-        session = httpx.Client(verify=self.settings.ca_verify_os2sync)
+        session = httpx.AsyncClient(verify=self.settings.ca_verify_os2sync)
         session.headers["User-Agent"] = "os2mo-data-import-and-export"
         session.headers["CVR"] = self.settings.municipality
         return session
@@ -53,50 +53,50 @@ class OS2SyncClient:
         url = url.format(BASE=self.settings.os2sync_api_url)
         return url
 
-    def os2sync_get(self, url, **params) -> Dict:
+    async def os2sync_get(self, url, **params) -> Dict:
         url = self.os2sync_url(url)
-        r = self.session.get(url, params=params)
+        r = await self.session.get(url, params=params)
         if r.status_code == 404:
             raise KeyError(f"No object found at {url=}, {params=}")
         r.raise_for_status()
         return r.json()
 
-    def os2sync_get_user(self, uuid: UUID) -> dict:
-        current = self.os2sync_get(f"{{BASE}}/user/{str(uuid)}")
+    async def os2sync_get_user(self, uuid: UUID) -> dict:
+        current = await self.os2sync_get(f"{{BASE}}/user/{str(uuid)}")
         return current
 
-    def os2sync_get_org_unit(self, uuid: UUID) -> OrgUnit:
-        current = self.os2sync_get(f"{{BASE}}/orgUnit/{str(uuid)}")
+    async def os2sync_get_org_unit(self, uuid: UUID) -> OrgUnit:
+        current = await self.os2sync_get(f"{{BASE}}/orgUnit/{str(uuid)}")
         current.pop("Type")
         current.pop("Timestamp")
         return OrgUnit(**current)
 
-    def delete_orgunit(self, uuid: UUID):
+    async def delete_orgunit(self, uuid: UUID):
         if uuid == self.settings.top_unit_uuid:
             logger.error("Received event to delete top_unit_uuid - ignoring.")
             return
         logger.info("delete orgunit %s", uuid)
-        self.os2sync_delete("{BASE}/orgUnit/" + str(uuid))
+        await self.os2sync_delete("{BASE}/orgUnit/" + str(uuid))
 
-    def delete_user(self, uuid: UUID):
-        self.os2sync_delete("{BASE}/user/" + str(uuid))
+    async def delete_user(self, uuid: UUID):
+        await self.os2sync_delete("{BASE}/user/" + str(uuid))
 
-    def passivate_orgunit(self, uuid: UUID):
+    async def passivate_orgunit(self, uuid: UUID):
         if uuid == self.settings.top_unit_uuid:
             logger.error("Received event to passivate top_unit_uuid - ignoring.")
             return
         logger.info("passivate orgunit %s", uuid)
-        self.os2sync_passivate("{BASE}/orgUnit/passiver/" + str(uuid))
+        await self.os2sync_passivate("{BASE}/orgUnit/passiver/" + str(uuid))
 
-    def passivate_user(self, uuid: UUID):
-        self.os2sync_passivate("{BASE}/user/passiver/" + str(uuid))
+    async def passivate_user(self, uuid: UUID):
+        await self.os2sync_passivate("{BASE}/user/passiver/" + str(uuid))
 
-    def upsert_org_unit(self, org_unit: OrgUnit) -> None:
+    async def upsert_org_unit(self, org_unit: OrgUnit) -> None:
         try:
-            current = self.os2sync_get_org_unit(uuid=org_unit.Uuid)
+            current = await self.os2sync_get_org_unit(uuid=org_unit.Uuid)
         except KeyError:
             logger.info(f"OrgUnit not found in os2sync - creating {org_unit.Uuid=}")
-            self.os2sync_post("{BASE}/orgUnit/", json=org_unit.json())
+            await self.os2sync_post("{BASE}/orgUnit/", json=org_unit.json())
             return
 
         # Avoid overwriting information that we cannot provide from os2mo.
@@ -112,15 +112,15 @@ class OS2SyncClient:
 
         org_unit_info = org_unit.json()
         logger.info(f"Syncing org_unit {org_unit}")
-        self.os2sync_post("{BASE}/orgUnit/", json=org_unit_info)
+        await self.os2sync_post("{BASE}/orgUnit/", json=org_unit_info)
 
-    def trigger_hierarchy(self) -> UUID:
+    async def trigger_hierarchy(self) -> UUID:
         """ "Triggers a job in the os2sync container that gathers the entire hierarchy from FK-ORG
 
         Returns: UUID
 
         """
-        r = self.session.get(f"{self.settings.os2sync_api_url}/hierarchy")
+        r = await self.session.get(f"{self.settings.os2sync_api_url}/hierarchy")
         r.raise_for_status()
         return UUID(r.text)
 
@@ -130,9 +130,9 @@ class OS2SyncClient:
         stop=stop_after_delay(10 * 60),
         retry=retry_if_exception_type(httpx.HTTPStatusError),
     )
-    def get_hierarchy(self, request_uuid: UUID) -> Tuple[dict, dict]:
+    async def get_hierarchy(self, request_uuid: UUID) -> Tuple[dict, dict]:
         """Fetches the hierarchy from os2sync. Retries for 10 minutes until it is ready."""
-        r = self.session.get(
+        r = await self.session.get(
             f"{self.settings.os2sync_api_url}/hierarchy/{str(request_uuid)}"
         )
         r.raise_for_status()
@@ -141,53 +141,55 @@ class OS2SyncClient:
             raise ConnectionError("Check connection to FK-ORG")
         return hierarchy["OUs"], hierarchy["Users"]
 
-    def get_existing_uuids(self, request_uuid: UUID) -> Tuple[Set[UUID], Set[UUID]]:
-        org_units, users = self.get_hierarchy(request_uuid=request_uuid)
+    async def get_existing_uuids(
+        self, request_uuid: UUID
+    ) -> Tuple[Set[UUID], Set[UUID]]:
+        org_units, users = await self.get_hierarchy(request_uuid=request_uuid)
         existing_os2sync_org_units = {UUID(o["Uuid"]) for o in org_units}
         existing_os2sync_users = {UUID(u["Uuid"]) for u in users}
         return existing_os2sync_org_units, existing_os2sync_users
 
-    def update_user(self, user: User):
-        self.os2sync_post("{BASE}/user", json=jsonable_encoder(user))
+    async def update_user(self, user: User):
+        await self.os2sync_post("{BASE}/user", json=jsonable_encoder(user))
 
-    def update_users(self, uuid: UUID, users):
+    async def update_users(self, uuid: UUID, users):
         if not users:
             # No fk-org user found. Delete user from fk-org
             logger.info(f"Deleting user {uuid=} from fk-org")
-            self.delete_user(uuid)
+            await self.delete_user(uuid)
             return
 
         for user in users:
             if not user["Positions"]:
                 logger.info(f"Deleting user {user['Uuid']=} from fk-org")
-                self.delete_user(user["Uuid"])
+                await self.delete_user(user["Uuid"])
             else:
                 logger.info(f"Syncing user {user['Uuid']=} to fk-org")
-                self.os2sync_post("{BASE}/user", json=user)
+                await self.os2sync_post("{BASE}/user", json=user)
 
-    def update_org_unit(self, uuid: UUID, org_unit: Optional[OrgUnit]):
+    async def update_org_unit(self, uuid: UUID, org_unit: Optional[OrgUnit]):
         if org_unit:
-            self.upsert_org_unit(org_unit)
+            await self.upsert_org_unit(org_unit)
         else:
-            self.delete_orgunit(uuid)
+            await self.delete_orgunit(uuid)
 
 
 class ReadOnlyOS2SyncClient(OS2SyncClient):
-    def os2sync_post(self, url, **params):
+    async def os2sync_post(self, url, **params):
         logger.info("Read-only attempted post", url=url, params=params)
 
-    def os2sync_delete(self, url, **params):
+    async def os2sync_delete(self, url, **params):
         logger.info("Read-only attempted delete", url=url, params=params)
 
-    def os2sync_passivate(self, url, **params):
+    async def os2sync_passivate(self, url, **params):
         logger.info("Read-only attempted passivate", url=url, params=params)
 
 
 class WritableOS2SyncClient(OS2SyncClient):
-    def os2sync_delete(self, url, **params):
+    async def os2sync_delete(self, url, **params):
         url = self.os2sync_url(url)
         try:
-            r = self.session.delete(url, **params)
+            r = await self.session.delete(url, **params)
             r.raise_for_status()
             return r
         except httpx.HTTPStatusError as e:
@@ -195,21 +197,21 @@ class WritableOS2SyncClient(OS2SyncClient):
                 logger.warning("delete %r %r :404", url, params)
                 return r
 
-    def os2sync_post(self, url, **params):
+    async def os2sync_post(self, url, **params):
         url = self.os2sync_url(url)
-        r = self.session.post(url, **params)
+        r = await self.session.post(url, **params)
         r.raise_for_status()
         return r
 
-    def os2sync_passivate(self, url, **params):
+    async def os2sync_passivate(self, url, **params):
         url = self.os2sync_url(url)
-        r = self.session.post(url, **params)
+        r = await self.session.post(url, **params)
         r.raise_for_status()
         return r
 
 
 def get_os2sync_client(
-    settings: Settings, session: httpx.Client | None, dry_run: bool
+    settings: Settings, session: httpx.AsyncClient | None, dry_run: bool
 ) -> OS2SyncClient:
     return (
         ReadOnlyOS2SyncClient(settings, session)

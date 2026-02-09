@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock
 from uuid import UUID
 from uuid import uuid4
 
@@ -11,13 +11,13 @@ from os2sync_export.__main__ import cleanup_duplicate_engagements
 async def test_cleanup_duplicate_engagements(
     mock_settings, graphql_session, os2sync_client
 ):
-    os2sync_client.update_users = MagicMock()
-    os2sync_client.delete_user = MagicMock()
+    os2sync_client.update_users = AsyncMock()
+    os2sync_client.delete_user = AsyncMock()
     mock_settings.uuid_from_it_systems = ["FK-org uuid"]
 
     ou_1 = str(uuid4())
     user_fk_org_uuid = str(uuid4())
-    os2sync_client.get_hierarchy = MagicMock(
+    os2sync_client.get_hierarchy = AsyncMock(
         return_value=(
             "Ou part is not relevant here",
             [

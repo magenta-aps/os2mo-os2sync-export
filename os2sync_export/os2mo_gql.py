@@ -288,7 +288,7 @@ async def sync_mo_user_to_fk_org(
 
     if len(it_users) == 1 and len(fk_org_users) == 0:
         try:
-            current = os2sync_client.os2sync_get_user(uuid=uuid)
+            current = await os2sync_client.os2sync_get_user(uuid=uuid)
         except KeyError:
             logger.info("User not found in fk-org")
             current = None
@@ -351,9 +351,9 @@ async def sync_mo_user_to_fk_org(
         deletes_fk.add(uuid)
 
     for os2sync_user in updates_fk:
-        os2sync_client.update_user(os2sync_user)
+        await os2sync_client.update_user(os2sync_user)
     for deleted_user_uuid in deletes_fk:
-        os2sync_client.delete_user(deleted_user_uuid)
+        await os2sync_client.delete_user(deleted_user_uuid)
     return updates_fk, deletes_fk
 
 
@@ -376,10 +376,10 @@ async def sync_orgunit(
         )
     except UnitNotRelevantError:
         logger.info("Unit not found relevant for os2sync", unit_uuid=uuid)
-        os2sync_client.delete_orgunit(uuid)
+        await os2sync_client.delete_orgunit(uuid)
         return None
 
-    os2sync_client.update_org_unit(os2sync_orgunit.Uuid, org_unit=os2sync_orgunit)
+    await os2sync_client.update_org_unit(os2sync_orgunit.Uuid, org_unit=os2sync_orgunit)
     return os2sync_orgunit
 
 
