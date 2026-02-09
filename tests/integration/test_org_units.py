@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock
 from uuid import UUID
 from uuid import uuid4
 
@@ -19,7 +19,7 @@ async def test_unit_not_found(
     set_settings,
 ) -> None:
     # Arrange
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
 
     # Act
     # Assert
@@ -41,7 +41,7 @@ async def test_unit_not_relevant(
     create_org_unit,
 ) -> None:
     # Arrange
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
 
     # Act
     await sync_orgunit(
@@ -62,7 +62,7 @@ async def test_unit_synced(
     create_org_unit,
 ) -> None:
     # Arrange
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
     expected = OrgUnit(
         Uuid=create_org_unit.uuid,
         ShortKey=None,
