@@ -63,6 +63,10 @@ async def check_user_fk_org_it_accounts(
 @click.command()
 @click.option("--dry-run", is_flag=True)
 def trigger_sync_fk_uuids_to_mo(dry_run: bool):
+    asyncio.run(_trigger_sync_fk_uuids_to_mo(dry_run))
+
+
+async def _trigger_sync_fk_uuids_to_mo(dry_run: bool):
     # Setup graphql_client
     settings = Settings()  # type: ignore
     mo_client = AsyncOAuth2Client(
@@ -84,23 +88,21 @@ def trigger_sync_fk_uuids_to_mo(dry_run: bool):
         settings=settings, session=None, dry_run=dry_run
     )
     click.echo("Waiting for os2sync to build the hierarchy")
-    h_uuid = os2sync_client.trigger_hierarchy()
-    _, existing_users = os2sync_client.get_hierarchy(h_uuid)
+    h_uuid = await os2sync_client.trigger_hierarchy()
+    _, existing_users = await os2sync_client.get_hierarchy(h_uuid)
 
     # Ensure each fk-org user exists as an ITuser in MO
     click.echo(f"Found {len(existing_users)} users to check")
-    asyncio.run(
-        tqdm.gather(
-            *[
-                check_user_fk_org_it_accounts(
-                    graphql_client=graphql_client,
-                    fk_org_uuid=UUID(u["Uuid"]),
-                    fk_org_username=u["UserId"],
-                    dry_run=dry_run,
-                )
-                for u in existing_users
-            ]
-        )
+    await tqdm.gather(
+        *[
+            check_user_fk_org_it_accounts(
+                graphql_client=graphql_client,
+                fk_org_uuid=UUID(u["Uuid"]),
+                fk_org_username=u["UserId"],
+                dry_run=dry_run,
+            )
+            for u in existing_users
+        ]
     )
 
 

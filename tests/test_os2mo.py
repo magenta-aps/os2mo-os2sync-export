@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
-import unittest
 from unittest.mock import ANY
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
@@ -38,7 +37,7 @@ from tests.helpers import MockOs2moGet
 from tests.helpers import dummy_settings
 
 
-class TestsMOAd(unittest.TestCase):
+class TestsMOAd:
     def test_is_ignored(self):
         settings = dummy_settings
         il1, il2, iu1, iu2 = [uuid4() for u in range(4)]
@@ -48,17 +47,17 @@ class TestsMOAd(unittest.TestCase):
             "org_unit_level": {"uuid": str(uuid4())},
             "org_unit_type": {"uuid": str(uuid4())},
         }
-        self.assertFalse(is_ignored(unit, settings))
+        assert not is_ignored(unit, settings)
         unit = {
             "org_unit_level": {"uuid": str(uuid4())},
             "org_unit_type": {"uuid": str(iu2)},
         }
-        self.assertTrue(is_ignored(unit, settings))
+        assert is_ignored(unit, settings)
         unit = {
             "org_unit_level": {"uuid": str(il1)},
             "org_unit_type": {"uuid": str(uuid4())},
         }
-        self.assertTrue(is_ignored(unit, settings))
+        assert is_ignored(unit, settings)
 
     @parameterized.expand(
         [
@@ -96,16 +95,14 @@ class TestsMOAd(unittest.TestCase):
         )
 
         tasks, contact_for_tasks = partition_kle(kles, settings.use_contact_for_tasks)
-        self.assertListEqual(expected_tasks, tasks)
-        self.assertListEqual(expected_contactfortasks, contact_for_tasks)
+        assert expected_tasks == tasks
+        assert expected_contactfortasks == contact_for_tasks
         org_unit = {}
         kle_to_orgunit(
             org_unit, kles, use_contact_for_tasks=settings.use_contact_for_tasks
         )
-        self.assertListEqual(expected_tasks, org_unit.get("Tasks"))
-        self.assertListEqual(
-            expected_contactfortasks, org_unit.get("ContactForTasks", [])
-        )
+        assert expected_tasks == org_unit.get("Tasks")
+        assert expected_contactfortasks == org_unit.get("ContactForTasks", [])
 
     @parameterized.expand(
         [
@@ -114,7 +111,7 @@ class TestsMOAd(unittest.TestCase):
             ([], None),
         ]
     )
-    def test_get_work_address(self, work_address_names, expected):
+    async def test_get_work_address(self, work_address_names, expected):
         addresses = [
             {
                 "name": "Henvendelsesstednavn",
@@ -127,8 +124,8 @@ class TestsMOAd(unittest.TestCase):
         with patch(
             "os2sync_export.os2mo.os2mo_get", return_value=MockOs2moGet(addresses)
         ):
-            work_address = get_work_address(positions, work_address_names)
-            self.assertEqual(work_address, expected)
+            work_address = await get_work_address(positions, work_address_names)
+            assert work_address == expected
 
     @parameterized.expand(
         [
@@ -175,13 +172,13 @@ class TestsMOAd(unittest.TestCase):
             ),
         ]
     )
-    def test_overwrite_unit_uuids(self, it_system, parent_it_system, expected):
+    async def test_overwrite_unit_uuids(self, it_system, parent_it_system, expected):
         test_org = {"Uuid": "old_uuid", "ParentOrgUnitUuid": "old_parent_uuid"}
         with patch(
             "os2sync_export.os2mo.os2mo_get",
             side_effect=[MockOs2moGet(it_system), MockOs2moGet(parent_it_system)],
         ):
-            overwrite_unit_uuids(test_org, ["FK-org uuid", "AD ObjectGUID"])
+            await overwrite_unit_uuids(test_org, ["FK-org uuid", "AD ObjectGUID"])
         assert test_org == expected
 
     @parameterized.expand(
@@ -203,7 +200,7 @@ class TestsMOAd(unittest.TestCase):
             ),
         ]
     )
-    def test_overwrite_position_uuids(self, position_it_systems, expected):
+    async def test_overwrite_position_uuids(self, position_it_systems, expected):
         test_user = {
             "Uuid": "old_uuid",
             "Positions": [{"OrgUnitUuid": "mo_unit_uuid"}],
@@ -212,16 +209,16 @@ class TestsMOAd(unittest.TestCase):
             "os2sync_export.os2mo.os2mo_get",
             side_effect=[MockOs2moGet(position_it_systems)],
         ):
-            overwrite_position_uuids(test_user, ["FK-org uuid", "AD ObjectGUID"])
+            await overwrite_position_uuids(test_user, ["FK-org uuid", "AD ObjectGUID"])
         assert test_user == expected
 
 
 @patch("os2sync_export.os2mo.organization_uuid", return_value="root_uuid")
 @given(st.tuples(st.uuids()))
-def test_org_unit_uuids(root_mock, hierarchy_uuids):
+async def test_org_unit_uuids(root_mock, hierarchy_uuids):
     with patch("os2sync_export.os2mo.os2mo_get") as session_mock:
         session_mock.return_value = MockOs2moGet({"items": [{"uuid": "test"}]})
-        org_unit_uuids(hierarchy_uuids=hierarchy_uuids)
+        await org_unit_uuids(hierarchy_uuids=hierarchy_uuids)
 
     session_mock.assert_called_once_with(
         "{BASE}/o/root_uuid/ou/",
@@ -231,7 +228,7 @@ def test_org_unit_uuids(root_mock, hierarchy_uuids):
 
 
 @patch("os2sync_export.os2mo.organization_uuid", return_value="root_uuid")
-def test_get_org_unit_hierarchy(root_mock):
+async def test_get_org_unit_hierarchy(root_mock):
     with patch(
         "os2sync_export.os2mo.os2mo_get",
         return_value=MockOs2moGet(
@@ -265,40 +262,40 @@ def test_get_org_unit_hierarchy(root_mock):
             }
         ),
     ):
-        hierarchy_uuids = get_org_unit_hierarchy("Linjeorganisation")
+        hierarchy_uuids = await get_org_unit_hierarchy("Linjeorganisation")
     assert hierarchy_uuids == (UUID("f805eb80-fdfe-8f24-9367-68ea955b9b9b"),)
 
 
-def test_manager_to_orgunit():
+async def test_manager_to_orgunit():
     manager_uuid = uuid4()
     person = {"uuid": manager_uuid}
     with patch("os2sync_export.os2mo.os2mo_get") as session_mock:
         session_mock.return_value = MockOs2moGet([{"person": person}])
-        manager_uuid = manager_to_orgunit("org_unit_uuid")
-    assert manager_uuid == manager_uuid
+        manager_uuid_res = await manager_to_orgunit("org_unit_uuid")
+    assert manager_uuid_res == manager_uuid
 
 
-def test_manager_to_orgunit_no_manager():
+async def test_manager_to_orgunit_no_manager():
     with patch("os2sync_export.os2mo.os2mo_get") as session_mock:
         session_mock.return_value = MockOs2moGet([])
-        manager_uuid = manager_to_orgunit("org_unit_uuid")
+        manager_uuid = await manager_to_orgunit("org_unit_uuid")
     assert manager_uuid is None
 
 
-def test_manager_to_orgunit_vacant():
+async def test_manager_to_orgunit_vacant():
     person = None
     with patch("os2sync_export.os2mo.os2mo_get") as session_mock:
         session_mock.return_value = MockOs2moGet([{"person": person}])
-        manager_uuid = manager_to_orgunit("org_unit_uuid")
+        manager_uuid = await manager_to_orgunit("org_unit_uuid")
     assert manager_uuid is None
 
 
-def test_manager_to_orgunit_multiple_managers():
+async def test_manager_to_orgunit_multiple_managers():
     with patch("os2sync_export.os2mo.os2mo_get") as session_mock:
         person_uuids = [uuid4(), uuid4()]
         managers = [{"person": {"uuid": uuid}} for uuid in person_uuids]
         session_mock.return_value = MockOs2moGet(managers)
-        manager_uuid = manager_to_orgunit("org_unit_uuid")
+        manager_uuid = await manager_to_orgunit("org_unit_uuid")
     assert manager_uuid in person_uuids
 
 

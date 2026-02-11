@@ -14,18 +14,27 @@ class Session:
     text = str(uuid4())
     status_code = 404
 
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    async def aclose(self):
+        pass
+
     def raise_for_status(self):
         pass
 
-    def get(self, *args, **kwargs):
+    async def get(self, *args, **kwargs):
         logger.info("GET %r %r", args, kwargs)
         return self
 
-    def delete(self, *args, **kwargs):
+    async def delete(self, *args, **kwargs):
         logger.info("DELETE %r %r", args, kwargs)
         return self
 
-    def post(self, *args, **kwargs):
+    async def post(self, *args, **kwargs):
         logger.info("POST %r %r", args, json.dumps(kwargs))
         return self
 

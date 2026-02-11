@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 import datetime
-from functools import lru_cache
 from operator import itemgetter
 from typing import Any
 from typing import Dict
@@ -13,7 +12,7 @@ from typing import Set
 from typing import Tuple
 from uuid import UUID
 
-import requests
+import httpx
 import structlog
 from fastramqpi.ra_utils.headers import TokenSettings
 from gql import gql
@@ -33,13 +32,14 @@ logger = structlog.stdlib.get_logger()
 
 
 def get_mo_session():
-    session = requests.Session()
     settings = get_os2sync_settings()
-    session.verify = settings.ca_verify_os2mo
+    session = httpx.AsyncClient(verify=settings.ca_verify_os2mo)
 
-    session.headers = {
-        "User-Agent": "os2mo-data-import-and-export",
-    }
+    session.headers = httpx.Headers(
+        {
+            "User-Agent": "os2mo-data-import-and-export",
+        }
+    )
 
     session_headers = TokenSettings(
         auth_server=settings.fastramqpi.auth_server,
@@ -121,13 +121,13 @@ def strip_truncate_and_warn(d, root, length):
                 )
 
 
-def os2mo_get(url, **params):
+async def os2mo_get(url, **params):
     # format url like {BASE}/service
     mo_url = get_os2sync_settings().fastramqpi.mo_url
 
     url = url.format(BASE=f"{mo_url}/service")
-    session = get_mo_session()
-    r = session.get(url, params=params)
+    async with get_mo_session() as session:
+        r = await session.get(url, params=params)
     if r.status_code == 404:
         raise ValueError("No object found with this uuid")
     r.raise_for_status()
@@ -209,11 +209,12 @@ async def engagements_to_user(user, engagements, graphql_session, settings):
         )
 
 
-def try_get_it_user_key(uuid: str, user_key_it_system_name) -> Optional[str]:
+async def try_get_it_user_key(uuid: str, user_key_it_system_name) -> Optional[str]:
     """
     fetches all it-systems related to a user and return the ad-user_key if exists
     """
-    it_response = os2mo_get("{BASE}/e/" + uuid + "/details/it").json()
+    res = await os2mo_get("{BASE}/e/" + uuid + "/details/it")
+    it_response = res.json()
     it_systems = IT.from_mo_json(it_response)
     it_systems = list(
         filter(lambda x: x.system_name == user_key_it_system_name, it_systems)
@@ -225,7 +226,7 @@ def try_get_it_user_key(uuid: str, user_key_it_system_name) -> Optional[str]:
     return one(it_systems).user_key
 
 
-def get_work_address(positions, work_address_names) -> Optional[str]:
+async def get_work_address(positions, work_address_names) -> Optional[str]:
     # find the primary engagement and lookup the addresses for that unit
     primary = filter(lambda e: e["is_primary"], positions)
     try:
@@ -236,9 +237,10 @@ def get_work_address(positions, work_address_names) -> Optional[str]:
         )
         primary_eng = first(positions)
 
-    org_addresses = os2mo_get(
+    res = await os2mo_get(
         "{BASE}/ou/" + primary_eng["OrgUnitUuid"] + "/details/address"
-    ).json()
+    )
+    org_addresses = res.json()
     # filter and sort based on settings and use the first match if any
     work_address: List[Dict] = list(
         filter(
@@ -270,21 +272,22 @@ def get_fk_org_uuid(
     return first(it_uuids, mo_uuid)
 
 
-def overwrite_position_uuids(sts_user: Dict, uuid_from_it_systems: List):
+async def overwrite_position_uuids(sts_user: Dict, uuid_from_it_systems: List):
     # For each position check the it-system of the org-unit
     for p in sts_user["Positions"]:
         unit_uuid = p["OrgUnitUuid"]
-        it = os2mo_get(f"{{BASE}}/ou/{unit_uuid}/details/it").json()
+        res = await os2mo_get(f"{{BASE}}/ou/{unit_uuid}/details/it")
+        it = res.json()
         p["OrgUnitUuid"] = get_fk_org_uuid(it, unit_uuid, uuid_from_it_systems)
 
 
-def get_org_unit_hierarchy(titles: list[str]) -> Optional[Tuple[UUID, ...]]:
+async def get_org_unit_hierarchy(titles: list[str]) -> Optional[Tuple[UUID, ...]]:
     """Find uuids of org_unit_hierarchy classes with the specified titles"""
     if not titles:
         return None
-    org_unit_hierarchy_classes = os2mo_get(
-        f"{{BASE}}/o/{organization_uuid()}/f/org_unit_hierarchy/"
-    ).json()
+    org_uuid = await organization_uuid()
+    res = await os2mo_get(f"{{BASE}}/o/{org_uuid}/f/org_unit_hierarchy/")
+    org_unit_hierarchy_classes = res.json()
     filtered_hierarchies = list(
         filter(
             lambda x: x["name"] in titles, org_unit_hierarchy_classes["data"]["items"]
@@ -305,7 +308,8 @@ async def get_sts_user_raw(
     user_key: Optional[str] = None,
     engagement_uuid: Optional[str] = None,
 ) -> Dict[str, Any]:
-    employee = os2mo_get("{BASE}/e/" + uuid + "/").json()
+    res = await os2mo_get("{BASE}/e/" + uuid + "/")
+    employee = res.json()
     user = User(
         dict(
             uuid=fk_org_uuid or uuid,
@@ -323,9 +327,10 @@ async def get_sts_user_raw(
         return sts_user
 
     # use calculate_primary flag to get the is_primary boolean used in getting work-address
-    engagements = os2mo_get(
+    res = await os2mo_get(
         "{BASE}/e/" + uuid + "/details/engagement?calculate_primary=true"
-    ).json()
+    )
+    engagements = res.json()
     if engagement_uuid:
         engagements = list(filter(lambda e: e["uuid"] == engagement_uuid, engagements))
 
@@ -335,9 +340,10 @@ async def get_sts_user_raw(
         # return immediately because users with no engagements are not synced.
         return sts_user
     if settings.uuid_from_it_systems:
-        overwrite_position_uuids(sts_user, settings.uuid_from_it_systems)
+        await overwrite_position_uuids(sts_user, settings.uuid_from_it_systems)
 
-    addresses = os2mo_get("{BASE}/e/" + uuid + "/details/address").json()
+    res = await os2mo_get("{BASE}/e/" + uuid + "/details/address")
+    addresses = res.json()
     if engagement_uuid is not None and settings.group_by_engagement_uuid:
         addresses = list(
             filter(lambda a: a["engagement_uuid"] == engagement_uuid, addresses)
@@ -353,7 +359,7 @@ async def get_sts_user_raw(
     # Optionally find the work address of employees primary engagement.
     work_address_names = settings.employee_engagement_address
     if sts_user["Positions"] and work_address_names:
-        sts_user["Location"] = get_work_address(
+        sts_user["Location"] = await get_work_address(
             sts_user["Positions"], work_address_names
         )
 
@@ -438,24 +444,24 @@ async def get_sts_user(
     return sts_users
 
 
-@lru_cache()
-def organization_uuid() -> str:
-    return one(os2mo_get("{BASE}/o/").json())["uuid"]
+async def organization_uuid() -> str:
+    res = await os2mo_get("{BASE}/o/")
+    return one(res.json())["uuid"]
 
 
-def org_unit_uuids(**kwargs: Any) -> Set[str]:
-    org_uuid = organization_uuid()
+async def org_unit_uuids(**kwargs: Any) -> Set[str]:
+    org_uuid = await organization_uuid()
     hierarchy_uuids = kwargs.get("hierarchy_uuids")
     if hierarchy_uuids:
         kwargs["hierarchy_uuids"] = tuple(str(u) for u in hierarchy_uuids)
-    ous = os2mo_get(f"{{BASE}}/o/{org_uuid}/ou/", limit=999999, **kwargs).json()[
-        "items"
-    ]
+    res = await os2mo_get(f"{{BASE}}/o/{org_uuid}/ou/", limit=999999, **kwargs)
+    ous = res.json()["items"]
     return set(map(itemgetter("uuid"), ous))
 
 
-def manager_to_orgunit(unit_uuid: UUID) -> Optional[str]:
-    manager = os2mo_get("{BASE}/ou/" + str(unit_uuid) + "/details/manager").json()
+async def manager_to_orgunit(unit_uuid: UUID) -> Optional[str]:
+    res = await os2mo_get("{BASE}/ou/" + str(unit_uuid) + "/details/manager")
+    manager = res.json()
     # Return None if the orgunit has no manager or if the manager-role is vacant
     match len(manager):
         case 0:
@@ -596,15 +602,17 @@ def is_ignored(unit, settings):
     )
 
 
-def overwrite_unit_uuids(sts_org_unit: Dict, uuid_from_it_systems: List):
+async def overwrite_unit_uuids(sts_org_unit: Dict, uuid_from_it_systems: List):
     # Overwrite UUIDs with values from it-account
     uuid = sts_org_unit["Uuid"]
-    it = os2mo_get(f"{{BASE}}/ou/{uuid}/details/it").json()
+    res = await os2mo_get(f"{{BASE}}/ou/{uuid}/details/it")
+    it = res.json()
     sts_org_unit["Uuid"] = get_fk_org_uuid(it, uuid, uuid_from_it_systems)
     # Also check if parent unit has a UUID from an it-account
     parent_uuid = sts_org_unit.get("ParentOrgUnitUuid")
     if parent_uuid:
-        it = os2mo_get(f"{{BASE}}/ou/{parent_uuid}/details/it").json()
+        res = await os2mo_get(f"{{BASE}}/ou/{parent_uuid}/details/it")
+        it = res.json()
         sts_org_unit["ParentOrgUnitUuid"] = get_fk_org_uuid(
             it, parent_uuid, uuid_from_it_systems
         )
@@ -613,7 +621,8 @@ def overwrite_unit_uuids(sts_org_unit: Dict, uuid_from_it_systems: List):
 async def get_sts_orgunit(
     uuid: UUID, settings: Settings, graphql_session: AsyncClientSession
 ) -> Optional[OrgUnit]:
-    base = parent = os2mo_get("{BASE}/ou/" + str(uuid) + "/").json()
+    res = await os2mo_get("{BASE}/ou/" + str(uuid) + "/")
+    base = parent = res.json()
 
     if is_ignored(base, settings):
         logger.info("Ignoring %r", base)
@@ -636,18 +645,20 @@ async def get_sts_orgunit(
     else:
         sts_org_unit["ParentOrgUnitUuid"] = None
 
+    res = await os2mo_get("{BASE}/ou/" + str(uuid) + "/details/it")
     itsystems_to_orgunit(
         sts_org_unit,
-        os2mo_get("{BASE}/ou/" + str(uuid) + "/details/it").json(),
+        res.json(),
         uuid_from_it_systems=settings.uuid_from_it_systems,
     )
+    res = await os2mo_get("{BASE}/ou/" + str(uuid) + "/details/address")
     addresses_to_orgunit(
         sts_org_unit,
-        os2mo_get("{BASE}/ou/" + str(uuid) + "/details/address").json(),
+        res.json(),
     )
 
     if settings.sync_managers:
-        manager_uuid = manager_to_orgunit(uuid)
+        manager_uuid = await manager_to_orgunit(uuid)
         if manager_uuid:
             if settings.uuid_from_it_systems:
                 users = await get_user_it_accounts(
@@ -664,14 +675,15 @@ async def get_sts_orgunit(
             sts_org_unit["ManagerUuid"] = manager_uuid
 
     if settings.enable_kle:
+        res = await os2mo_get("{BASE}/ou/" + str(uuid) + "/details/kle")
         kle_to_orgunit(
             sts_org_unit,
-            os2mo_get("{BASE}/ou/" + str(uuid) + "/details/kle").json(),
+            res.json(),
             use_contact_for_tasks=settings.use_contact_for_tasks,
         )
 
     if settings.uuid_from_it_systems:
-        overwrite_unit_uuids(sts_org_unit, settings.uuid_from_it_systems)
+        await overwrite_unit_uuids(sts_org_unit, settings.uuid_from_it_systems)
 
     strip_truncate_and_warn(sts_org_unit, sts_org_unit, settings.truncate_length)
 

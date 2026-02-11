@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MPL-2.0
 from datetime import datetime
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock
 from unittest.mock import call
 from uuid import UUID
 from uuid import uuid4
@@ -95,7 +95,7 @@ async def test_account_with_addresses(
     # Arrange
     adguid1 = uuid4()
     adguid2 = uuid4()
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
 
     itsystem_AD = await graphql_client.testing__get_itsystem(
@@ -280,7 +280,7 @@ async def test_account_with_no_relevant_engagement(
     settings = set_settings(top_unit_uuid=uuid4())
     adguid = uuid4()
     fk_org_uuid = uuid4()
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
     itsystem_AD = await graphql_client.testing__get_itsystem(
         ITSystemFilter(user_keys=["Active Directory"], from_date=None, to_date=None)
@@ -349,7 +349,7 @@ async def test_startdate(
     # Arrange
     adguid = uuid4()
     fk_org_uuid = uuid4()
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
     itsystem_AD = await graphql_client.testing__get_itsystem(
         ITSystemFilter(user_keys=["Active Directory"], from_date=None, to_date=None)

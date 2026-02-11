@@ -346,7 +346,9 @@ class MockResponse:
         return deepcopy(self.value)
 
 
-def patched_session_get(url: str, params: Optional[Dict[Any, Any]] = None, **kwargs):
+async def patched_session_get(
+    url: str, params: Optional[Dict[Any, Any]] = None, **kwargs
+):
     if params:
         raise ValueError("unexpected params: {}".format(params))
     if kwargs:

@@ -43,9 +43,11 @@ async def read_all_org_units(
     """
     logger.info("read_all_org_units starting")
     # Read all relevant org_unit uuids from os2mo
-    os2mo_uuids_present = os2mo.org_unit_uuids(
+    os2mo_uuids_present = await os2mo.org_unit_uuids(
         root=settings.top_unit_uuid,
-        hierarchy_uuids=os2mo.get_org_unit_hierarchy(settings.filter_hierarchy_names),
+        hierarchy_uuids=await os2mo.get_org_unit_hierarchy(
+            settings.filter_hierarchy_names
+        ),
     )
 
     logger.info(f"Aktive Orgenheder fundet i OS2MO {len(os2mo_uuids_present)}")
@@ -64,7 +66,7 @@ async def read_all_org_units(
     return {ou.Uuid: ou for ou in org_units if ou}
 
 
-def read_all_user_uuids(org_uuid: str, limit: int = 1_000) -> Set[str]:
+async def read_all_user_uuids(org_uuid: str, limit: int = 1_000) -> Set[str]:
     """Return a set of all employee uuids in MO.
 
     :param limit: Size of pagination groups. Set to 0 to skip pagination and fetch all users in one request.
@@ -75,9 +77,10 @@ def read_all_user_uuids(org_uuid: str, limit: int = 1_000) -> Set[str]:
     total = 1
     all_employee_uuids = set()
     while start < total:
-        employee_list = os2mo.os2mo_get(
+        res = await os2mo.os2mo_get(
             f"{{BASE}}/o/{org_uuid}/e/?limit={limit}&start={start}"
-        ).json()
+        )
+        employee_list = res.json()
 
         batch = set(map(itemgetter("uuid"), employee_list["items"]))
         all_employee_uuids.update(batch)
@@ -96,10 +99,10 @@ async def read_all_users(
 
     logger.info("read_all_users starting")
 
-    org_uuid = os2mo.organization_uuid()
+    org_uuid = await os2mo.organization_uuid()
 
     logger.info("read_all_users getting list of users from os2mo")
-    os2mo_uuids_present = read_all_user_uuids(org_uuid)
+    os2mo_uuids_present = await read_all_user_uuids(org_uuid)
 
     logger.info(f"Medarbejdere fundet i OS2Mo: {len(os2mo_uuids_present)}")
 
@@ -127,7 +130,7 @@ async def main(settings: Settings, graphql_session, os2sync_client):
     log_mox_config(settings)
 
     os2sync_client = os2sync_client or OS2SyncClient(settings=settings)
-    request_uuid = os2sync_client.trigger_hierarchy()
+    request_uuid = await os2sync_client.trigger_hierarchy()
     mo_org_units = await read_all_org_units(settings, graphql_session)
 
     logger.info(f"Orgenheder som tjekkes i OS2Sync: {len(mo_org_units)}")
@@ -135,12 +138,12 @@ async def main(settings: Settings, graphql_session, os2sync_client):
     for org_unit in tqdm(
         mo_org_units.values(), desc="Updating OrgUnits in fk-org", unit="OrgUnit"
     ):
-        os2sync_client.upsert_org_unit(org_unit)
+        await os2sync_client.upsert_org_unit(org_unit)
 
     (
         existing_os2sync_org_units,
         existing_os2sync_users,
-    ) = os2sync_client.get_existing_uuids(
+    ) = await os2sync_client.get_existing_uuids(
         request_uuid=request_uuid,
     )
 
@@ -150,7 +153,7 @@ async def main(settings: Settings, graphql_session, os2sync_client):
         terminated_org_units = existing_os2sync_org_units - set(mo_org_units)
         logger.info(f"Orgenheder som slettes i OS2Sync: {len(terminated_org_units)}")
         for uuid in terminated_org_units:
-            os2sync_client.delete_orgunit(uuid)
+            await os2sync_client.delete_orgunit(uuid)
 
     logger.info("sync_os2sync_orgunits done")
 
@@ -163,13 +166,13 @@ async def main(settings: Settings, graphql_session, os2sync_client):
     # Create or update users
     logger.info(f"Medarbejdere overført til OS2SYNC: {len(mo_users)}")
     for user in mo_users.values():
-        os2sync_client.os2sync_post("{BASE}/user", json=user)
+        await os2sync_client.os2sync_post("{BASE}/user", json=user)
 
     # Delete any user not in os2mo
     terminated_users = existing_os2sync_users - set(mo_users)
     logger.info(f"Medarbejdere slettes i OS2Sync: {len(terminated_users)}")
     for uuid in terminated_users:
-        os2sync_client.delete_user(uuid)
+        await os2sync_client.delete_user(uuid)
 
     logger.info("sync users done")
 
@@ -180,8 +183,8 @@ async def cleanup_duplicate_engagements(
     os2sync_client: OS2SyncClient,
 ):
     """Delete and resync users in fk-org with multiple engagements of the same job-function (name) and same org_unit"""
-    request_uuid = os2sync_client.trigger_hierarchy()
-    _, users = os2sync_client.get_hierarchy(request_uuid=request_uuid)
+    request_uuid = await os2sync_client.trigger_hierarchy()
+    _, users = await os2sync_client.get_hierarchy(request_uuid=request_uuid)
     # Find users with duplicated engagements
     user_uuids = {
         UUID(item["Uuid"]) for item in users if not all_unique(item["Positions"], tuple)
@@ -190,7 +193,7 @@ async def cleanup_duplicate_engagements(
 
     logger.info("Deleting users from fk-org.")
     for user_uuid in user_uuids:
-        os2sync_client.delete_user(user_uuid)
+        await os2sync_client.delete_user(user_uuid)
     logger.info("Done with cleanup of duplicate engagements")
     if settings.uuid_from_it_systems:
         fk_org_uuid_map = await os2mo.fk_org_uuid_to_mo_uuid(
@@ -228,8 +231,8 @@ async def cleanup_duplicates(
     )
     logger.info("Passivating and synchronizing orgunits")
     for uuid, unit in orgunits.items():
-        os2sync_client.passivate_orgunit(uuid)
-        os2sync_client.upsert_org_unit(unit)
+        await os2sync_client.passivate_orgunit(uuid)
+        await os2sync_client.upsert_org_unit(unit)
     logger.info("Read all users from MO")
     mo_users = await read_all_users(
         graphql_session=graphql_session,
@@ -237,7 +240,7 @@ async def cleanup_duplicates(
     )
     logger.info("Passivating and synchronizing users")
     for uuid, user in mo_users.items():
-        os2sync_client.passivate_user(uuid)
-        os2sync_client.update_users(uuid, [user])
+        await os2sync_client.passivate_user(uuid)
+        await os2sync_client.update_users(uuid, [user])
 
     logger.info("Cleanup Done")

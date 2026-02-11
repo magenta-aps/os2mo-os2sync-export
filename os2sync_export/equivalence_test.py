@@ -84,6 +84,10 @@ def uuid_sort(user: dict) -> str:
 @click.command()
 @click.option("--progress", is_flag=True)
 def test_equivalence(progress):
+    asyncio.run(_test_equivalence(progress))
+
+
+async def _test_equivalence(progress):
     # Setup graphql_client
     settings = Settings()  # type: ignore
     mo_client = AsyncOAuth2Client(
@@ -100,46 +104,46 @@ def test_equivalence(progress):
         http_client=mo_client,
     )
     click.echo("Reading units and persons from MO")
-    units, persons = asyncio.run(read_all_units_and_persons(gql_client))
+    units, persons = await read_all_units_and_persons(gql_client)
     click.echo(f"Found {len(units)} units and {len(persons)} persons.")
 
-    for person in tqdm(persons, desc="persons", disable=not progress):
-        update_old, delete_old = (
-            httpx.post(
+    async with httpx.AsyncClient() as client:
+        for person in tqdm(persons, desc="persons", disable=not progress):
+            r_old = await client.post(
                 f"http://localhost:8000/trigger/user/{person}?dry_run=true",
                 timeout=None,
             )
-        ).json()
-        update_new, delete_new = (
-            httpx.post(
+            update_old, delete_old = r_old.json()
+            r_new = await client.post(
                 f"http://localhost:8000/trigger/user/{person}?dry_run=true&new=true",
                 timeout=None,
             )
-        ).json()
-        # Sort by uuids to avoid getting mismatches on different ordering.
-        update_old.sort(key=uuid_sort)
-        update_new.sort(key=uuid_sort)
-        if not update_old == update_new:
-            click.echo("Update user mismatch:")
-            click.echo(f"{update_old=}")
-            click.echo(f"{update_new=}")
-        if not delete_old == delete_new:
-            click.echo("Delete user mismatch:")
-            click.echo(f"{delete_old=}")
-            click.echo(f"{delete_new=}")
+            update_new, delete_new = r_new.json()
+            # Sort by uuids to avoid getting mismatches on different ordering.
+            update_old.sort(key=uuid_sort)
+            update_new.sort(key=uuid_sort)
+            if not update_old == update_new:
+                click.echo("Update user mismatch:")
+                click.echo(f"{update_old=}")
+                click.echo(f"{update_new=}")
+            if not delete_old == delete_new:
+                click.echo("Delete user mismatch:")
+                click.echo(f"{delete_old=}")
+                click.echo(f"{delete_new=}")
 
-    for unit in tqdm(units, desc="units", disable=not progress):
-        old = httpx.post(
-            f"http://localhost:8000/trigger/org_unit/{unit}?dry_run=true", timeout=None
-        )
-        new = httpx.post(
-            f"http://localhost:8000/trigger/org_unit/{unit}?dry_run=true&new=true",
-            timeout=None,
-        )
-        if old.json() != new.json():
-            click.echo("Orgunit mismatch:")
-            click.echo(f"{old.json()=}")
-            click.echo(f"{new.json()=}")
+        for unit in tqdm(units, desc="units", disable=not progress):
+            old = await client.post(
+                f"http://localhost:8000/trigger/org_unit/{unit}?dry_run=true",
+                timeout=None,
+            )
+            new = await client.post(
+                f"http://localhost:8000/trigger/org_unit/{unit}?dry_run=true&new=true",
+                timeout=None,
+            )
+            if old.json() != new.json():
+                click.echo("Orgunit mismatch:")
+                click.echo(f"{old.json()=}")
+                click.echo(f"{new.json()=}")
 
 
 if __name__ == "__main__":

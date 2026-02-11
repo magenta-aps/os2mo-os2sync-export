@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from datetime import datetime
 from datetime import timedelta
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock
 from unittest.mock import call
 from uuid import uuid4
 
@@ -36,7 +36,7 @@ async def test_no_engagements(
     # Arrange
     adguid = uuid4()
     fkorg_uuid = uuid4()
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
 
     person_uuid = create_person.uuid
     itsystem_AD = await graphql_client.testing__get_itsystem(
@@ -99,7 +99,7 @@ async def test_two_ad_one_fk(
     adguid1 = uuid4()
     adguid2 = uuid4()
     fkorg_uuid = uuid4()
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
     itsystem_AD = await graphql_client.testing__get_itsystem(
         ITSystemFilter(user_keys=["Active Directory"], from_date=None, to_date=None)
@@ -240,7 +240,7 @@ async def test_one_ad_zero_fk(
     # Test lookup to fk-org
     # Arrange
     adguid = uuid4()
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
     os2sync_mock.os2sync_get_user.return_value = {
         "Uuid": person_uuid,
@@ -329,7 +329,7 @@ async def test_one_ad_zero_fk_user_not_found(
     # Test lookup to fk-org when the user isn't in fk-org yet
     # Arrange
     adguid = uuid4()
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
     os2sync_mock.os2sync_get_user.side_effect = KeyError()
 
@@ -411,7 +411,7 @@ async def test_one_ad_zero_fk_user_not_active(
     # Test lookup to fk-org when the user isn't in fk-org yet
     # Arrange
     adguid = uuid4()
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
     os2sync_mock.os2sync_get_user.return_value = {
         "Uuid": person_uuid,
@@ -500,7 +500,7 @@ async def test_one_ad_zero_fk_dry_run(
     # Test lookup to fk-org
     # Arrange
     adguid = uuid4()
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
     os2sync_mock.os2sync_get_user.return_value = User(
         Uuid=person_uuid,
@@ -589,7 +589,7 @@ async def test_two_ad_zero_fk(
     # Arrange
     adguid1 = uuid4()
     adguid2 = uuid4()
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
     itsystem_AD = await graphql_client.testing__get_itsystem(
         ITSystemFilter(user_keys=["Active Directory"], from_date=None, to_date=None)
@@ -715,7 +715,7 @@ async def test_duplicate_fk_account(
     # Arrange
     adguid1 = uuid4()
     fkorg_uuid = uuid4()
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
     itsystem_AD = await graphql_client.testing__get_itsystem(
         ITSystemFilter(user_keys=["Active Directory"], from_date=None, to_date=None)
@@ -779,7 +779,7 @@ async def test_remove_old_fk_accounts(
     # Arrange
     adguid = uuid4()
     old_fk_uuid = uuid4()
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
     itsystem_AD = await graphql_client.testing__get_itsystem(
         ITSystemFilter(user_keys=["Active Directory"], from_date=None, to_date=None)
@@ -887,7 +887,7 @@ async def test_no_fk_itsystem(
     mock_settings,
 ) -> None:
     # Arrange
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
     fk_it = await graphql_client.find_f_k_itsystem()
     await graphql_client.testing__itsystem_terminate(

@@ -7,7 +7,6 @@ from typing import Any
 from typing import Callable
 from typing import Generator
 from unittest.mock import AsyncMock
-from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
@@ -105,17 +104,11 @@ def mock_graphql_client() -> Generator[AsyncMock, None, None]:
 
 
 @pytest.fixture
-def requests_session() -> Generator[MagicMock, None, None]:
-    """Fixture for the requests session."""
-    yield MagicMock()
-
-
-@pytest.fixture
 def mock_os2sync_client(
-    mock_settings, requests_session
+    mock_settings,
 ) -> Generator[WritableOS2SyncClient, None, None]:
     """Fixture for the os2sync_client."""
-    yield WritableOS2SyncClient(settings=mock_settings, session=requests_session)
+    yield WritableOS2SyncClient(settings=mock_settings)
 
 
 @pytest.fixture

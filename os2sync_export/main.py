@@ -143,10 +143,10 @@ async def amqp_trigger_employee(
         )
         logger.info(f"Event registered for person with {uuid=}", fk_org_users=sts_users)
     except ValueError:
-        os2sync_client.delete_user(uuid)
+        await os2sync_client.delete_user(uuid)
         logger.info(f"No fk-org user was found for {uuid=}. Deleting from fk-org")
     else:
-        os2sync_client.update_users(uuid, sts_users)
+        await os2sync_client.update_users(uuid, sts_users)
 
 
 @fastapi_router.post("/event/org_unit")
@@ -174,11 +174,11 @@ async def amqp_trigger_org_unit(
                 )
             except ValueError:
                 logger.info(f"Event registered but no org_unit was found with {uuid=}")
-                os2sync_client.delete_orgunit(uuid)
+                await os2sync_client.delete_orgunit(uuid)
         if sts_org_unit is None:
-            os2sync_client.delete_orgunit(uuid)
+            await os2sync_client.delete_orgunit(uuid)
         else:
-            os2sync_client.upsert_org_unit(sts_org_unit)
+            await os2sync_client.upsert_org_unit(sts_org_unit)
 
     logger.info(f"Synced org_unit to fk-org: {uuid=}, now checking engagements")
     employees = await find_employees(graphql_session, uuid)
@@ -236,7 +236,7 @@ async def amqp_trigger_address(
         except ValueError:
             logger.info("Related org_unit not found")
             return
-        os2sync_client.update_org_unit(ou_uuid, sts_org_unit)
+        await os2sync_client.update_org_unit(ou_uuid, sts_org_unit)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
         return
 
@@ -244,7 +244,7 @@ async def amqp_trigger_address(
         sts_users = await get_sts_user(
             e_uuid, graphql_session=graphql_session, settings=settings
         )
-        os2sync_client.update_users(e_uuid, sts_users)
+        await os2sync_client.update_users(e_uuid, sts_users)
         return
 
     logger.warn(
@@ -306,12 +306,12 @@ async def amqp_trigger_it_user(
             logger.info(
                 f"Found terminated it-user. Deleting fk-org user with uuid = {terminate_uuid}"
             )
-            os2sync_client.delete_orgunit(terminate_uuid)
+            await os2sync_client.delete_orgunit(terminate_uuid)
         for terminate_uuid in terminated_users:
             logger.info(
                 f"Found terminated it-user. Deleting fk-org user with uuid = {terminate_uuid}"
             )
-            os2sync_client.delete_user(terminate_uuid)
+            await os2sync_client.delete_user(terminate_uuid)
 
     if ou_uuid and await is_relevant(graphql_session, ou_uuid, settings):
         try:
@@ -321,7 +321,7 @@ async def amqp_trigger_it_user(
         except ValueError:
             logger.info("Related org_unit not found")
             return
-        os2sync_client.update_org_unit(ou_uuid, sts_org_unit)
+        await os2sync_client.update_org_unit(ou_uuid, sts_org_unit)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
 
         # If the uuid is overwritten from an it-account we need to ensure no org_unit exists with the old uuid.
@@ -329,21 +329,21 @@ async def amqp_trigger_it_user(
             logger.info(
                 f"Delete org_unit with {ou_uuid=} from fk-org to as the uuid was overwritten by an it-account"
             )
-            os2sync_client.delete_orgunit(ou_uuid)
+            await os2sync_client.delete_orgunit(ou_uuid)
         return
 
     if e_uuid:
         sts_users = await get_sts_user(
             e_uuid, graphql_session=graphql_session, settings=settings
         )
-        os2sync_client.update_users(e_uuid, sts_users)
+        await os2sync_client.update_users(e_uuid, sts_users)
 
         # If the users uuid is overwritten from an it-account we need to ensure no user exists with the old uuid.
         if not any(str(e_uuid) == str(user["Uuid"]) for user in sts_users if user):
             logger.info(
                 f"Delete user with {e_uuid=} from fk-org to as the uuid was overwritten by an it-account"
             )
-            os2sync_client.delete_user(e_uuid)
+            await os2sync_client.delete_user(e_uuid)
         return
 
     logger.warn(f"Unable to update ituser, could not find owners for: {uuid}")
@@ -383,7 +383,7 @@ async def amqp_trigger_manager(
         except ValueError:
             logger.info("Related org_unit not found")
             return
-        os2sync_client.update_org_unit(ou_uuid, sts_org_unit)
+        await os2sync_client.update_org_unit(ou_uuid, sts_org_unit)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
         return
 
@@ -425,7 +425,7 @@ async def amqp_trigger_engagement(
         sts_users = await get_sts_user(
             e_uuid, graphql_session=graphql_session, settings=settings
         )
-        os2sync_client.update_users(e_uuid, sts_users)
+        await os2sync_client.update_users(e_uuid, sts_users)
         return
 
     logger.warn(f"Unable to update ituser, could not find owners for: {uuid}")
@@ -464,7 +464,7 @@ async def amqp_trigger_kle(
         except ValueError:
             logger.info("Related org_unit not found")
             return
-        os2sync_client.update_org_unit(ou_uuid, sts_org_unit)
+        await os2sync_client.update_org_unit(ou_uuid, sts_org_unit)
         logger.info(f"Synced org_unit to fk-org: {ou_uuid}")
         return
 
@@ -502,7 +502,7 @@ async def trigger_user(
     except ValueError:
         raise HTTPException(status_code=404, detail="User not found")
 
-    os2sync_client.update_users(uuid, sts_users)
+    await os2sync_client.update_users(uuid, sts_users)
     logger.info(f"Synced user to fk-org: {uuid}")
 
     return [User(**u) for u in sts_users if u["Positions"]], set(
@@ -540,7 +540,7 @@ async def trigger_orgunit(
     except ValueError:
         raise HTTPException(status_code=404, detail="OrgUnit not found")
 
-    os2sync_client.update_org_unit(uuid, sts_org_unit)
+    await os2sync_client.update_org_unit(uuid, sts_org_unit)
     logger.info(f"Synced org_unit to fk-org: {uuid}")
     return sts_org_unit
 

@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: Magenta ApS <https://magenta.dk>
 # SPDX-License-Identifier: MPL-2.0
 from datetime import datetime
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
@@ -33,7 +33,7 @@ async def test_midnight_timezone_bug(
 ) -> None:
     # 1. ARRANGE
     person_uuid = create_person.uuid
-    os2sync_mock = MagicMock()
+    os2sync_mock = AsyncMock()
 
     # Get AD System UUID
     itsystem_AD = await graphql_client.testing__get_itsystem(

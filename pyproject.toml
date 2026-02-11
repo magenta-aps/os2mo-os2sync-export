@@ -17,7 +17,7 @@ fastramqpi = "^14.2.0"
 gql = "^3.5.0"
 Jinja2 = "^3.1"
 prometheus-fastapi-instrumentator = "^7.0.0"
-requests = "^2.32.3"
+httpx = "^0.27.0"
 os2mo-data-import = "^6.2.2"
 websockets = "^13.1" # for ariadne
 click = "^8.1.7"
@@ -28,7 +28,6 @@ types-tqdm = "^4.66.0.20240417"
 pre-commit = "^3.8.0"
 mypy = "^1.12.1"
 ruff = "^0.6.4"
-types-requests = "^2.32.0.20240905"
 
 [tool.poetry.group.dev.dependencies]
 ariadne-codegen = "^0.7"
@@ -40,6 +39,7 @@ pytest-asyncio = "^0.21.0"
 pytest-cov = "^4.1.0"
 pytest-split = "^0.8.1"
 freezegun = "^1.5.1"
+respx = "^0.21.1"
 parameterized = "^0.9.0"
 
 [build-system]
