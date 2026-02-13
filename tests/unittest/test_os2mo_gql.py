@@ -1114,3 +1114,13 @@ def test_find_person(response_model):
 
     with pytest.raises(AttributeError):
         find_object_unit(address_info)
+
+
+@pytest.mark.parametrize(
+    "response_model",
+    (FindAddressUnitOrPersonAddresses,),
+)
+def test_find_unit_objects_none(response_model):
+    address_info = response_model(objects=[])
+    result = find_object_unit(address_info)
+    assert result == set()
