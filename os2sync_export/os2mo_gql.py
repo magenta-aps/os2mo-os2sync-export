@@ -502,6 +502,10 @@ def find_object_person(
     | FindItuserUnitOrPersonItusers
     | FindEngagementPersonEngagements,
 ) -> set[UUID]:
+    # If objects is empty, return empty set to avoid `one` ValueError
+    if not object_info.objects:
+        return set()
+
     validities = one(object_info.objects).validities  # type: ignore [attr-defined]
     person_uuids = {o.uuid for org in validities if org.person for o in org.person}
     return person_uuids

@@ -1120,7 +1120,10 @@ def test_find_person(response_model):
     "response_model",
     (FindAddressUnitOrPersonAddresses,),
 )
-def test_find_unit_objects_none(response_model):
+def test_find_unit_or_person_objects_none(response_model):
     address_info = response_model(objects=[])
-    result = find_object_unit(address_info)
-    assert result == set()
+    unit_result = find_object_unit(address_info)
+    person_result = find_object_person(address_info)
+
+    assert unit_result == set()
+    assert person_result == set()
