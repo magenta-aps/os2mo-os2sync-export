@@ -290,9 +290,9 @@ async def get_org_unit_hierarchy(titles: list[str]) -> Optional[Tuple[UUID, ...]
             lambda x: x["name"] in titles, org_unit_hierarchy_classes["data"]["items"]
         )
     )
-    assert len(filtered_hierarchies) > 0, (
-        f"No org_unit_hierarchy classes found matching the titles {titles}."
-    )
+    assert (
+        len(filtered_hierarchies) > 0
+    ), f"No org_unit_hierarchy classes found matching the titles {titles}."
     # Return tuple, not list, because lists can't be used as input to lru_cached functions.
     return tuple(UUID(o["uuid"]) for o in filtered_hierarchies)
 
