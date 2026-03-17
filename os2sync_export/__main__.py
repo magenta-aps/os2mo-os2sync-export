@@ -154,7 +154,9 @@ async def main(settings: Settings, graphql_session, os2sync_client):
 
     if settings.autowash:
         # Delete any org_unit not in os2mo
-        assert mo_org_units, "No org_units were found in os2mo. Stopping os2sync_export to ensure we won't delete every org_unit from fk-org"
+        assert mo_org_units, (
+            "No org_units were found in os2mo. Stopping os2sync_export to ensure we won't delete every org_unit from fk-org"
+        )
         terminated_org_units = existing_os2sync_org_units - set(mo_org_units)
         logger.info(f"Orgenheder som slettes i OS2Sync: {len(terminated_org_units)}")
         for uuid in terminated_org_units:
@@ -167,7 +169,9 @@ async def main(settings: Settings, graphql_session, os2sync_client):
         graphql_session=graphql_session,
         settings=settings,
     )
-    assert mo_users, "No mo-users were found. Stopping os2sync_export to ensure we won't delete every user from fk-org. Again"
+    assert mo_users, (
+        "No mo-users were found. Stopping os2sync_export to ensure we won't delete every user from fk-org. Again"
+    )
     # Create or update users
     logger.info(f"Medarbejdere overført til OS2SYNC: {len(mo_users)}")
     for user in mo_users.values():
@@ -219,7 +223,7 @@ async def cleanup_duplicate_engagements(
         3. Clear the `success_users` table.
         `DELETE FROM success_users;`
         4. Trigger sync of the users again:
-        `docker exec -it os2sync_export bash -c "printf '{' '.join(str(u) for u in user_uuids)}' | xargs -d' ' -I % curl -X POST localhost:8000/trigger/user/%"`
+        `docker exec -it os2sync_export bash -c "printf '{" ".join(str(u) for u in user_uuids)}' | xargs -d' ' -I % curl -X POST localhost:8000/trigger/user/%"`
         """
     )
 
