@@ -65,7 +65,7 @@ class Settings(BaseSettings):  # type: ignore
     filter_hierarchy_names: list[str] = []  # Title in MO
     filter_users_by_it_system: bool = False
 
-    use_extension_field_as_job_function: bool = False
+    extension_field_as_job_function: Literal[1, 3] | None = None
 
     filter_orgunit_uuid: list[UUID] = []
 

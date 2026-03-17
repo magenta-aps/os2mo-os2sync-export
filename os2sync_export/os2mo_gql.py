@@ -220,13 +220,14 @@ def convert_to_os2sync(
         ]
     for i in mo_engagements:
         if i.current and i.validities:
-            # Job title can be read from extension_3 if configured to do so.
-            name = (
-                i.current.extension_3
-                if settings.use_extension_field_as_job_function
-                and i.current.extension_3
-                else i.current.job_function.name
-            )
+            # Job title can be read from an extension field if configured to do so.
+            if settings.extension_field_as_job_function == 1:
+                extension_value = i.current.extension_1
+            elif settings.extension_field_as_job_function == 3:
+                extension_value = i.current.extension_3
+            else:
+                extension_value = None
+            name = extension_value or i.current.job_function.name
             # Org units can be mapped to other uuids in fk-org by adding an it-user to the unit in MO
             org_unit_uuid = (
                 UUID(first(one(i.current.org_unit).itusers).user_key)

@@ -113,7 +113,7 @@ def strip_truncate_and_warn(d, root, length):
             if len(v) > length:
                 v = d[k] = v[:length]
                 logger.warning(
-                    "truncating to %d key '%s' for" " uuid '%s' to value '%s'",
+                    "truncating to %d key '%s' for uuid '%s' to value '%s'",
                     length,
                     k,
                     root["Uuid"],
@@ -173,11 +173,9 @@ def pick_address(addresses: list[dict], classes: list[UUID]) -> str | None:
 
 async def engagements_to_user(user, engagements, graphql_session, settings):
     """
-    key_to_sort_by: This is a feature flag used to determine
-    whether to use "extension_3" as job function, or display
-    the contents of the "job_function" field.
-        True - if wanting to be overriden with "extension_3".
-        False - if wanting to display "job_function".
+    The extension_field_as_job_function setting determines which extension
+    field to use as job function. Set to an integer (e.g. 1, 3) to use
+    the corresponding extension field, or None to use job_function.name.
     """
     engagements = [
         e
@@ -188,17 +186,16 @@ async def engagements_to_user(user, engagements, graphql_session, settings):
             settings=settings,
         )
     ]
-    # Feature flag in Settings. Set it to True, if wanting to use the extension field.
-    # Default is False.
-    use_extension_field = settings.use_extension_field_as_job_function
+    # Job title can be read from an extension field if configured to do so.
+    extension_field = f"extension_{settings.extension_field_as_job_function}"
     for e in engagements:
         e["job_function"] = (
-            e.get("extension_3")
-            if use_extension_field and e.get("extension_3")
+            e.get(extension_field)
+            if settings.extension_field_as_job_function and e.get(extension_field)
             else e.get("job_function").get("name")
         )
 
-    for e in sorted(engagements, key=lambda e: (e["job_function"] + e.get("uuid"))):
+    for e in sorted(engagements, key=lambda e: e["job_function"] + e.get("uuid")):
         user["Positions"].append(
             {
                 "OrgUnitUuid": e.get("org_unit").get("uuid"),
@@ -293,9 +290,9 @@ async def get_org_unit_hierarchy(titles: list[str]) -> Optional[Tuple[UUID, ...]
             lambda x: x["name"] in titles, org_unit_hierarchy_classes["data"]["items"]
         )
     )
-    assert (
-        len(filtered_hierarchies) > 0
-    ), f"No org_unit_hierarchy classes found matching the titles {titles}."
+    assert len(filtered_hierarchies) > 0, (
+        f"No org_unit_hierarchy classes found matching the titles {titles}."
+    )
     # Return tuple, not list, because lists can't be used as input to lru_cached functions.
     return tuple(UUID(o["uuid"]) for o in filtered_hierarchies)
 
