@@ -8,7 +8,7 @@ WORKDIR /app
 
 ENV POETRY_HOME=/opt/poetry \
     POETRY_VIRTUALENVS_CREATE=false \
-    POETRY_VERSION=1.3.1
+    POETRY_VERSION=1.8.3
 
 RUN curl -sSL https://install.python-poetry.org | python3 -
 COPY pyproject.toml poetry.lock ./
