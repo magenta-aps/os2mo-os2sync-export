@@ -162,6 +162,27 @@ async def test_sync_mo_user_to_fk_no_users(
     os2sync_client.delete_user.assert_called_once_with(uuid)
 
 
+async def test_sync_mo_user_to_fk_empty_it_accounts(
+    mock_graphql_client, mock_settings, os2sync_client
+):
+    """Test that an empty it_accounts objects list doesn't crash"""
+    mock_graphql_client.find_f_k_itsystem.return_value = FindFKItsystemItsystems(
+        **{"objects": [{"uuid": uuid4()}]}
+    )
+    mock_graphql_client.read_user_i_t_accounts.return_value = (
+        ReadUserITAccountsEmployees(objects=[])
+    )
+    uuid = uuid4()
+    await sync_mo_user_to_fk_org(
+        graphql_client=mock_graphql_client,
+        uuid=uuid,
+        settings=mock_settings,
+        os2sync_client=os2sync_client,
+    )
+    os2sync_client.update_user.assert_not_called()
+    os2sync_client.delete_user.assert_called_once_with(uuid)
+
+
 async def test_sync_mo_user_to_fk_one_it_user(
     mock_graphql_client, mock_settings, os2sync_client
 ):

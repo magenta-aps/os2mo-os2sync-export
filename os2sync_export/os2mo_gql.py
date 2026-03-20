@@ -87,6 +87,9 @@ async def read_fk_users_from_person(
         landline=landline,
         now=datetime.now(timezone.utc),
     )
+    # If objects is empty, return empty lists to avoid `one` ValueError
+    if not it_accounts.objects:
+        return [], []
     current_accounts = one(it_accounts.objects).current
     if current_accounts is None:
         return [], []
