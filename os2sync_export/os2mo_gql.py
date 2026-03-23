@@ -327,7 +327,9 @@ async def sync_mo_user_to_fk_org(
             and not dry_run
         ):
             await graphql_client.create_i_t_user(
-                external_id=it.external_id,  # type: ignore
+                external_id=uuid4()
+                if settings.randomize_fk_org_uuid
+                else it.external_id,  # type: ignore
                 itsystem=fk_it_uuid,
                 person=uuid,
                 user_key=it.external_id,  # type: ignore

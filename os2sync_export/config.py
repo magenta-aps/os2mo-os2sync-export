@@ -66,6 +66,7 @@ class Settings(BaseSettings):  # type: ignore
     filter_users_by_it_system: bool = False
 
     use_extension_field_as_job_function: bool = False
+    randomize_fk_org_uuid: bool = False
 
     filter_orgunit_uuid: list[UUID] = []
 
