@@ -204,6 +204,12 @@ from .input_types import UuidsBoundITUserFilter
 from .input_types import UuidsBoundLeaveFilter
 from .input_types import UuidsBoundOrganisationUnitFilter
 from .input_types import ValidityInput
+from .read_all_employee_uuids import ReadAllEmployeeUuids
+from .read_all_employee_uuids import ReadAllEmployeeUuidsEmployees
+from .read_all_employee_uuids import ReadAllEmployeeUuidsEmployeesObjects
+from .read_all_org_unit_uuids import ReadAllOrgUnitUuids
+from .read_all_org_unit_uuids import ReadAllOrgUnitUuidsOrgUnits
+from .read_all_org_unit_uuids import ReadAllOrgUnitUuidsOrgUnitsObjects
 from .read_orgunit import ReadOrgunit
 from .read_orgunit import ReadOrgunitOrgUnits
 from .read_orgunit import ReadOrgunitOrgUnitsObjects
@@ -433,6 +439,12 @@ __all__ = [
     "ParentsBoundFacetFilter",
     "RAOpenValidityInput",
     "RAValidityInput",
+    "ReadAllEmployeeUuids",
+    "ReadAllEmployeeUuidsEmployees",
+    "ReadAllEmployeeUuidsEmployeesObjects",
+    "ReadAllOrgUnitUuids",
+    "ReadAllOrgUnitUuidsOrgUnits",
+    "ReadAllOrgUnitUuidsOrgUnitsObjects",
     "ReadOrgunit",
     "ReadOrgunitOrgUnits",
     "ReadOrgunitOrgUnitsObjects",
