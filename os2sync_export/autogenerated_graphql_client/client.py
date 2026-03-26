@@ -30,6 +30,10 @@ from .input_types import ITSystemFilter
 from .input_types import ITSystemTerminateInput
 from .input_types import ITUserCreateInput
 from .input_types import OrganisationUnitCreateInput
+from .read_all_employee_uuids import ReadAllEmployeeUuids
+from .read_all_employee_uuids import ReadAllEmployeeUuidsEmployees
+from .read_all_org_unit_uuids import ReadAllOrgUnitUuids
+from .read_all_org_unit_uuids import ReadAllOrgUnitUuidsOrgUnits
 from .read_orgunit import ReadOrgunit
 from .read_orgunit import ReadOrgunitOrgUnits
 from .read_user_i_t_accounts import ReadUserITAccounts
@@ -61,6 +65,40 @@ def gql(q: str) -> str:
 
 
 class GraphQLClient(AsyncBaseClient):
+    async def read_all_employee_uuids(self) -> ReadAllEmployeeUuidsEmployees:
+        query = gql(
+            """
+            query ReadAllEmployeeUuids {
+              employees {
+                objects {
+                  uuid
+                }
+              }
+            }
+            """
+        )
+        variables: dict[str, object] = {}
+        response = await self.execute(query=query, variables=variables)
+        data = self.get_data(response)
+        return ReadAllEmployeeUuids.parse_obj(data).employees
+
+    async def read_all_org_unit_uuids(self) -> ReadAllOrgUnitUuidsOrgUnits:
+        query = gql(
+            """
+            query ReadAllOrgUnitUuids {
+              org_units {
+                objects {
+                  uuid
+                }
+              }
+            }
+            """
+        )
+        variables: dict[str, object] = {}
+        response = await self.execute(query=query, variables=variables)
+        data = self.get_data(response)
+        return ReadAllOrgUnitUuids.parse_obj(data).org_units
+
     async def read_user_i_t_accounts(
         self,
         uuid: UUID,
