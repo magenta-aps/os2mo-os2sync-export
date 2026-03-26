@@ -110,8 +110,7 @@ async def trigger_cleanup_duplicates(
     )
 
     if settings.new:
-        background_tasks.add_task(
-            cleanup_passivate_and_reimport_new,
+        await cleanup_passivate_and_reimport_new(
             settings=settings,
             graphql_client=graphql_client,
             os2sync_client=os2sync_client,
