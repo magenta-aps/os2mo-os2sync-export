@@ -331,6 +331,100 @@ async def test_sync_mo_user_to_fk_delete_user(
     )
 
 
+@pytest.mark.parametrize("randomize_fk_org_uuid", [True, False])
+async def test_sync_mo_user_to_fk_randomize_fk_org_uuid(
+    mock_graphql_client, set_settings, os2sync_client, randomize_fk_org_uuid
+):
+    """Test that when randomize_fk_org_uuid is True, create_i_t_user is called
+    with a random UUID instead of the it-user's external_id."""
+    settings = set_settings(randomize_fk_org_uuid=randomize_fk_org_uuid)
+    external_id = str(uuid4())
+    it_users = ReadUserITAccountsEmployees(
+        objects=[
+            ReadUserITAccountsEmployeesObjects(
+                current=ReadUserITAccountsEmployeesObjectsCurrent(
+                    fk_org_uuids=[],
+                    itusers=[
+                        {
+                            "uuid": uuid4(),
+                            "user_key": "BSG",
+                            "external_id": external_id,
+                            "mobile": [],
+                            "landline": [],
+                            "email": [],
+                            "person": [
+                                {
+                                    "name": "Brian Storm Graversen",
+                                    "nickname": "",
+                                    "cpr_number": None,
+                                }
+                            ],
+                            "engagements_responses": {
+                                "objects": [
+                                    {
+                                        "current": {
+                                            "org_unit": [
+                                                {
+                                                    "uuid": uuid4(),
+                                                    "itusers": [],
+                                                    "name": "unitname",
+                                                    "ancestors": [
+                                                        {"uuid": settings.top_unit_uuid}
+                                                    ],
+                                                    "addresses": [],
+                                                    "managers": [],
+                                                    "kles": [],
+                                                    "parent": {
+                                                        "uuid": uuid4(),
+                                                        "itusers": [],
+                                                    },
+                                                }
+                                            ],
+                                            "job_function": {
+                                                "name": "open source developer"
+                                            },
+                                        },
+                                        "validities": [
+                                            {
+                                                "validity": {
+                                                    "from": str(datetime(2021, 1, 1))
+                                                }
+                                            }
+                                        ],
+                                    }
+                                ],
+                            },
+                        }
+                    ],
+                )
+            )
+        ]
+    )
+    mock_graphql_client.read_user_i_t_accounts.return_value = it_users
+    mock_graphql_client.find_f_k_itsystem.return_value = FindFKItsystemItsystems(
+        **{"objects": [{"uuid": uuid4()}]}
+    )
+    await sync_mo_user_to_fk_org(
+        graphql_client=mock_graphql_client,
+        uuid=uuid4(),
+        settings=settings,
+        os2sync_client=os2sync_client,
+    )
+    # Verify create_i_t_user was called
+    mock_graphql_client.create_i_t_user.assert_called_once()
+    call_kwargs = mock_graphql_client.create_i_t_user.call_args
+    created_external_id = call_kwargs.kwargs.get(
+        "external_id", call_kwargs.args[0] if call_kwargs.args else None
+    )
+    if randomize_fk_org_uuid:
+        # external_id should be a random UUID, not the original
+        assert created_external_id != external_id
+        # Verify it's a valid UUID
+        UUID(str(created_external_id))
+    else:
+        assert created_external_id == external_id
+
+
 def test_convert_to_os2sync(mock_settings):
     mo_it_user = BASE_ITUSER_RESPONSE.copy()
     mo_it_user.person = [
