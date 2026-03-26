@@ -390,25 +390,32 @@ async def sync_orgunit(
 
 
 def filter_relevant_orgunit(settings: Settings, orgunit_data: UnitFields) -> bool:
+    uuid = orgunit_data.uuid
+    log = logger.bind(uuid=uuid)
     # Root unit is always relevant
-    if orgunit_data.uuid == settings.top_unit_uuid:
+    if uuid == settings.top_unit_uuid:
+        log.info("Unit is top_unit_uuid, relevant")
         return True
     # There can only be one root in fk-org
     if orgunit_data.parent is None:
+        log.info("Unit has no parent and is not top_unit, not relevant")
         return False
     ancestor_uuids = {a.uuid for a in orgunit_data.ancestors}
     # Ensure the unit is in the correct part of the tree
     if settings.top_unit_uuid not in ancestor_uuids:
+        log.info("Unit is not under top_unit_uuid, not relevant")
         return False
 
     # Ensure the unit or any of it's ancestors are not filtered
-    if orgunit_data.uuid in settings.filter_orgunit_uuid or any(
-        uuid in ancestor_uuids for uuid in settings.filter_orgunit_uuid
+    if uuid in settings.filter_orgunit_uuid or any(
+        u in ancestor_uuids for u in settings.filter_orgunit_uuid
     ):
+        log.info("Unit or ancestor is in filter_orgunit_uuid, not relevant")
         return False
     # If the unit has an fk-org account it is considered relevant
     # This enables syncing specific units outside the usually relevant hierarchies
     if orgunit_data.itusers:
+        log.info("Unit has fk-org it-account, relevant")
         return True
     # Ensure the unit has the correct org_unit_hierarchy (if relevant)
     if settings.filter_hierarchy_names:
@@ -417,19 +424,34 @@ def filter_relevant_orgunit(settings: Settings, orgunit_data: UnitFields) -> boo
             or orgunit_data.org_unit_hierarchy_model.name
             not in settings.filter_hierarchy_names
         ):
+            log.info(
+                "Unit hierarchy not in filter_hierarchy_names, not relevant",
+                hierarchy=orgunit_data.org_unit_hierarchy_model.name
+                if orgunit_data.org_unit_hierarchy_model
+                else None,
+            )
             return False
     # Ensure the unit level or type is not ignored
     if (
         orgunit_data.org_unit_level
         and orgunit_data.org_unit_level.uuid in settings.ignored_unit_levels
     ):
+        log.info(
+            "Unit level is ignored, not relevant",
+            level=orgunit_data.org_unit_level.uuid,
+        )
         return False
     if (
         orgunit_data.unit_type
         and orgunit_data.unit_type.uuid in settings.ignored_unit_types
     ):
+        log.info(
+            "Unit type is ignored, not relevant",
+            unit_type=orgunit_data.unit_type.uuid,
+        )
         return False
     # If all above checks are ok, the unit is relevant to sync to os2sync
+    log.info("Unit passed all filters, relevant")
     return True
 
 
