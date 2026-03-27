@@ -16,11 +16,6 @@ from more_itertools import flatten
 
 from os2sync_export import os2mo
 from os2sync_export.config import Settings
-from os2sync_export.depends import GraphQLClient
-from os2sync_export.exceptions import NotFoundError
-from os2sync_export.exceptions import UnitNotRelevantError
-from os2sync_export.os2mo_gql import sync_mo_user_to_fk_org
-from os2sync_export.os2mo_gql import sync_orgunit
 from os2sync_export.os2sync import OS2SyncClient
 from os2sync_export.os2sync_models import OrgUnit
 
@@ -251,63 +246,24 @@ async def cleanup_duplicates(
     logger.info("Cleanup Done")
 
 
-async def cleanup_passivate_and_reimport_new(
-    settings: Settings,
-    graphql_client: GraphQLClient,
+async def delete_all_from_fk_org(
     os2sync_client: OS2SyncClient,
 ) -> None:
-    """Passivate and reimport every org_unit and every user using the new GraphQL client."""
-    logger.info("Starting cleanup (new) - passivate and reimport")
+    """Delete every org_unit and every user from FK-org."""
+    logger.info("Starting delete of all data from FK-org")
 
-    # Get all existing UUIDs from FK-org and passivate everything
     logger.info("Triggering hierarchy request to FK-org")
     request_uuid = await os2sync_client.trigger_hierarchy()
     existing_org_units, existing_users = await os2sync_client.get_existing_uuids(
         request_uuid=request_uuid
     )
 
-    logger.info("Passivating all org units in FK-org", count=len(existing_org_units))
-    for uuid in existing_org_units:
-        await os2sync_client.passivate_orgunit(uuid)
-
-    logger.info("Passivating all users in FK-org", count=len(existing_users))
+    logger.info("Deleting all users from FK-org", count=len(existing_users))
     for uuid in existing_users:
-        await os2sync_client.passivate_user(uuid)
+        await os2sync_client.delete_user(uuid)
 
-    # Read all org unit UUIDs from MO and re-sync
-    logger.info("Reading all org unit UUIDs from MO")
-    org_unit_result = await graphql_client.read_all_org_unit_uuids()
-    mo_org_unit_uuids = {obj.uuid for obj in org_unit_result.objects}
-    logger.info("Found org units in MO", count=len(mo_org_unit_uuids))
+    logger.info("Deleting all org units from FK-org", count=len(existing_org_units))
+    for uuid in existing_org_units:
+        await os2sync_client.delete_orgunit(uuid)
 
-    logger.info("Synchronizing org units")
-    for uuid in mo_org_unit_uuids:
-        try:
-            await sync_orgunit(
-                uuid=uuid,
-                settings=settings,
-                graphql_client=graphql_client,
-                os2sync_client=os2sync_client,
-            )
-        except (NotFoundError, UnitNotRelevantError):
-            logger.info("Skipping org unit", uuid=uuid)
-
-    # Read all employee UUIDs from MO and re-sync
-    logger.info("Reading all employee UUIDs from MO")
-    employee_result = await graphql_client.read_all_employee_uuids()
-    mo_employee_uuids = {obj.uuid for obj in employee_result.objects}
-    logger.info("Found employees in MO", count=len(mo_employee_uuids))
-
-    logger.info("Synchronizing users")
-    for uuid in mo_employee_uuids:
-        try:
-            await sync_mo_user_to_fk_org(
-                uuid=uuid,
-                graphql_client=graphql_client,
-                settings=settings,
-                os2sync_client=os2sync_client,
-            )
-        except Exception:
-            logger.exception("Failed to sync user", uuid=uuid)
-
-    logger.info("Cleanup (new) Done")
+    logger.info("Delete all from FK-org Done")
