@@ -8,7 +8,6 @@ from uuid import UUID
 
 import structlog
 from fastapi import APIRouter
-from fastapi import BackgroundTasks
 from fastapi import Depends
 from fastapi import FastAPI
 from fastapi import HTTPException
@@ -61,43 +60,36 @@ async def index() -> Dict[str, str]:
 
 @fastapi_router.post("/trigger", status_code=202)
 async def trigger_all(
-    background_tasks: BackgroundTasks,
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
     os2sync_client: OS2SyncClient_,
-) -> Dict[str, str]:
+) -> None:
     if settings.new:
         raise NotImplementedError
-    background_tasks.add_task(
-        main,
+    await main(
         settings=settings,
         graphql_session=graphql_session,
         os2sync_client=os2sync_client,
     )
-    return {"triggered": "OK"}
 
 
 @fastapi_router.post("/cleanup_duplicate_engagements", status_code=202)
 async def trigger_cleanup_duplicate_engagements(
-    background_tasks: BackgroundTasks,
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
     os2sync_client: OS2SyncClient_,
-) -> Dict[str, str]:
+) -> None:
     if settings.new:
         raise NotImplementedError
-    background_tasks.add_task(
-        cleanup_duplicate_engagements,
+    await cleanup_duplicate_engagements(
         settings=settings,
         graphql_session=graphql_session,
         os2sync_client=os2sync_client,
     )
-    return {"triggered": "OK"}
 
 
 @fastapi_router.post("/cleanup_full_passivate_and_reimport", status_code=202)
 async def trigger_cleanup_duplicates(
-    background_tasks: BackgroundTasks,
     settings: Settings_,
     graphql_session: LegacyGraphQLSession,
     graphql_client: GraphQLClient,
@@ -110,15 +102,13 @@ async def trigger_cleanup_duplicates(
     )
 
     if settings.new:
-        background_tasks.add_task(
-            cleanup_passivate_and_reimport_new,
+        await cleanup_passivate_and_reimport_new(
             settings=settings,
             graphql_client=graphql_client,
             os2sync_client=os2sync_client,
         )
     else:
-        background_tasks.add_task(
-            cleanup_duplicates,
+        await cleanup_duplicates(
             settings=settings,
             graphql_session=graphql_session,
             os2sync_client=os2sync_client,
