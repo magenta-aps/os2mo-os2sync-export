@@ -516,6 +516,8 @@ def addresses_to_orgunit(orgunit, addresses, landline_scope_classes: List[UUID] 
             orgunit["PNR"] = a["name"]
         elif address_type_is(a, user_key="ContactOpenHours"):
             orgunit["ContactOpenHours"] = a["name"]
+        elif address_type_is(a, user_key="PhoneOpenHours"):
+            orgunit["PhoneOpenHours"] = a["name"]
         elif address_type_is(a, user_key="DtrId"):
             orgunit["DtrId"] = a["name"]
         elif a["address_type"]["scope"] == "WWW":
