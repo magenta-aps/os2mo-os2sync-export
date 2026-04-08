@@ -132,6 +132,7 @@ class GraphQLClient(AsyncBaseClient):
                       engagements_responses {
                         objects {
                           current {
+                            extension_1
                             extension_3
                             org_unit {
                               ...UnitFields

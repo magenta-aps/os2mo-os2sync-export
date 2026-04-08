@@ -219,7 +219,7 @@ async def cleanup_duplicate_engagements(
         3. Clear the `success_users` table.
         `DELETE FROM success_users;`
         4. Trigger sync of the users again:
-        `docker exec -it os2sync_export bash -c "printf '{' '.join(str(u) for u in user_uuids)}' | xargs -d' ' -I % curl -X POST localhost:8000/trigger/user/%"`
+        `docker exec -it os2sync_export bash -c "printf '{" ".join(str(u) for u in user_uuids)}' | xargs -d' ' -I % curl -X POST localhost:8000/trigger/user/%"`
         """
     )
 

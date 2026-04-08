@@ -122,6 +122,7 @@ BASE_ITUSER_RESPONSE = ReadUserITAccountsEmployeesObjectsCurrentItusers(
                 current=ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent(
                     job_function=JobFunction(name="tester"),
                     org_unit=[BASE_UNIT],
+                    extension_1=None,
                     extension_3="",
                 ),
                 validities=[
@@ -383,18 +384,22 @@ def test_convert_to_os2sync_cpr(sync_cpr, set_settings):
         assert os2sync_user.Person.Cpr is None
 
 
-@pytest.mark.parametrize("use_extension_field_as_job_function", [True, False])
+@pytest.mark.parametrize(
+    "extension_field_as_job_function,expected_name",
+    [(3, "Konge"), (1, "Regent"), (None, "Udvikler")],
+)
 def test_convert_to_os2sync_extension_job_function(
-    use_extension_field_as_job_function, set_settings
+    extension_field_as_job_function, expected_name, set_settings
 ):
     settings = set_settings(
-        use_extension_field_as_job_function=use_extension_field_as_job_function
+        extension_field_as_job_function=extension_field_as_job_function
     )
     mo_it_user = BASE_ITUSER_RESPONSE.copy()
     mo_it_user.engagements_responses = ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponses(
         objects=[
             ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjects(
                 current=ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent(
+                    extension_1="Regent",
                     extension_3="Konge",
                     org_unit=[BASE_UNIT],
                     job_function=JobFunction(name="Udvikler"),
@@ -413,10 +418,7 @@ def test_convert_to_os2sync_extension_job_function(
     os2sync_user = convert_to_os2sync(
         settings, mo_it_user, UUID(mo_it_user.external_id)
     )
-    if use_extension_field_as_job_function:
-        assert os2sync_user.Positions[0].Name == "Konge"
-    else:
-        assert os2sync_user.Positions[0].Name == "Udvikler"
+    assert os2sync_user.Positions[0].Name == expected_name
 
 
 def test_convert_to_os2sync_engagement_org_unit_uuid(mock_settings):
