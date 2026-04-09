@@ -174,8 +174,8 @@ def pick_address(addresses: list[dict], classes: list[UUID]) -> str | None:
 async def engagements_to_user(user, engagements, graphql_session, settings):
     """
     The extension_field_as_job_function setting determines which extension
-    field to use as job function. Set to an integer (e.g. 1, 3) to use
-    the corresponding extension field, or None to use job_function.name.
+    field to use as job function. Set to an ExtensionField enum value (1 or 3)
+    to use the corresponding extension field, or None to use job_function.name.
     """
     engagements = [
         e
