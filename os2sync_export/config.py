@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: Magenta ApS
 #
 # SPDX-License-Identifier: MPL-2.0
+from enum import StrEnum
 from typing import Literal
 from typing import cast
 from uuid import UUID
@@ -10,6 +11,12 @@ from fastramqpi.config import Settings as _FastRAMQPISettings
 from fastramqpi.ramqp.config import AMQPConnectionSettings as _AMQPConnectionSettings
 from pydantic import AnyHttpUrl
 from pydantic import BaseSettings
+
+
+class ExtensionField(StrEnum):
+    EXTENSION_1 = "1"
+    EXTENSION_3 = "3"
+
 
 logger = structlog.stdlib.get_logger()
 
@@ -65,7 +72,7 @@ class Settings(BaseSettings):  # type: ignore
     filter_hierarchy_names: list[str] = []  # Title in MO
     filter_users_by_it_system: bool = False
 
-    extension_field_as_job_function: Literal[1, 3] | None = None
+    extension_field_as_job_function: ExtensionField | None = None
     randomize_fk_org_uuid: bool = False
 
     filter_orgunit_uuid: list[UUID] = []
