@@ -328,13 +328,15 @@ async def sync_mo_user_to_fk_org(
             it.external_id not in (f.user_key if f else None for f in fk_org_users)
             and not dry_run
         ):
+            # allow us to overwrite external_id while keeping the original value for user_key
+            user_key = it.external_id
+            if settings.randomize_fk_org_uuid:
+                it.external_id = str(uuid4())
             await graphql_client.create_i_t_user(
-                external_id=uuid4()
-                if settings.randomize_fk_org_uuid
-                else it.external_id,  # type: ignore
+                it.external_id,  # type: ignore
                 itsystem=fk_it_uuid,
                 person=uuid,
-                user_key=it.external_id,  # type: ignore
+                user_key=user_key,  # type: ignore
                 from_=datetime.now(timezone.utc),
             )
     # remove fk-org itusers it the it-user no longer exists.
