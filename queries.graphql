@@ -226,6 +226,16 @@ mutation TerminateITUser($uuid: UUID!, $to: DateTime!) {
   }
 }
 
+mutation EventSend(
+  $namespace: String!
+  $routing_key: String!
+  $subject: String!
+) {
+  event_send(
+    input: {namespace: $namespace, routing_key: $routing_key, subject: $subject}
+  )
+}
+
 query _testing__get_class($filter: ClassFilter) {
   classes(filter: $filter) {
     objects {
