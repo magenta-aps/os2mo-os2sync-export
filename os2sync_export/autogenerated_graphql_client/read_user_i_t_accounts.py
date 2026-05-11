@@ -72,6 +72,7 @@ class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObject
 class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent(
     BaseModel
 ):
+    extension_1: Optional[str]
     extension_3: Optional[str]
     org_unit: List[
         "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentOrgUnit"
