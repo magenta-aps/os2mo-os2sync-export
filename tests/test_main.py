@@ -10,7 +10,7 @@ import pytest
 from fastramqpi.events import Event
 
 from os2sync_export.main import amqp_trigger_it_user
-from os2sync_export.main import amqp_trigger_org_unit
+from os2sync_export.main import sync_org_unit
 from os2sync_export.os2mo import is_relevant
 from os2sync_export.os2sync_models import OrgUnit
 
@@ -124,7 +124,7 @@ async def test_trigger_orgunit_update(
         "os2sync_export.main.get_sts_orgunit", return_value=fk_org_orggunit
     ) as get_org_unit_mock:
         with patch("os2sync_export.main.is_relevant", return_value=is_relevant):
-            await amqp_trigger_org_unit(
+            await sync_org_unit(
                 event_uuid=Event(subject=orgunit_uuid, priority=1000),
                 settings=mock_settings,
                 graphql_session=graphql_session,
@@ -145,7 +145,7 @@ async def test_trigger_orgunit_update(
 
 
 @patch("os2sync_export.main.is_relevant", return_value=True)
-@patch("os2sync_export.main.amqp_trigger_employee")
+@patch("os2sync_export.main.sync_person")
 @patch(
     "os2sync_export.main.get_sts_orgunit",
     return_value=OrgUnit(Uuid=uuid4(), Name="test", ParentOrgUnitUuid=None),
@@ -158,24 +158,19 @@ async def test_trigger_orgunit_employees_update(
     os2sync_client,
     graphql_session,
 ):
+    gql_mock = AsyncMock()
     """Test react to orgunit event and all employees"""
     employee_uuids = {uuid4(), uuid4()}
     with patch("os2sync_export.main.find_employees", return_value=employee_uuids):
-        await amqp_trigger_org_unit(
+        await sync_org_unit(
             event_uuid=Event(subject=uuid4(), priority=1000),
             settings=mock_settings,
             graphql_session=graphql_session,
-            graphql_client=None,
+            graphql_client=gql_mock,
             os2sync_client=os2sync_client,
         )
-    assert trigger_employee_mock.call_args_list == [
-        call(
-            event_uuid=Event(subject=u, priority=1000),
-            settings=mock_settings,
-            graphql_session=graphql_session,
-            graphql_client=None,
-            os2sync_client=os2sync_client,
-        )
+    assert gql_mock.event_send.call_args_list == [
+        call(namespace="os2sync_export", routing_key="person", subject=str(u))
         for u in employee_uuids
     ]
 
