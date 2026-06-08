@@ -43,7 +43,11 @@ class OS2SyncClient:
         if self.settings.os2sync_api_url == "stub":
             return stub.Session()
 
-        session = httpx.AsyncClient(verify=self.settings.ca_verify_os2sync)
+        session = httpx.AsyncClient(
+            verify=self.settings.ca_verify_os2sync,
+            # OS2sync is slow
+            timeout=30,
+        )
         session.headers["User-Agent"] = "os2mo-data-import-and-export"
         session.headers["CVR"] = self.settings.municipality
         return session
