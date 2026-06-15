@@ -299,27 +299,32 @@ async def sync_mo_user_to_fk_org(
             current = None
 
         if current:
+            fk_it_user_key = one(it_users).external_id  # type: ignore
             if dry_run:
                 fk_org_users = [
                     ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids(
                         uuid=uuid4(),
-                        user_key=one(it_users).external_id,  # type: ignore
+                        user_key=fk_it_user_key,
                         external_id=str(uuid),
                     )
                 ]
             else:
-                await graphql_client.create_i_t_user(
+                result = await graphql_client.create_i_t_user(
                     external_id=str(uuid),
                     itsystem=fk_it_uuid,
                     person=uuid,
-                    user_key=one(it_users).external_id,  # type: ignore
+                    user_key=fk_it_user_key,
                     from_=datetime.now(timezone.utc),
                 )
-                fk_org_users, _ = await read_fk_users_from_person(
-                    graphql_client=graphql_client,
-                    uuid=uuid,
-                    it_user_keys=settings.it_system_user_keys,
-                )
+                # Use the UUID returned by the mutation directly rather than
+                # re-reading from the database to get it.
+                fk_org_users = [
+                    ReadUserITAccountsEmployeesObjectsCurrentFkOrgUuids(
+                        uuid=result.uuid,
+                        user_key=fk_it_user_key,
+                        external_id=str(uuid),
+                    )
+                ]
     # The code above could be be deleted after the initial runs.
 
     # Create a fk-org ituser for each it-user if it dosn't already exist

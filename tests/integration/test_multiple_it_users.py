@@ -880,6 +880,83 @@ async def test_remove_old_fk_accounts(
 
 
 @pytest.mark.integration_test
+async def test_randomize_does_not_apply_when_fk_account_already_has_ad_guid(
+    graphql_client: GraphQLClient,
+    create_person,
+    create_engagements,
+    set_settings,
+) -> None:
+    """Prove that a user is sent to os2sync with UUID=AD_GUID even when
+    randomize_fk_org_uuid=True, if a FK-org IT account already exists with
+    external_id=AD_GUID (created by a previous sync with randomize=False).
+
+    The loop condition `it.external_id not in fk_user_keys` is False, so
+    it.external_id is never mutated to a random UUID.  convert_and_filter then
+    resolves the uuid directly from the FK-org IT account's external_id, which
+    is still the AD GUID.
+    """
+    # Arrange
+    settings = set_settings(randomize_fk_org_uuid=True)
+    adguid = uuid4()
+    os2sync_mock = AsyncMock()
+    os2sync_mock.os2sync_get_user.side_effect = KeyError()
+    person_uuid = create_person.uuid
+
+    itsystem_AD = await graphql_client.testing__get_itsystem(
+        ITSystemFilter(user_keys=["Active Directory"], from_date=None, to_date=None)
+    )
+    AD_uuid = first(itsystem_AD.objects).uuid
+    itsystem_FK = await graphql_client.testing__get_itsystem(
+        ITSystemFilter(user_keys=["FK-ORG-UUID"], from_date=None, to_date=None)
+    )
+    FK_uuid = first(itsystem_FK.objects).uuid
+
+    # AD IT account
+    await graphql_client.testing__ituser_create(
+        input=ITUserCreateInput(
+            person=person_uuid,
+            user_key="AD-username",
+            external_id=str(adguid),
+            engagements=[e.uuid for e in create_engagements],
+            itsystem=AD_uuid,
+            validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
+        )
+    )
+    # FK-org IT account created by a previous run with randomize=False:
+    # external_id and user_key are both the AD GUID.
+    await graphql_client.testing__ituser_create(
+        input=ITUserCreateInput(
+            person=person_uuid,
+            user_key=str(adguid),
+            external_id=str(adguid),
+            itsystem=FK_uuid,
+            validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
+        )
+    )
+
+    # Act
+    await sync_mo_user_to_fk_org(
+        uuid=person_uuid,
+        graphql_client=graphql_client,
+        settings=settings,
+        os2sync_client=os2sync_mock,
+    )
+
+    # Assert – with randomize=True the UUID sent to os2sync must NOT be the AD GUID.
+    # This assertion currently FAILS, proving the bug: when a FK-org IT account already
+    # exists with external_id=AD_GUID the loop condition is False so it.external_id is
+    # never mutated, and convert_and_filter resolves the UUID directly from the FK-org
+    # IT account's external_id (still the AD GUID).
+    assert os2sync_mock.update_user.call_count == 1
+    synced_uuid = os2sync_mock.update_user.call_args[0][0].Uuid
+    assert synced_uuid != adguid, (
+        f"randomize_fk_org_uuid=True should produce a fresh UUID, "
+        f"but the AD GUID {adguid} was sent to os2sync because the existing FK-org "
+        f"IT account already has external_id=AD_GUID and prevents randomization"
+    )
+
+
+@pytest.mark.integration_test
 async def test_no_fk_itsystem(
     graphql_client: GraphQLClient,
     create_person,
