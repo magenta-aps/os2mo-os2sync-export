@@ -327,13 +327,29 @@ async def sync_mo_user_to_fk_org(
                 ]
     # The code above could be be deleted after the initial runs.
 
-    # Create a fk-org ituser for each it-user if it dosn't already exist
+    # Create a fk-org ituser for each it-user if it doesn't already exist.
+    # If randomize_fk_org_uuid is True and the existing FK-org IT account still holds
+    # the AD GUID as its external_id (written by a previous sync without randomize),
+    # replace it with a new account carrying a fresh random UUID so that os2sync
+    # never receives the raw AD GUID.
     for it in it_users:
-        if (
-            it.external_id not in (f.user_key if f else None for f in fk_org_users)
-            and not dry_run
-        ):
-            # allow us to overwrite external_id while keeping the original value for user_key
+        existing_fk = next(
+            (f for f in fk_org_users if f.user_key == it.external_id), None
+        )
+        needs_randomization = (
+            existing_fk is not None
+            and settings.randomize_fk_org_uuid
+            and existing_fk.external_id == it.external_id
+        )
+        if existing_fk is None or needs_randomization:
+            if dry_run:
+                continue
+            if needs_randomization:
+                await graphql_client.terminate_i_t_user(
+                    uuid=existing_fk.uuid,  # type: ignore
+                    to=date.today() - timedelta(days=1),  # type: ignore
+                )
+                fk_org_users = [f for f in fk_org_users if f.uuid != existing_fk.uuid]
             user_key = it.external_id
             if settings.randomize_fk_org_uuid:
                 it.external_id = str(uuid4())
