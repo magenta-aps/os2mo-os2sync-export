@@ -270,6 +270,8 @@ from .testing__ituser_create import TestingItuserCreate
 from .testing__ituser_create import TestingItuserCreateItuserCreate
 from .testing__org_unit_create import TestingOrgUnitCreate
 from .testing__org_unit_create import TestingOrgUnitCreateOrgUnitCreate
+from .testing__org_unit_terminate import TestingOrgUnitTerminate
+from .testing__org_unit_terminate import TestingOrgUnitTerminateOrgUnitTerminate
 
 __all__ = [
     "AccessLogFilter",
@@ -486,6 +488,8 @@ __all__ = [
     "TestingItuserCreateItuserCreate",
     "TestingOrgUnitCreate",
     "TestingOrgUnitCreateOrgUnitCreate",
+    "TestingOrgUnitTerminate",
+    "TestingOrgUnitTerminateOrgUnitTerminate",
     "UnitFields",
     "UnitFieldsAddresses",
     "UnitFieldsAddressesAddressType",
