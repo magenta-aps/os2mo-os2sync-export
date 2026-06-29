@@ -481,20 +481,17 @@ async def trigger_orgunit(
         settings=settings, session=None, dry_run=dry_run
     )
 
-    try:
-        if settings.new or new:
-            return await sync_orgunit(
-                settings=settings,
-                graphql_client=graphql_client,
-                os2sync_client=os2sync_client,
-                uuid=uuid,
-            )
-
-        sts_org_unit = await get_sts_orgunit(
-            uuid, settings=settings, graphql_session=graphql_session
+    if settings.new or new:
+        return await sync_orgunit(
+            settings=settings,
+            graphql_client=graphql_client,
+            os2sync_client=os2sync_client,
+            uuid=uuid,
         )
-    except ValueError:
-        raise HTTPException(status_code=404, detail="OrgUnit not found")
+
+    sts_org_unit = await get_sts_orgunit(
+        uuid, settings=settings, graphql_session=graphql_session
+    )
 
     await os2sync_client.update_org_unit(uuid, sts_org_unit)
     logger.info(f"Synced org_unit to fk-org: {uuid}")
