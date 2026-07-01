@@ -91,9 +91,9 @@ class GraphQLClient(AsyncBaseClient):
                         name
                         nickname
                       }
-                      engagements_responses {
+                      engagements_responses(filter: {from_date: $now, to_date: null}) {
                         objects {
-                          current {
+                          validities(start: $now, end: null) {
                             extension_1
                             extension_3
                             org_unit {
@@ -103,7 +103,7 @@ class GraphQLClient(AsyncBaseClient):
                               name
                             }
                           }
-                          validities(start: null, end: $now) {
+                          startdates: validities(start: null, end: null) {
                             validity {
                               from
                             }

@@ -61,44 +61,44 @@ class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponses(BaseM
 class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjects(
     BaseModel
 ):
-    current: Optional[
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent"
-    ]
     validities: List[
         "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities"
     ]
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent(
-    BaseModel
-):
-    extension_1: Optional[str]
-    extension_3: Optional[str]
-    org_unit: List[
-        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentOrgUnit"
+    startdates: List[
+        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsStartdates"
     ]
-    job_function: "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentJobFunction"
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentOrgUnit(
-    UnitFields
-):
-    pass
-
-
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentJobFunction(
-    BaseModel
-):
-    name: str
 
 
 class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities(
     BaseModel
 ):
-    validity: "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesValidity"
+    extension_1: Optional[str]
+    extension_3: Optional[str]
+    org_unit: List[
+        "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesOrgUnit"
+    ]
+    job_function: "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesJobFunction"
 
 
-class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesValidity(
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesOrgUnit(
+    UnitFields
+):
+    pass
+
+
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesJobFunction(
+    BaseModel
+):
+    name: str
+
+
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsStartdates(
+    BaseModel
+):
+    validity: "ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsStartdatesValidity"
+
+
+class ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsStartdatesValidity(
     BaseModel
 ):
     from_: datetime = Field(alias="from")
@@ -125,11 +125,11 @@ ReadUserITAccountsEmployeesObjectsCurrentItusers.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersPerson.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponses.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjects.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrent.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentOrgUnit.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsCurrentJobFunction.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValidities.update_forward_refs()
-ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesValidity.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesOrgUnit.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsValiditiesJobFunction.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsStartdates.update_forward_refs()
+ReadUserITAccountsEmployeesObjectsCurrentItusersEngagementsResponsesObjectsStartdatesValidity.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersEmail.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersMobile.update_forward_refs()
 ReadUserITAccountsEmployeesObjectsCurrentItusersLandline.update_forward_refs()

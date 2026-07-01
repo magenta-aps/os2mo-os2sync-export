@@ -214,29 +214,31 @@ def convert_to_os2sync(
             e
             for e in it.engagements_responses.objects
             if e
-            and e.current
+            and e.validities
             and filter_relevant_orgunit(
-                settings=settings, orgunit_data=one(e.current.org_unit)
+                settings=settings, orgunit_data=one(first(e.validities).org_unit)
             )
         ]
     for i in mo_engagements:
-        if i.current and i.validities:
+        if i.validities and i.startdates:
+            # There might be other validities in the future but can only sync the first
+            eng = first(i.validities)
             # Job title can be read from an extension field if configured to do so.
             if settings.extension_field_as_job_function == ExtensionField.EXTENSION_1:
-                extension_value = i.current.extension_1
+                extension_value = eng.extension_1
             elif settings.extension_field_as_job_function == ExtensionField.EXTENSION_3:
-                extension_value = i.current.extension_3
+                extension_value = eng.extension_3
             else:
                 extension_value = None
-            name = extension_value or i.current.job_function.name
+            name = extension_value or eng.job_function.name
             # Org units can be mapped to other uuids in fk-org by adding an it-user to the unit in MO
             org_unit_uuid = (
-                UUID(first(one(i.current.org_unit).itusers).user_key)
-                if one(i.current.org_unit).itusers
-                else one(i.current.org_unit).uuid
+                UUID(first(one(eng.org_unit).itusers).user_key)
+                if one(eng.org_unit).itusers
+                else one(eng.org_unit).uuid
             )
             # Original startdate of the engagement
-            start_date = min([s.validity.from_ for s in i.validities])
+            start_date = min([s.validity.from_ for s in i.startdates])
 
             positions.append(
                 Position(Name=name, OrgUnitUuid=org_unit_uuid, StartDate=start_date)
@@ -290,7 +292,6 @@ async def sync_mo_user_to_fk_org(
         fk_it_uuid = one(fk_it.objects).uuid
     except ValueError:
         raise ITSystemError
-
     if len(it_users) == 1 and len(fk_org_users) == 0:
         try:
             current = await os2sync_client.os2sync_get_user(uuid=uuid)
