@@ -206,23 +206,6 @@ async def engagements_to_user(user, engagements, graphql_session, settings):
         )
 
 
-async def try_get_it_user_key(uuid: str, user_key_it_system_name) -> Optional[str]:
-    """
-    fetches all it-systems related to a user and return the ad-user_key if exists
-    """
-    res = await os2mo_get("{BASE}/e/" + uuid + "/details/it")
-    it_response = res.json()
-    it_systems = IT.from_mo_json(it_response)
-    it_systems = list(
-        filter(lambda x: x.system_name == user_key_it_system_name, it_systems)
-    )
-
-    # if no ad OR multiple
-    if len(it_systems) != 1:
-        return None
-    return one(it_systems).user_key
-
-
 async def get_work_address(positions, work_address_names) -> Optional[str]:
     # find the primary engagement and lookup the addresses for that unit
     primary = filter(lambda e: e["is_primary"], positions)
