@@ -2,10 +2,11 @@
 # SPDX-License-Identifier: MPL-2.0
 services:
   init:
-    image: magentaaps/os2mo-init:2
+    image: magentaaps/os2mo-init:5
     environment:
       # Keycloak
       AUTH_SERVER: "http://keycloak:8080/auth"
+      AUTH_REALM: "mo"
       # OS2mo
       MO_URL: "http://mo:5000"
       CLIENT_ID: "dipex"
@@ -28,8 +29,10 @@ services:
       - ./os2sync_export:/app/os2sync_export
       - ./tests:/app/tests
     depends_on:
-      - db
-      - init
+      db:
+        condition: service_started
+      init:
+        condition: service_completed_successfully
 
   db:
     # Requirement for running integration tests
