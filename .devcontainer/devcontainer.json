@@ -1,0 +1,23 @@
+// SPDX-FileCopyrightText: Magenta ApS
+// SPDX-License-Identifier: MPL-2.0
+{
+  "name": "os2sync_export",
+  "dockerComposeFile": "../docker-compose.yaml",
+  "service": "os2sync_export",
+  "workspaceFolder": "/app",
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/app,type=bind"
+  ],
+  "postCreateCommand": "git config --global --add safe.directory /app && pre-commit install",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "charliermarsh.ruff"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      }
+    }
+  }
+}
