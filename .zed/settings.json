@@ -1,0 +1,26 @@
+// SPDX-FileCopyrightText: Magenta ApS
+// SPDX-License-Identifier: MPL-2.0
+{
+  // Use the container's global install of Ruff and BasedPyRight
+  // (Dockerfile installs with POETRY_VIRTUALENVS_CREATE=false)
+  "lsp": {
+    "ruff": {
+      "binary": {
+        "path": "/usr/local/bin/ruff",
+        "arguments": ["server"]
+      }
+    },
+    "basedpyright": {
+      "binary": {
+        "path": "/usr/local/bin/basedpyright-langserver",
+        "arguments": ["--stdio"]
+      }
+    }
+  },
+  "format_on_save": "on",
+  "formatter": {
+    "language_server": {
+      "name": "ruff"
+    }
+  }
+}

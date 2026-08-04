@@ -9,15 +9,4 @@
     "source=${localWorkspaceFolder},target=/app,type=bind"
   ],
   "postCreateCommand": "git config --global --add safe.directory /app && pre-commit install",
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "ms-python.python",
-        "charliermarsh.ruff"
-      ],
-      "settings": {
-        "python.defaultInterpreterPath": "/usr/local/bin/python"
-      }
-    }
-  }
 }
