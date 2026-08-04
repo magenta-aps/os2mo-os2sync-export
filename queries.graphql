@@ -290,6 +290,11 @@ mutation _testing__itsystem_terminate($input: ITSystemTerminateInput!) {
   }
 }
 
+mutation _testing__org_unit_terminate($input: OrganisationUnitTerminateInput!) {
+  org_unit_terminate(input: $input) {
+    uuid
+  }
+}
 mutation _testing__engagement_update($input: EngagementUpdateInput!) {
   engagement_update(input: $input) {
     uuid

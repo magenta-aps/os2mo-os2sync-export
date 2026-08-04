@@ -57,7 +57,6 @@ from os2sync_export.depends import GraphQLClient
 from os2sync_export.exceptions import DuplicatedITUserError
 from os2sync_export.exceptions import ITSystemError
 from os2sync_export.exceptions import NoPositionError
-from os2sync_export.exceptions import NotFoundError
 from os2sync_export.exceptions import UnitNotRelevantError
 from os2sync_export.os2mo import addresses_to_orgunit
 from os2sync_export.os2sync import OS2SyncClient
@@ -376,10 +375,12 @@ async def sync_orgunit(
 ) -> OrgUnit | None:
     res = await graphql_client.read_orgunit(uuid=uuid)
     if not res.objects:
-        raise NotFoundError()
+        await os2sync_client.delete_orgunit(uuid)
+        return None
     orgunit_data = one(res.objects).current
     if not orgunit_data:
-        raise NotFoundError()
+        await os2sync_client.delete_orgunit(uuid)
+        return None
     try:
         os2sync_orgunit = mo_orgunit_to_os2sync(
             settings=settings, orgunit_data=orgunit_data
