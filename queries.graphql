@@ -238,19 +238,19 @@ mutation EventSend(
   )
 }
 
-query _testing__get_class($filter: ClassFilter) {
-  classes(filter: $filter) {
-    objects {
-      uuid
-    }
+mutation _testing__create_facet($input: FacetCreateInput!) {
+  facet_create(input: $input) {
+    uuid
   }
 }
-
-query _testing__get_itsystem($filter: ITSystemFilter) {
-  itsystems(filter: $filter) {
-    objects {
-      uuid
-    }
+mutation _testing__create_class($input: ClassCreateInput!) {
+  class_create(input: $input) {
+    uuid
+  }
+}
+mutation _testing__create_itsystem($input: ITSystemCreateInput!) {
+  itsystem_create(input: $input) {
+    uuid
   }
 }
 
