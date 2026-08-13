@@ -22,6 +22,8 @@ from .find_k_l_e_unit import FindKLEUnit
 from .find_k_l_e_unit import FindKLEUnitItusers
 from .find_manager_unit import FindManagerUnit
 from .find_manager_unit import FindManagerUnitManagers
+from .find_past_i_t_user import FindPastITUser
+from .find_past_i_t_user import FindPastITUserItusers
 from .input_types import AddressCreateInput
 from .input_types import ClassCreateInput
 from .input_types import EmployeeCreateInput
@@ -31,6 +33,7 @@ from .input_types import FacetCreateInput
 from .input_types import ITSystemCreateInput
 from .input_types import ITSystemTerminateInput
 from .input_types import ITUserCreateInput
+from .input_types import ITUserFilter
 from .input_types import OrganisationUnitCreateInput
 from .input_types import OrganisationUnitTerminateInput
 from .read_orgunit import ReadOrgunit
@@ -383,6 +386,32 @@ class GraphQLClient(AsyncBaseClient):
         response = await self.execute(query=query, variables=variables)
         data = self.get_data(response)
         return FindFKItsystem.parse_obj(data).itsystems
+
+    async def find_past_i_t_user(
+        self,
+        filter: Union[Optional[ITUserFilter], UnsetType] = UNSET,
+        start: Union[Optional[datetime], UnsetType] = UNSET,
+        end: Union[Optional[datetime], UnsetType] = UNSET,
+    ) -> FindPastITUserItusers:
+        query = gql("""
+            query FindPastITUser($filter: ITUserFilter, $start: DateTime = null, $end: DateTime) {
+              itusers(filter: $filter) {
+                objects {
+                  validities(start: $start, end: $end) {
+                    user_key
+                    external_id
+                    validity {
+                      to
+                    }
+                  }
+                }
+              }
+            }
+            """)
+        variables: dict[str, object] = {"filter": filter, "start": start, "end": end}
+        response = await self.execute(query=query, variables=variables)
+        data = self.get_data(response)
+        return FindPastITUser.parse_obj(data).itusers
 
     async def create_i_t_user(
         self,

@@ -55,6 +55,11 @@ from .find_manager_unit import FindManagerUnitManagers
 from .find_manager_unit import FindManagerUnitManagersObjects
 from .find_manager_unit import FindManagerUnitManagersObjectsValidities
 from .find_manager_unit import FindManagerUnitManagersObjectsValiditiesOrgUnit
+from .find_past_i_t_user import FindPastITUser
+from .find_past_i_t_user import FindPastITUserItusers
+from .find_past_i_t_user import FindPastITUserItusersObjects
+from .find_past_i_t_user import FindPastITUserItusersObjectsValidities
+from .find_past_i_t_user import FindPastITUserItusersObjectsValiditiesValidity
 from .fragments import AddressFields
 from .fragments import AddressFieldsAddressType
 from .fragments import AddressFieldsVisibility
@@ -362,6 +367,11 @@ __all__ = [
     "FindManagerUnitManagersObjects",
     "FindManagerUnitManagersObjectsValidities",
     "FindManagerUnitManagersObjectsValiditiesOrgUnit",
+    "FindPastITUser",
+    "FindPastITUserItusers",
+    "FindPastITUserItusersObjects",
+    "FindPastITUserItusersObjectsValidities",
+    "FindPastITUserItusersObjectsValiditiesValidity",
     "FullEventFilter",
     "GraphQLClient",
     "GraphQLClientError",
