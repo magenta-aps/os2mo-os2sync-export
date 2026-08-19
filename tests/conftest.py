@@ -181,8 +181,8 @@ async def create_person(
 
 
 @pytest.fixture
-async def create_itsystems(graphql_client: GraphQLClient) -> tuple[UUID, UUID]:
-    AD_uuid = (
+async def create_AD_itsystem(graphql_client: GraphQLClient) -> UUID:
+    return (
         await graphql_client.testing__create_itsystem(
             input=ITSystemCreateInput(
                 name="Active Directory",
@@ -191,7 +191,11 @@ async def create_itsystems(graphql_client: GraphQLClient) -> tuple[UUID, UUID]:
             )
         )
     ).uuid
-    fk_org_uuid = (
+
+
+@pytest.fixture()
+async def create_FK_itsystem(graphql_client: GraphQLClient) -> UUID:
+    return (
         await graphql_client.testing__create_itsystem(
             input=ITSystemCreateInput(
                 name="FK-org uuid",
@@ -200,7 +204,6 @@ async def create_itsystems(graphql_client: GraphQLClient) -> tuple[UUID, UUID]:
             )
         )
     ).uuid
-    return AD_uuid, fk_org_uuid
 
 
 @pytest.fixture

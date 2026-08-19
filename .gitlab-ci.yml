@@ -26,7 +26,7 @@ variables:
   PRODUCT: os2mo
   COMPONENT: os2syncexport
 
-  OS2MO_INIT_CONFIG: "/builds/$CI_PROJECT_PATH/init.config.yml"
+  OS2MO_INIT_CONFIG: ""
 
 # Conditions
 #############

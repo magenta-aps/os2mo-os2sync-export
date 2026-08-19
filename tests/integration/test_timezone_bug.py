@@ -21,15 +21,13 @@ async def test_midnight_timezone_bug(
     graphql_client: GraphQLClient,
     create_person,
     create_engagement,
-    create_itsystems,
+    create_AD_itsystem,
+    create_FK_itsystem,
     mock_settings,
 ) -> None:
     # 1. ARRANGE
     person_uuid = create_person.uuid
     os2sync_mock = AsyncMock()
-
-    # Get AD System UUID
-    AD_uuid, _ = create_itsystems
 
     # Create an IT User that is valid starting from Jan 2nd 00:00:00
     # We use a naive date here to ensure it's treated as "Local Midnight" by MO
@@ -41,7 +39,7 @@ async def test_midnight_timezone_bug(
             user_key="midnight-user",
             external_id=str(uuid4()),
             engagements=[create_engagement.uuid],
-            itsystem=AD_uuid,
+            itsystem=create_AD_itsystem,
             validity=RAValidityInput(from_=validity_start, to=None),  # type: ignore
         )
     )

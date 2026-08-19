@@ -29,7 +29,8 @@ from os2sync_export.os2sync_models import User
 async def test_no_engagements(
     graphql_client: GraphQLClient,
     create_person,
-    create_itsystems,
+    create_AD_itsystem,
+    create_FK_itsystem,
     mock_settings,
 ) -> None:
     # Test a scenario where a user has an AD and FK-org account, but no engagements.
@@ -39,7 +40,6 @@ async def test_no_engagements(
     os2sync_mock = AsyncMock()
 
     person_uuid = create_person.uuid
-    AD_uuid, FK_uuid = create_itsystems
 
     await graphql_client.testing__ituser_create(
         input=ITUserCreateInput(
@@ -47,7 +47,7 @@ async def test_no_engagements(
             user_key="AD-username 1",
             external_id=str(adguid),
             engagements=None,
-            itsystem=AD_uuid,
+            itsystem=create_AD_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -57,7 +57,7 @@ async def test_no_engagements(
             person=person_uuid,
             user_key=str(adguid),
             external_id=str(fkorg_uuid),
-            itsystem=FK_uuid,
+            itsystem=create_FK_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -86,7 +86,8 @@ async def test_two_ad_one_fk(
     graphql_client: GraphQLClient,
     create_person,
     create_engagements,
-    create_itsystems,
+    create_AD_itsystem,
+    create_FK_itsystem,
     mock_settings,
 ) -> None:
     # Arrange
@@ -95,7 +96,6 @@ async def test_two_ad_one_fk(
     fkorg_uuid = uuid4()
     os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
-    AD_uuid, FK_uuid = create_itsystems
 
     # AD user 1
     await graphql_client.testing__ituser_create(
@@ -104,7 +104,7 @@ async def test_two_ad_one_fk(
             user_key="AD-username 1",
             external_id=str(adguid1),
             engagements=[e.uuid for e in create_engagements],
-            itsystem=AD_uuid,
+            itsystem=create_AD_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -115,7 +115,7 @@ async def test_two_ad_one_fk(
             person=person_uuid,
             user_key=str(adguid1),
             external_id=str(fkorg_uuid),
-            itsystem=FK_uuid,
+            itsystem=create_FK_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -127,7 +127,7 @@ async def test_two_ad_one_fk(
             external_id=str(adguid2),
             # TODO: connect some other engagement
             engagements=[e.uuid for e in create_engagements],
-            itsystem=AD_uuid,
+            itsystem=create_AD_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -223,7 +223,8 @@ async def test_one_ad_zero_fk(
     graphql_client: GraphQLClient,
     create_person,
     create_engagements,
-    create_itsystems,
+    create_AD_itsystem,
+    create_FK_itsystem,
     mock_settings,
 ) -> None:
     # Test lookup to fk-org
@@ -240,7 +241,6 @@ async def test_one_ad_zero_fk(
         "Landline": "None",
         "Email": "None",
     }
-    AD_uuid, _ = create_itsystems
 
     # AD user
     await graphql_client.testing__ituser_create(
@@ -249,7 +249,7 @@ async def test_one_ad_zero_fk(
             user_key="AD-username 1",
             external_id=str(adguid),
             engagements=[e.uuid for e in create_engagements],
-            itsystem=AD_uuid,
+            itsystem=create_AD_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -311,7 +311,8 @@ async def test_one_ad_zero_fk_user_not_found(
     graphql_client: GraphQLClient,
     create_person,
     create_engagements,
-    create_itsystems,
+    create_AD_itsystem,
+    create_FK_itsystem,
     mock_settings,
 ) -> None:
     # Test lookup to fk-org when the user isn't in fk-org yet
@@ -321,8 +322,6 @@ async def test_one_ad_zero_fk_user_not_found(
     person_uuid = create_person.uuid
     os2sync_mock.os2sync_get_user.side_effect = KeyError()
 
-    AD_uuid, _ = create_itsystems
-
     # AD user
     await graphql_client.testing__ituser_create(
         input=ITUserCreateInput(
@@ -330,7 +329,7 @@ async def test_one_ad_zero_fk_user_not_found(
             user_key="AD-username 1",
             external_id=str(adguid),
             engagements=[e.uuid for e in create_engagements],
-            itsystem=AD_uuid,
+            itsystem=create_AD_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -392,7 +391,8 @@ async def test_one_ad_zero_fk_user_not_active(
     graphql_client: GraphQLClient,
     create_person,
     create_engagements,
-    create_itsystems,
+    create_AD_itsystem,
+    create_FK_itsystem,
     mock_settings,
 ) -> None:
     # Test lookup to fk-org when the user isn't in fk-org yet
@@ -409,7 +409,6 @@ async def test_one_ad_zero_fk_user_not_active(
         "Landline": "None",
         "Email": "None",
     }
-    AD_uuid, _ = create_itsystems
     # AD user
     await graphql_client.testing__ituser_create(
         input=ITUserCreateInput(
@@ -417,7 +416,7 @@ async def test_one_ad_zero_fk_user_not_active(
             user_key="AD-username 1",
             external_id=str(adguid),
             engagements=[e.uuid for e in create_engagements],
-            itsystem=AD_uuid,
+            itsystem=create_AD_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -479,7 +478,8 @@ async def test_one_ad_zero_fk_dry_run(
     graphql_client: GraphQLClient,
     create_person,
     create_engagements,
-    create_itsystems,
+    create_AD_itsystem,
+    create_FK_itsystem,
     mock_settings,
 ) -> None:
     # Test lookup to fk-org
@@ -496,7 +496,6 @@ async def test_one_ad_zero_fk_dry_run(
         Landline=None,
         Email=None,
     )
-    AD_uuid, _ = create_itsystems
     # AD user
     await graphql_client.testing__ituser_create(
         input=ITUserCreateInput(
@@ -504,7 +503,7 @@ async def test_one_ad_zero_fk_dry_run(
             user_key="AD-username 1",
             external_id=str(adguid),
             engagements=[e.uuid for e in create_engagements],
-            itsystem=AD_uuid,
+            itsystem=create_AD_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -566,7 +565,8 @@ async def test_two_ad_zero_fk(
     graphql_client: GraphQLClient,
     create_person,
     create_engagements,
-    create_itsystems,
+    create_AD_itsystem,
+    create_FK_itsystem,
     mock_settings,
 ) -> None:
     # Arrange
@@ -574,7 +574,6 @@ async def test_two_ad_zero_fk(
     adguid2 = uuid4()
     os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
-    AD_uuid, _ = create_itsystems
     # AD user 1
     await graphql_client.testing__ituser_create(
         input=ITUserCreateInput(
@@ -582,7 +581,7 @@ async def test_two_ad_zero_fk(
             user_key="AD-username 1",
             external_id=str(adguid1),
             engagements=[e.uuid for e in create_engagements],
-            itsystem=AD_uuid,
+            itsystem=create_AD_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -594,7 +593,7 @@ async def test_two_ad_zero_fk(
             external_id=str(adguid2),
             # TODO: connect some other engagement
             engagements=[e.uuid for e in create_engagements],
-            itsystem=AD_uuid,
+            itsystem=create_AD_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -690,7 +689,8 @@ async def test_duplicate_fk_account(
     graphql_client: GraphQLClient,
     create_person,
     create_engagements,
-    create_itsystems,
+    create_AD_itsystem,
+    create_FK_itsystem,
     mock_settings,
 ) -> None:
     # Arrange
@@ -698,7 +698,6 @@ async def test_duplicate_fk_account(
     fkorg_uuid = uuid4()
     os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
-    AD_uuid, FK_uuid = create_itsystems
     # AD user 1
     await graphql_client.testing__ituser_create(
         input=ITUserCreateInput(
@@ -706,7 +705,7 @@ async def test_duplicate_fk_account(
             user_key="AD-username 1",
             external_id=str(adguid1),
             engagements=[e.uuid for e in create_engagements],
-            itsystem=AD_uuid,
+            itsystem=create_AD_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -717,7 +716,7 @@ async def test_duplicate_fk_account(
             person=person_uuid,
             user_key=str(adguid1),
             external_id=str(fkorg_uuid),
-            itsystem=FK_uuid,
+            itsystem=create_FK_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -728,7 +727,7 @@ async def test_duplicate_fk_account(
             person=person_uuid,
             user_key=str(adguid1),
             external_id=str(fkorg_uuid),
-            itsystem=FK_uuid,
+            itsystem=create_FK_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -746,9 +745,10 @@ async def test_duplicate_fk_account(
 @pytest.mark.integration_test
 async def test_remove_old_fk_accounts(
     graphql_client: GraphQLClient,
-    create_person,
+    create_AD_itsystem,
+    create_FK_itsystem,
     create_engagements,
-    create_itsystems,
+    create_person,
     mock_settings,
 ) -> None:
     # Arrange
@@ -756,7 +756,6 @@ async def test_remove_old_fk_accounts(
     old_fk_uuid = uuid4()
     os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
-    AD_uuid, FK_uuid = create_itsystems
     # current AD user
     await graphql_client.testing__ituser_create(
         input=ITUserCreateInput(
@@ -764,7 +763,7 @@ async def test_remove_old_fk_accounts(
             user_key="AD-username 1",
             external_id=str(adguid),
             engagements=[e.uuid for e in create_engagements],
-            itsystem=AD_uuid,
+            itsystem=create_AD_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -775,7 +774,7 @@ async def test_remove_old_fk_accounts(
             person=person_uuid,
             user_key=str(uuid4()),
             external_id=str(person_uuid),
-            itsystem=FK_uuid,
+            itsystem=create_FK_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -786,7 +785,7 @@ async def test_remove_old_fk_accounts(
             person=person_uuid,
             user_key=str(uuid4()),
             external_id=str(old_fk_uuid),
-            itsystem=FK_uuid,
+            itsystem=create_FK_itsystem,
             validity=RAValidityInput(from_=datetime(1970, 1, 1), to=None),  # type: ignore
         )
     )
@@ -851,16 +850,15 @@ async def test_remove_old_fk_accounts(
 async def test_no_fk_itsystem(
     graphql_client: GraphQLClient,
     create_person,
-    create_itsystems,
+    create_FK_itsystem,
     mock_settings,
 ) -> None:
     # Arrange
     os2sync_mock = AsyncMock()
     person_uuid = create_person.uuid
-    _, fk_it = create_itsystems
     await graphql_client.testing__itsystem_terminate(
         input=ITSystemTerminateInput(
-            uuid=fk_it,
+            uuid=create_FK_itsystem,
             # Terminate it-system from midnight
             to=datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
             - timedelta(days=1),
