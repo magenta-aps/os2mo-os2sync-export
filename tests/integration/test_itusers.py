@@ -546,7 +546,8 @@ async def test_future_engagement(
     mock_settings,
     create_person,
     create_org_unit,
-    create_engagement_classes,
+    create_job_function,
+    create_engagement_type,
     create_AD_itsystem,
     create_FK_itsystem,
     set_settings,
@@ -559,14 +560,13 @@ async def test_future_engagement(
     # Mock that user is not in os2sync already
     os2sync_mock.os2sync_get_user.side_effect = [KeyError]
     person_uuid = create_person.uuid
-    engagement_type, job_function = create_engagement_classes
     res = await graphql_client.testing__engagement_create(
         input=EngagementCreateInput(
             employee=create_person.uuid,
             org_unit=create_org_unit.uuid,
             user_key="1234",
-            engagement_type=engagement_type,
-            job_function=job_function,
+            engagement_type=create_engagement_type,
+            job_function=create_job_function,
             validity=RAValidityInput(from_=engagement_startdate, to=None),  # type: ignore
         )
     )
