@@ -137,9 +137,60 @@ async def _create_facet(graphql_client: GraphQLClient, user_key: str) -> UUID:
     return r.uuid
 
 
+async def _create_class(
+    graphql_client: GraphQLClient,
+    facet_uuid: UUID,
+    name: str,
+    user_key: str,
+    scope: str | None = None,
+) -> UUID:
+    r = await graphql_client.testing__create_class(
+        input=ClassCreateInput(
+            name=name,
+            user_key=user_key,
+            scope=scope,
+            facet_uuid=facet_uuid,
+            validity=FULL_VALIDITY,
+        )
+    )
+    return r.uuid
+
+
 @pytest.fixture
 async def create_org_unit_type_facet(graphql_client: GraphQLClient) -> UUID:
     return await _create_facet(graphql_client, "org_unit_type")
+
+
+@pytest.fixture
+async def create_address_type_facet(graphql_client: GraphQLClient) -> UUID:
+    return await _create_facet(graphql_client, "employee_address_type")
+
+
+@pytest.fixture
+async def create_email_address_type(
+    graphql_client: GraphQLClient, create_address_type_facet: UUID
+) -> UUID:
+    return await _create_class(
+        graphql_client, create_address_type_facet, "email", "email", "EMAIL"
+    )
+
+
+@pytest.fixture
+async def create_mobile_address_type(
+    graphql_client: GraphQLClient, create_address_type_facet: UUID
+) -> UUID:
+    return await _create_class(
+        graphql_client, create_address_type_facet, "Mobile", "mobile", "PHONE"
+    )
+
+
+@pytest.fixture
+async def create_landline_address_type(
+    graphql_client: GraphQLClient, create_address_type_facet: UUID
+) -> UUID:
+    return await _create_class(
+        graphql_client, create_address_type_facet, "Landline", "landline", "PHONE"
+    )
 
 
 @pytest.fixture
@@ -147,16 +198,9 @@ async def create_org_unit_type(
     graphql_client: GraphQLClient,
     create_org_unit_type_facet: UUID,
 ) -> UUID:
-    return (
-        await graphql_client.testing__create_class(
-            input=ClassCreateInput(
-                name="afdeling",
-                user_key="unit",
-                facet_uuid=create_org_unit_type_facet,
-                validity=FULL_VALIDITY,
-            )
-        )
-    ).uuid
+    return await _create_class(
+        graphql_client, create_org_unit_type_facet, "afdeling", "unit"
+    )
 
 
 @pytest.fixture
@@ -238,16 +282,7 @@ async def create_engagement_type(
     graphql_client: GraphQLClient,
     engagement_type_facet: UUID,
 ) -> UUID:
-    return (
-        await graphql_client.testing__create_class(
-            input=ClassCreateInput(
-                name="ansat",
-                user_key="-",
-                facet_uuid=engagement_type_facet,
-                validity=FULL_VALIDITY,
-            )
-        )
-    ).uuid
+    return await _create_class(graphql_client, engagement_type_facet, "ansat", "-")
 
 
 @pytest.fixture
@@ -255,16 +290,7 @@ async def create_job_function(
     graphql_client: GraphQLClient,
     job_function_facet: UUID,
 ) -> UUID:
-    return (
-        await graphql_client.testing__create_class(
-            input=ClassCreateInput(
-                name="Tester",
-                user_key="test",
-                facet_uuid=job_function_facet,
-                validity=FULL_VALIDITY,
-            )
-        )
-    ).uuid
+    return await _create_class(graphql_client, job_function_facet, "Tester", "test")
 
 
 @pytest.fixture
