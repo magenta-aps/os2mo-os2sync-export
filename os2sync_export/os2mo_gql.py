@@ -265,8 +265,8 @@ async def find_past_account_uuid(
     user_key_it_system_names: list[str],
 ) -> UUID | None:
     """Check if user has had an fk-org account in the past for a different AD-account with the same SamAccountName"""
-    # Read all AD accounts with the given SamAccountName
 
+    # Read all AD accounts with the given SamAccountName
     past_ad_account = await graphql_client.find_past_i_t_user(
         filter=ITUserFilter(
             employee=EmployeeFilter(uuids=[person_uuid]),  # type: ignore[call-arg]
@@ -301,17 +301,22 @@ async def find_past_account_uuid(
     # Return the latest fk-org uuid that matches. Return None if no matches are found.
     if not past_fk_org_accounts.objects:
         return None
+    past_fk_org_validities = [
+        validity
+        for ituser in past_fk_org_accounts.objects
+        for validity in ituser.validities
+    ]
+    if not past_fk_org_validities:
+        return None
 
-    latest_fk_org_uuid = max(
-        past_fk_org_accounts.objects,
-        key=lambda o: max(
-            # Replace None validity.to with max datetime to allow comparison
-            (v.validity.to or datetime.max.replace(tzinfo=UTC) for v in o.validities),
-        ),
+    max_date = datetime.max.replace(tzinfo=UTC)
+
+    latest = max(
+        past_fk_org_validities,
+        # Replace empty validities with datetime.max to allow comparison
+        key=lambda v: v.validity.to or max_date,
     )
-    past_fk_org_uuid = only({v.external_id for v in latest_fk_org_uuid.validities})
-
-    return UUID(past_fk_org_uuid) if past_fk_org_uuid else None
+    return UUID(latest.external_id) if latest.external_id else None
 
 
 @handle_exclusively_decorator(key=lambda uuid, *_, **__: uuid)
