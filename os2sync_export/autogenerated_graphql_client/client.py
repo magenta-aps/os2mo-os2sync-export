@@ -23,11 +23,12 @@ from .find_k_l_e_unit import FindKLEUnitItusers
 from .find_manager_unit import FindManagerUnit
 from .find_manager_unit import FindManagerUnitManagers
 from .input_types import AddressCreateInput
-from .input_types import ClassFilter
+from .input_types import ClassCreateInput
 from .input_types import EmployeeCreateInput
 from .input_types import EngagementCreateInput
 from .input_types import EngagementUpdateInput
-from .input_types import ITSystemFilter
+from .input_types import FacetCreateInput
+from .input_types import ITSystemCreateInput
 from .input_types import ITSystemTerminateInput
 from .input_types import ITUserCreateInput
 from .input_types import OrganisationUnitCreateInput
@@ -40,16 +41,18 @@ from .terminate_i_t_user import TerminateITUser
 from .terminate_i_t_user import TerminateITUserItuserTerminate
 from .testing__address_create import TestingAddressCreate
 from .testing__address_create import TestingAddressCreateAddressCreate
+from .testing__create_class import TestingCreateClass
+from .testing__create_class import TestingCreateClassClassCreate
+from .testing__create_facet import TestingCreateFacet
+from .testing__create_facet import TestingCreateFacetFacetCreate
+from .testing__create_itsystem import TestingCreateItsystem
+from .testing__create_itsystem import TestingCreateItsystemItsystemCreate
 from .testing__employee_create import TestingEmployeeCreate
 from .testing__employee_create import TestingEmployeeCreateEmployeeCreate
 from .testing__engagement_create import TestingEngagementCreate
 from .testing__engagement_create import TestingEngagementCreateEngagementCreate
 from .testing__engagement_update import TestingEngagementUpdate
 from .testing__engagement_update import TestingEngagementUpdateEngagementUpdate
-from .testing__get_class import TestingGetClass
-from .testing__get_class import TestingGetClassClasses
-from .testing__get_itsystem import TestingGetItsystem
-from .testing__get_itsystem import TestingGetItsystemItsystems
 from .testing__itsystem_terminate import TestingItsystemTerminate
 from .testing__itsystem_terminate import TestingItsystemTerminateItsystemTerminate
 from .testing__ituser_create import TestingItuserCreate
@@ -441,39 +444,50 @@ class GraphQLClient(AsyncBaseClient):
         data = self.get_data(response)
         return EventSend.parse_obj(data).event_send
 
-    async def testing__get_class(
-        self, filter: Union[Optional[ClassFilter], UnsetType] = UNSET
-    ) -> TestingGetClassClasses:
+    async def testing__create_facet(
+        self, input: FacetCreateInput
+    ) -> TestingCreateFacetFacetCreate:
         query = gql("""
-            query _testing__get_class($filter: ClassFilter) {
-              classes(filter: $filter) {
-                objects {
-                  uuid
-                }
+            mutation _testing__create_facet($input: FacetCreateInput!) {
+              facet_create(input: $input) {
+                uuid
               }
             }
             """)
-        variables: dict[str, object] = {"filter": filter}
+        variables: dict[str, object] = {"input": input}
         response = await self.execute(query=query, variables=variables)
         data = self.get_data(response)
-        return TestingGetClass.parse_obj(data).classes
+        return TestingCreateFacet.parse_obj(data).facet_create
 
-    async def testing__get_itsystem(
-        self, filter: Union[Optional[ITSystemFilter], UnsetType] = UNSET
-    ) -> TestingGetItsystemItsystems:
+    async def testing__create_class(
+        self, input: ClassCreateInput
+    ) -> TestingCreateClassClassCreate:
         query = gql("""
-            query _testing__get_itsystem($filter: ITSystemFilter) {
-              itsystems(filter: $filter) {
-                objects {
-                  uuid
-                }
+            mutation _testing__create_class($input: ClassCreateInput!) {
+              class_create(input: $input) {
+                uuid
               }
             }
             """)
-        variables: dict[str, object] = {"filter": filter}
+        variables: dict[str, object] = {"input": input}
         response = await self.execute(query=query, variables=variables)
         data = self.get_data(response)
-        return TestingGetItsystem.parse_obj(data).itsystems
+        return TestingCreateClass.parse_obj(data).class_create
+
+    async def testing__create_itsystem(
+        self, input: ITSystemCreateInput
+    ) -> TestingCreateItsystemItsystemCreate:
+        query = gql("""
+            mutation _testing__create_itsystem($input: ITSystemCreateInput!) {
+              itsystem_create(input: $input) {
+                uuid
+              }
+            }
+            """)
+        variables: dict[str, object] = {"input": input}
+        response = await self.execute(query=query, variables=variables)
+        data = self.get_data(response)
+        return TestingCreateItsystem.parse_obj(data).itsystem_create
 
     async def testing__employee_create(
         self, input: EmployeeCreateInput

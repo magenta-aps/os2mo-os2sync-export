@@ -29,7 +29,6 @@ services:
       - ./tests:/app/tests
     depends_on:
       - db
-      - init
 
   db:
     # Requirement for running integration tests

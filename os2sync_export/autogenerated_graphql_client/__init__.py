@@ -252,18 +252,18 @@ from .terminate_i_t_user import TerminateITUser
 from .terminate_i_t_user import TerminateITUserItuserTerminate
 from .testing__address_create import TestingAddressCreate
 from .testing__address_create import TestingAddressCreateAddressCreate
+from .testing__create_class import TestingCreateClass
+from .testing__create_class import TestingCreateClassClassCreate
+from .testing__create_facet import TestingCreateFacet
+from .testing__create_facet import TestingCreateFacetFacetCreate
+from .testing__create_itsystem import TestingCreateItsystem
+from .testing__create_itsystem import TestingCreateItsystemItsystemCreate
 from .testing__employee_create import TestingEmployeeCreate
 from .testing__employee_create import TestingEmployeeCreateEmployeeCreate
 from .testing__engagement_create import TestingEngagementCreate
 from .testing__engagement_create import TestingEngagementCreateEngagementCreate
 from .testing__engagement_update import TestingEngagementUpdate
 from .testing__engagement_update import TestingEngagementUpdateEngagementUpdate
-from .testing__get_class import TestingGetClass
-from .testing__get_class import TestingGetClassClasses
-from .testing__get_class import TestingGetClassClassesObjects
-from .testing__get_itsystem import TestingGetItsystem
-from .testing__get_itsystem import TestingGetItsystemItsystems
-from .testing__get_itsystem import TestingGetItsystemItsystemsObjects
 from .testing__itsystem_terminate import TestingItsystemTerminate
 from .testing__itsystem_terminate import TestingItsystemTerminateItsystemTerminate
 from .testing__ituser_create import TestingItuserCreate
@@ -470,18 +470,18 @@ __all__ = [
     "TerminateITUserItuserTerminate",
     "TestingAddressCreate",
     "TestingAddressCreateAddressCreate",
+    "TestingCreateClass",
+    "TestingCreateClassClassCreate",
+    "TestingCreateFacet",
+    "TestingCreateFacetFacetCreate",
+    "TestingCreateItsystem",
+    "TestingCreateItsystemItsystemCreate",
     "TestingEmployeeCreate",
     "TestingEmployeeCreateEmployeeCreate",
     "TestingEngagementCreate",
     "TestingEngagementCreateEngagementCreate",
     "TestingEngagementUpdate",
     "TestingEngagementUpdateEngagementUpdate",
-    "TestingGetClass",
-    "TestingGetClassClasses",
-    "TestingGetClassClassesObjects",
-    "TestingGetItsystem",
-    "TestingGetItsystemItsystems",
-    "TestingGetItsystemItsystemsObjects",
     "TestingItsystemTerminate",
     "TestingItsystemTerminateItsystemTerminate",
     "TestingItuserCreate",
