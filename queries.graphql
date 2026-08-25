@@ -202,6 +202,25 @@ query FindFKItsystem {
   }
 }
 
+query FindPastITUser(
+  $filter: ITUserFilter
+  $start: DateTime = null
+  $end: DateTime
+) {
+  itusers(filter: $filter) {
+    objects {
+      validities(start: $start, end: $end) {
+        user_key
+        external_id
+        validity {
+          to
+        }
+      }
+    }
+  }
+}
+
+
 mutation CreateITUser(
   $external_id: String!
   $itsystem: UUID!
