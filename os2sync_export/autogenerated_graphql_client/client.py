@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 from typing import List
 from typing import Optional
 from typing import Union
@@ -12,6 +13,8 @@ from .create_i_t_user import CreateITUserItuserCreate
 from .event_send import EventSend
 from .find_address_unit_or_person import FindAddressUnitOrPerson
 from .find_address_unit_or_person import FindAddressUnitOrPersonAddresses
+from .find_all_f_k_itusers import FindAllFKItusers
+from .find_all_f_k_itusers import FindAllFKItusersItusers
 from .find_engagement_person import FindEngagementPerson
 from .find_engagement_person import FindEngagementPersonEngagements
 from .find_f_k_itsystem import FindFKItsystem
@@ -412,6 +415,34 @@ class GraphQLClient(AsyncBaseClient):
         response = await self.execute(query=query, variables=variables)
         data = self.get_data(response)
         return FindPastITUser.parse_obj(data).itusers
+
+    async def find_all_f_k_itusers(
+        self,
+        cursor: Union[Optional[Any], UnsetType] = UNSET,
+        limit: Union[Optional[Any], UnsetType] = UNSET,
+    ) -> FindAllFKItusersItusers:
+        query = gql("""
+            query FindAllFKItusers($cursor: Cursor = null, $limit: int = 1000) {
+              itusers(
+                filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}
+                cursor: $cursor
+                limit: $limit
+              ) {
+                objects {
+                  current {
+                    external_id
+                  }
+                }
+                page_info {
+                  next_cursor
+                }
+              }
+            }
+            """)
+        variables: dict[str, object] = {"cursor": cursor, "limit": limit}
+        response = await self.execute(query=query, variables=variables)
+        data = self.get_data(response)
+        return FindAllFKItusers.parse_obj(data).itusers
 
     async def create_i_t_user(
         self,
