@@ -177,6 +177,24 @@ class OS2SyncClient:
         else:
             await self.delete_orgunit(uuid)
 
+    async def cleanup_units(self, uuids: set[UUID], dry_run: bool = False):
+        if not uuids:
+            raise ValueError("Cleanup method called with empty payload.")
+        await self.os2sync_post(
+            "{BASE}/orgUnit/cleanup",
+            json=jsonable_encoder(uuids),
+            params={"dry_run": dry_run},
+        )
+
+    async def cleanup_users(self, uuids: set[UUID], dry_run: bool = False):
+        if not uuids:
+            raise ValueError("Cleanup method called with empty payload.")
+        await self.os2sync_post(
+            "{BASE}/user/cleanup",
+            json=jsonable_encoder(uuids),
+            params={"dry_run": dry_run},
+        )
+
 
 class ReadOnlyOS2SyncClient(OS2SyncClient):
     async def os2sync_post(self, url, **params):

@@ -220,6 +220,25 @@ query FindPastITUser(
   }
 }
 
+query FindAllFKItusers(
+  $cursor: Cursor = null
+  $limit: int = 1000
+) {
+  itusers(
+    filter: {itsystem: {user_keys: ["FK-ORG-UUID", "FK-ORG UUID"]}}
+    cursor: $cursor
+    limit: $limit
+  ) {
+    objects {
+      current {
+        external_id
+      }
+    }
+    page_info {
+      next_cursor
+    }
+  }
+}
 
 mutation CreateITUser(
   $external_id: String!

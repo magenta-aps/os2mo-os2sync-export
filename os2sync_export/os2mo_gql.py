@@ -620,3 +620,19 @@ def find_object_person(
 async def find_fk_itsystem_uuid(graphql_client: GraphQLClient):
     res = await graphql_client.find_f_k_itsystem()
     return one(res.objects).uuid
+
+
+async def find_active_accounts(
+    graphql_client: GraphQLClient,
+) -> set[UUID]:
+    active_accounts: set[UUID] = set()
+    cursor: str | None = None
+    while True:
+        fk_accounts_in_MO = await graphql_client.find_all_f_k_itusers(cursor=cursor)
+        for account in fk_accounts_in_MO.objects:
+            if account.current and account.current.external_id:
+                active_accounts.add(UUID(account.current.external_id))
+        cursor = fk_accounts_in_MO.page_info.next_cursor
+        if cursor is None:
+            break
+    return active_accounts
