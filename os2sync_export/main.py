@@ -34,6 +34,7 @@ from os2sync_export.os2mo import get_manager_org_unit_uuid
 from os2sync_export.os2mo import get_sts_orgunit
 from os2sync_export.os2mo import get_sts_user
 from os2sync_export.os2mo import is_relevant
+from os2sync_export.os2mo_gql import find_active_accounts
 from os2sync_export.os2mo_gql import find_object_person
 from os2sync_export.os2mo_gql import find_object_unit
 from os2sync_export.os2mo_gql import sync_mo_user_to_fk_org
@@ -82,6 +83,25 @@ async def trigger_all(
         graphql_session=graphql_session,
         os2sync_client=os2sync_client,
     )
+
+
+@fastapi_router.post("/cleanup_users", status_code=202)
+async def cleanup_users(
+    graphql_client: GraphQLClient,
+    os2sync_client: OS2SyncClient_,
+    settings: Settings_,
+    dry_run: bool = False,
+) -> None:
+    """Cleanup stale users from fk-org."""
+    if not settings.new:
+        raise NotImplementedError
+    active_accounts = await find_active_accounts(
+        graphql_client=graphql_client,
+    )
+    if not active_accounts:
+        raise ValueError("No active accounts found! Stopping!")
+
+    await os2sync_client.cleanup_users(active_accounts, dry_run=dry_run)
 
 
 @fastapi_router.post("/cleanup_duplicate_engagements", status_code=202)

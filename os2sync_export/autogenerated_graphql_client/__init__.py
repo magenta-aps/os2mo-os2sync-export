@@ -25,6 +25,11 @@ from .find_address_unit_or_person import (
 from .find_address_unit_or_person import (
     FindAddressUnitOrPersonAddressesObjectsValiditiesPerson,
 )
+from .find_all_f_k_itusers import FindAllFKItusers
+from .find_all_f_k_itusers import FindAllFKItusersItusers
+from .find_all_f_k_itusers import FindAllFKItusersItusersObjects
+from .find_all_f_k_itusers import FindAllFKItusersItusersObjectsCurrent
+from .find_all_f_k_itusers import FindAllFKItusersItusersPageInfo
 from .find_engagement_person import FindEngagementPerson
 from .find_engagement_person import FindEngagementPersonEngagements
 from .find_engagement_person import FindEngagementPersonEngagementsObjects
@@ -343,6 +348,11 @@ __all__ = [
     "FindAddressUnitOrPersonAddressesObjectsValidities",
     "FindAddressUnitOrPersonAddressesObjectsValiditiesOrgUnit",
     "FindAddressUnitOrPersonAddressesObjectsValiditiesPerson",
+    "FindAllFKItusers",
+    "FindAllFKItusersItusers",
+    "FindAllFKItusersItusersObjects",
+    "FindAllFKItusersItusersObjectsCurrent",
+    "FindAllFKItusersItusersPageInfo",
     "FindEngagementPerson",
     "FindEngagementPersonEngagements",
     "FindEngagementPersonEngagementsObjects",
