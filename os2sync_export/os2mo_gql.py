@@ -262,6 +262,7 @@ async def find_past_account_uuid(
     graphql_client: GraphQLClient,
     person_uuid: UUID,
     it: ReadUserITAccountsEmployeesObjectsCurrentItusers,
+    current_fk_uuids: set[UUID],
     user_key_it_system_names: list[str],
 ) -> UUID | None:
     """Check if user has had an fk-org account in the past for a different AD-account with the same SamAccountName"""
@@ -305,6 +306,7 @@ async def find_past_account_uuid(
         validity
         for ituser in past_fk_org_accounts.objects
         for validity in ituser.validities
+        if validity.external_id not in current_fk_uuids
     ]
     if not past_fk_org_validities:
         return None
@@ -399,7 +401,11 @@ async def sync_mo_user_to_fk_org(
             if settings.randomize_fk_org_uuid:
                 # If the user has had a fk-org account in the past for an AD account with the same username, reuse the uuid.
                 past_fk_org_uuid = await find_past_account_uuid(
-                    graphql_client, uuid, it, settings.user_key_it_system_names
+                    graphql_client=graphql_client,
+                    person_uuid=uuid,
+                    it=it,
+                    current_fk_uuids=set(fk_org_uuids),  # type: ignore[arg-type]
+                    user_key_it_system_names=settings.user_key_it_system_names,
                 )
                 it.external_id = (
                     str(past_fk_org_uuid) if past_fk_org_uuid else str(uuid4())
