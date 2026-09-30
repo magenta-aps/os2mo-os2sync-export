@@ -34,6 +34,7 @@ from .input_types import ITSystemCreateInput
 from .input_types import ITSystemTerminateInput
 from .input_types import ITUserCreateInput
 from .input_types import ITUserFilter
+from .input_types import KLECreateInput
 from .input_types import OrganisationUnitCreateInput
 from .input_types import OrganisationUnitTerminateInput
 from .read_orgunit import ReadOrgunit
@@ -60,6 +61,8 @@ from .testing__itsystem_terminate import TestingItsystemTerminate
 from .testing__itsystem_terminate import TestingItsystemTerminateItsystemTerminate
 from .testing__ituser_create import TestingItuserCreate
 from .testing__ituser_create import TestingItuserCreateItuserCreate
+from .testing__kle_create import TestingKleCreate
+from .testing__kle_create import TestingKleCreateKleCreate
 from .testing__org_unit_create import TestingOrgUnitCreate
 from .testing__org_unit_create import TestingOrgUnitCreateOrgUnitCreate
 from .testing__org_unit_terminate import TestingOrgUnitTerminate
@@ -637,3 +640,18 @@ class GraphQLClient(AsyncBaseClient):
         response = await self.execute(query=query, variables=variables)
         data = self.get_data(response)
         return TestingEngagementUpdate.parse_obj(data).engagement_update
+
+    async def testing__kle_create(
+        self, input: KLECreateInput
+    ) -> TestingKleCreateKleCreate:
+        query = gql("""
+            mutation _testing__kle_create($input: KLECreateInput!) {
+              kle_create(input: $input) {
+                uuid
+              }
+            }
+            """)
+        variables: dict[str, object] = {"input": input}
+        response = await self.execute(query=query, variables=variables)
+        data = self.get_data(response)
+        return TestingKleCreate.parse_obj(data).kle_create
