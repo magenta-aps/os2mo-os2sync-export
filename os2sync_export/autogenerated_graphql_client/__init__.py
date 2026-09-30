@@ -273,6 +273,8 @@ from .testing__itsystem_terminate import TestingItsystemTerminate
 from .testing__itsystem_terminate import TestingItsystemTerminateItsystemTerminate
 from .testing__ituser_create import TestingItuserCreate
 from .testing__ituser_create import TestingItuserCreateItuserCreate
+from .testing__kle_create import TestingKleCreate
+from .testing__kle_create import TestingKleCreateKleCreate
 from .testing__org_unit_create import TestingOrgUnitCreate
 from .testing__org_unit_create import TestingOrgUnitCreateOrgUnitCreate
 from .testing__org_unit_terminate import TestingOrgUnitTerminate
@@ -496,6 +498,8 @@ __all__ = [
     "TestingItsystemTerminateItsystemTerminate",
     "TestingItuserCreate",
     "TestingItuserCreateItuserCreate",
+    "TestingKleCreate",
+    "TestingKleCreateKleCreate",
     "TestingOrgUnitCreate",
     "TestingOrgUnitCreateOrgUnitCreate",
     "TestingOrgUnitTerminate",

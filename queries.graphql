@@ -319,3 +319,9 @@ mutation _testing__engagement_update($input: EngagementUpdateInput!) {
     uuid
   }
 }
+
+mutation _testing__kle_create($input: KLECreateInput!) {
+  kle_create(input: $input) {
+    uuid
+  }
+}
